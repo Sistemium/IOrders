@@ -7,9 +7,9 @@ console.log = function() {
 	}
 };
 
-applicationCache.addEventListener('updateready', function() {
+applicationCache.addEventListener('updateready', function(a) {
 	
-	window.applicationCache.swapCache();
+	window.applicationCache.update();
 	
 	Ext.Msg.confirm(
 		'Обновление программы',
