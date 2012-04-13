@@ -22,85 +22,6 @@ var getItemTplMeta = function(modelName, config) {
 	
 	var modelForDeps = undefined;
 	
-	//start
-	var newTpl = '<div class="hbox <tpl if="needUpload">needUpload</tpl>">';
-		//start div data
-		newTpl += '<div class="data">';
-			//start if hasName
-			if(templateData.hasName) {
-				newTpl += '<p class="name">{name}</p>';
-			}
-			//end hasName
-	
-			//start if !hasName && keyColumnsLength > 0
-			if(!templateData.hasName && templateData.keyColumnsLength > 0) {
-				newTpl += '<p class="key">';
-				
-				Ext.each(templateData.keyColumns, function(keyCol) {
-					
-					if(keyCol.parent && !keyCol.parentInfo) {
-						newTpl += '<span class="' + keyCol.cls + '">{' + keyCol.name_br + '}' + (!keyCol.end ? ' : ' : '') + '</span>&nbsp;';
-					} else if(keyCol.parent && keyCol.parentInfo) {
-						newTpl += '<div class="parent-info">{[getParentInfo("' + keyCol.name + '", values.' + keyCol.name + ')]}</div>');
-					} else if(!keyCol.parent) {
-						newTpl += '<span class="' + keyCol.cls + '">{' + keyCol.name + '}' + (!keyCol.end ? ' : ' : '') + '</span>&nbsp;';
-					}
-				});
-				
-				newTpl += '</p>'
-			}
-			//end if !hasName && keyColumnsLength > 0
-	
-			if(templateData.otherColumns.length > 0) {
-				
-				newTpl += '<div class="other">'
-					   +	'<small class="other-fields">';
-				
-								Ext.each(templateData.otherColumns, function(col) {
-									
-									if(col.parent && (col.labal || col.name)) {
-										newTpl += '<div>'
-											+		'<span class="label-parent x-button">'
-											+			'<input type="hidden" property="' + col.name + '" value="{' + col.name + '}" />'
-											+			col.label
-											+		'</span>';
-										if(col.name_br) {
-											newTpl += ': {' + col.name_br + '}';
-										}
-										
-										newTpl += '</div>'
-									} else if(!col.parent && (col.labal || col.name)) {
-										newTpl += '<div class="' + col.cls + '">' + col.name + '</div>';
-									}
-								});
-				newTpl +=	'</small>'
-					   + '</div>'
-			}
-			
-		//end div data
-		newTpl += '</div>';
-	
-		//start div buttons
-		if(useDeps && !onlyKey) {
-			newTpl += '<div class="buttons">' 
-					+ '<tpl for="deps">'
-						+ '<tpl if="count &gt; 0 || extendable">'
-						+	'<div class="hbox dep">'
-						+ 		'<input type="hidden" value="{id}" />'
-						+ 		'<div class="count"><tpl if="count &gt; 0">{count}</tpl></div>'
-						+ 		'<div class="stats"><tpl if="stats &gt; 0">{stats}</tpl></div>'
-						+ 		'<div class="data">{nameSet}</div>'
-						+ 		'<div class="aggregates">{aggregates}</div>'
-						+ 		'<tpl if="extendable && (!editing && !contains || editing && contains)"><div class="x-button extend add">+</div></tpl>'
-						+ 	'</div>'
-						+ '</tpl>'
-					+ '</tpl>'
-				+ '</div>';
-		}
-		//end div buttons
-	//end
-	newTpl += '</div>'
-	
 	var templateString = '<div class="hbox {cls}">'
 				+		'<div class="data">'
 				+			'<tpl if="hasName">'
@@ -149,10 +70,30 @@ var getItemTplMeta = function(modelName, config) {
 				+		'{buttons}'
 				+	'</div>';
 	
+	var buttons = 
+		'<div class="buttons">' 
+			+ '<tpl for="deps">'
+				+ '<tpl if="count &gt; 0 || extendable">'
+				+	'<div class="hbox dep">'
+				+ 		'<input type="hidden" value="{id}" />'
+				+ 		'<div class="count"><tpl if="count &gt; 0">{count}</tpl></div>'
+				+ 		'<div class="stats"><tpl if="stats &gt; 0">{stats}</tpl></div>'
+				+ 		'<div class="data">{nameSet}</div>'
+				+ 		'<div class="aggregates">{aggregates}</div>'
+				+ 		'<tpl if="extendable && (!editing && !contains || editing && contains)"><div class="x-button extend add">+</div></tpl>'
+				+ 	'</div>'
+				+ '</tpl>'
+ 			+ '</tpl>'
+ 		+ '</div>';
+	
 	var templateData = {
 		hasName: false,
+		keyColumnsLength: 0,
 		keyColumns: [],
-		otherColumns: []
+		otherColumnsLength: 0,
+		otherColumns: [],
+		buttons: useDeps && !onlyKey ? buttons : '',
+		cls: '<tpl if="needUpload">needUpload</tpl>'
 	};
 	
 	var idColExist = columnStore.findExact('name', 'id') === -1 ? false : true;
@@ -169,6 +110,8 @@ var getItemTplMeta = function(modelName, config) {
 				&& ( !filterObject || filterObject.modelName.toLowerCase() != rec.get('name').toLowerCase())
 				&& groupField !== rec.get('name') ? true : false;
 		});
+
+		templateData.keyColumnsLength = keyColumns.getCount(); 
 
 		if(keyColumns.getCount() > 0) {
 
@@ -227,6 +170,7 @@ var getItemTplMeta = function(modelName, config) {
 				&& colName !== 'id' && colName !== 'name' && rec.get('label') ? true : false;
 		});
 		
+		templateData.otherColumnsLength = otherColumns.getCount(); 
 		if(otherColumns.getCount() > 0) {
 	
 			otherColumns.each(function(col) {
@@ -269,7 +213,7 @@ var getItemTplMeta = function(modelName, config) {
 		}
 	}
 	
-	return {itemTpl: newTpl, modelForDeps: modelForDeps};
+	return {itemTpl: new Ext.XTemplate(templateString).apply(templateData), modelForDeps: modelForDeps};
 };
 
 function getItemTpl (modelName) {
