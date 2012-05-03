@@ -238,11 +238,12 @@ function getItemTpl (modelName) {
 				 + '</div>';
 		}
 		case 'OfferCategory': {
-			return '<div class="<tpl if="lastActive || minLastActive">active</tpl>">{name}</div>'
-				 + '<div>'
-				   + '<tpl if="minLastActive"><small class="green">[{minLastActive}]</small></tpl>'
-				   + '<tpl if="maxLastActive && maxLastActive != minLastActive"><small class="green">[{maxLastActive}]</small></tpl>'
-				 + '</div>';
+			return '<div class="hbox">'
+				 + '<div class="data <tpl if="lastActive || minLastActive">active</tpl>">{name}</div>'
+				   + '<tpl if="minLastActive"><div class="green">({maxLastActive})</div></tpl>'
+//				   + '<tpl if="maxLastActive && maxLastActive != minLastActive"><small class="green">[{maxLastActive}]</small></tpl>'
+				 + '</div>'
+			;
 		}
 		case 'ShipmentProduct': {
 			return '<div class="data">'
@@ -262,7 +263,7 @@ function getItemTpl (modelName) {
 			       +'<div class="info {cls} data ' + '<tpl if="stockLevel==1">caution</tpl>' + '">'
 				     + '<p>{name}'
 						+'<tpl if="extraLabel"><span class="blue"> [{extraLabel}]</span></tpl>'
-						+'<tpl if="lastActive"><span class="green"> [{lastActive}]</span></tpl>'
+						+'<tpl if="lastActive"><span class="green"> ({lastActive})</span></tpl>'
 						+'<tpl if="BonusProgram_tag"><span class="crec {BonusProgram_tagColor}">{BonusProgram_tag}</span></tpl>'
 					 +'</p>'
 				     + '<small><span class="price">Цена: {price} руб. </span>'
