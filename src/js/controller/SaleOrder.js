@@ -272,7 +272,12 @@ Ext.regController('SaleOrder', {
 																	newCard.on('activate', function() {
 																		newCard.customerRecord.getCustomerBonusProgram(function(bonusStore) {
 																			newCard.customerRecord.bonusProgramStore = bonusStore;
-																			Ext.dispatch(Ext.apply(options, {action: 'toggleBonusOn', view: newCard, atStart: true, bonusStore: bonusStore}));
+																			Ext.dispatch(Ext.apply(options, {
+																				action: 'toggleBonusOn',
+																				view: newCard,
+																				atStart: true,
+																				bonusStore: bonusStore
+																			}));
 																		});
 																	});
 																}
@@ -706,22 +711,25 @@ Ext.regController('SaleOrder', {
 
 			view.cmpLinkArray.push(view.bonusPanel);
 		}
-
-		var list = view.bonusPanel.getComponent('bonusList');
-
+		
+		var list = view.bonusPanel.getComponent('bonusList'),
+			allowedCheck = function(item) {
+				return customerBonusProgramStore.findExact('bonusProgram', item.getId()) !== -1 || !item.get('isCustomerTargeted');
+			};
+		
 		list.refresh();
 		view.bonusPanel.show();
-
-		view.bonusProgramStore.filterBy(function(item) {
-			return customerBonusProgramStore.findExact('bonusProgram', item.getId()) !== -1 || !item.get('isCustomerTargeted');
-		});
+		
+		view.bonusProgramStore.filterBy(allowedCheck);
 		
 		if(productRec) {
-
+			
 			view.bonusProductStore.filter({property: 'product', value: productRec.get('product')});
-
-			view.bonusProgramStore.filterBy(function(item) {return view.bonusProductStore.findExact('bonusprogram', item.getId()) !== -1;});
-
+			
+			view.bonusProgramStore.filterBy(function(item) {
+				return view.bonusProductStore.findExact('bonusprogram', item.getId()) !== -1;
+			});
+			
 			var bonusList = view.bonusPanel.getComponent('bonusList');
 			bonusList.selectSnapshot && bonusList.selModel.select(bonusList.selectSnapshot);
 		}
@@ -729,7 +737,7 @@ Ext.regController('SaleOrder', {
 		if(options.atStart) {
 			
 			view.bonusProgramStore.filterBy(function(item) {
-				return item.get('isPopAtStart');
+				return item.get('isPopAtStart') && allowedCheck (item);
 			});
 			
 			var bonusList = view.bonusPanel.getComponent('bonusList');
