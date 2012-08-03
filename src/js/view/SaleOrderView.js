@@ -34,7 +34,7 @@ var SaleOrderView = Ext.extend(AbstractView, {
 					}
 				}, this);
 			}
-		}, getGroupConfig('Category')));
+		}, getGroupConfig('OfferCategory')));
 		
 		this.productCategoryList = Ext.create({
 			xtype: 'expandableGroupedList',
