@@ -602,11 +602,44 @@ var getGroupConfig = function(model) {
 				field: 'ShopDepartment_name'
 			};
 		}
+		case 'OfferCategory' : {
+			var result = {
+				getGroupString: function(rec) {
+					return rec.get('ShopDepartment_name');
+				},
+				sorters: [
+					{ property: 'ShopDepartment_ord' },
+					{ property: 'ShopDepartment_name' },
+					{ property: 'ord' },
+					{ property: 'name' }
+				],
+				field: 'ShopDepartment_name'
+			};
+			
+			var sorters = [];
+			
+			Ext.each (result.sorters, function(s, i) {
+				if (tableHasColumn(model,s.property))
+					sorters.push(s);
+			});
+			
+			if (sorters.length) result.sorters = sorters;
+			else delete result.sorters;
+			
+			return result;
+		}
 		default : {
 			return {};
 		}
 	}
 };
+
+var tableHasColumn = function (table, column) {
+	var table = Ext.getStore('tables').getById(table),
+		columns = table.columns()
+	;
+	return columns.getById(table.getId() + column)
+}
 
 var getSortersConfig = function(model, storeConfig) {
 

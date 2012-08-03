@@ -361,3 +361,7 @@
 .make-draft.x-button-pressed .x-button-label,  .x-panel.statusDesc .draft{
 	color: blue;
 }
+
+.title {
+	color: black;
+}
