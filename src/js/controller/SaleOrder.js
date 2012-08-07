@@ -238,14 +238,16 @@ Ext.regController('SaleOrder', {
 													console.log ('SaleOrder: empty customer');
 												}
 
-												newCard.bonusProgramStore = createStore('BonusProgram', Ext.apply(getSortersConfig('BonusProgram', {})));
+												newCard.bonusProgramStore = createStore('BonusProgramByCustomer', Ext.apply(getSortersConfig('BonusProgram', {})));
 												newCard.bonusProductStore = createStore('BonusProgramProduct', Ext.apply(getSortersConfig('BonusProgramProduct', {})));
-
+												newCard.bonusProgramStore.filters.add({property: 'customer', value: options.saleOrder.get('customer')});
+												
 												newCard.bonusProgramStore.load({
 													limit: 0,
 													callback: function() {
 														newCard.bonusProgramStore.remoteFilter = false;
-
+														newCard.bonusProgramStore.clearFilter(true);
+														
 														newCard.bonusProductStore.load({
 															limit: 0,
 															callback: function() {
