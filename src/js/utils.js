@@ -602,6 +602,14 @@ var getGroupConfig = function(model) {
 				field: 'date'
 			};
 		}
+		case 'BonusProgramByCustomer' : {
+			return {
+				sorters: [
+					{property: 'isWithMsg', direction: 'desc'},
+					{property: 'name', direction: 'ASC'}
+				]
+			};
+		}
 		case 'Product' : {
 			return {
 				getGroupString: function(rec) {
@@ -654,8 +662,8 @@ var getGroupConfig = function(model) {
 	}
 };
 
-var tableHasColumn = function (table, column) {
-	var table = Ext.getStore('tables').getById(table),
+var tableHasColumn = function (tbl, column) {
+	var table = Ext.getStore('tables').getById(tbl),
 		columns = table.columns()
 	;
 	return columns.getById(table.getId() + column)
