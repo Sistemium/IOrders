@@ -213,12 +213,30 @@ var getItemTplMeta = function(modelName, config) {
 		}
 	}
 	
-	return {itemTpl: new Ext.XTemplate(templateString).apply(templateData), modelForDeps: modelForDeps};
+	var res = {
+		itemTpl: new Ext.XTemplate(templateString).apply(templateData),
+		modelForDeps: modelForDeps
+	};
+	
+	return res;
 };
 
 function getItemTpl (modelName) {
 
 	switch(modelName) {
+		case 'BonusProgramByCustomer': {
+			return '<div class="hbox"><div class="data">'
+						+'<p class="name">{name}</p>'
+						+'<div>'
+							+'<small class="other-fields">'
+								+'<div class="goal"><tpl if="goal">Выполни : {goal}</tpl></div>'
+								+'<div class="gain"><tpl if="gain">Получи : {gain}</tpl></div>'
+								+'<div class="msg blue"><tpl if="msg">Сообщение : {msg}</tpl></div>'
+							+'</small>'
+						+'</div>'
+					+'</div></div>'
+			;
+		}
 		case 'Dep': {
 			return '<div class="hbox dep <tpl if="loading">loading</tpl>">'
 					+	'<div class="count"><tpl if="count &gt; 0">{count}</tpl></div>'
@@ -276,6 +294,8 @@ function getItemTpl (modelName) {
 				 + '</div>';
 		}
 	}
+	
+	return undefined;
 };
 
 var createFieldSet = function(columnsStore, modelName, view) {
