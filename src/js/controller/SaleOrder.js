@@ -686,7 +686,7 @@ Ext.regController('SaleOrder', {
 				items: [{
 					xtype: 'list',
 					itemId: 'bonusList',
-					itemTpl: getItemTplMeta('BonusProgram', {useDeps: false}).itemTpl,
+					itemTpl: getItemTpl('BonusProgramByCustomer'),
 					store: view.bonusProgramStore,
 					listeners: {
 						itemtap: function(list, idx, item, e) {
@@ -739,7 +739,7 @@ Ext.regController('SaleOrder', {
 		if(options.atStart) {
 			
 			view.bonusProgramStore.filterBy(function(item) {
-				return item.get('isPopAtStart') && allowedCheck (item);
+				return (item.get('isPopAtStart') || item.get('isWithMsg')) && allowedCheck (item);
 			});
 			
 			var bonusList = view.bonusPanel.getComponent('bonusList');
