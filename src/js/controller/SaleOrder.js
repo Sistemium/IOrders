@@ -237,14 +237,22 @@ Ext.regController('SaleOrder', {
 												} else {
 													console.log ('SaleOrder: empty customer');
 												}
-
+												
+												var bonusModelName = 'BonusProgramByCustomer';
+												
+												if (!Ext.ModelMgr.getModel(bonusModelName))
+													bonusModelName = 'BonusProgram'
+												;
+												
 												newCard.bonusProgramStore = createStore(
-													'BonusProgramByCustomer',
-													getGroupConfig('BonusProgramByCustomer')
+													bonusModelName,
+													getGroupConfig(bonusModelName)
 												);
 												
 												newCard.bonusProductStore = createStore('BonusProgramProduct', Ext.apply(getSortersConfig('BonusProgramProduct', {})));
-												newCard.bonusProgramStore.filters.add({property: 'customer', value: options.saleOrder.get('customer')});
+												
+												if (bonusModelName == 'BonusProgramByCustomer')
+													newCard.bonusProgramStore.filters.add({property: 'customer', value: options.saleOrder.get('customer')});
 												
 												newCard.bonusProgramStore.load({
 													limit: 0,
@@ -696,7 +704,7 @@ Ext.regController('SaleOrder', {
 				items: [{
 					xtype: 'list',
 					itemId: 'bonusList',
-					itemTpl: getItemTpl('BonusProgramByCustomer'),
+					itemTpl: getItemTpl(view.bonusProgramStore.model.modelName),
 					store: view.bonusProgramStore,
 					listeners: {
 						itemtap: function(list, idx, item, e) {

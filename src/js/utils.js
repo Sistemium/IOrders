@@ -295,7 +295,7 @@ function getItemTpl (modelName) {
 		}
 	}
 	
-	return undefined;
+	return getItemTplMeta(modelName, {useDeps:false}).itemTpl;
 };
 
 var createFieldSet = function(columnsStore, modelName, view) {
