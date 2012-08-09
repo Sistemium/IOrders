@@ -264,7 +264,7 @@ Ext.regController('SaleOrder', {
 															return rec.get('isWithMsg')
 														}).getCount();
 														
-														if (withMsgCount) newCard.dockedItems.item(0).items.getByKey('ModeChanger').items.getByKey('Bonus').setBadge(withMsgCount);
+														if (withMsgCount) newCard.dockedItems.get(0).items.getByKey('ModeChanger').items.getByKey('Bonus').setBadge(withMsgCount);
 														
 														newCard.bonusProductStore.load({
 															limit: 0,
