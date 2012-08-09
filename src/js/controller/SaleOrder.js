@@ -252,6 +252,12 @@ Ext.regController('SaleOrder', {
 														newCard.bonusProgramStore.remoteFilter = false;
 														newCard.bonusProgramStore.clearFilter(true);
 														
+														var withMsgCount = newCard.bonusProgramStore.queryBy(function(rec){
+															return rec.get('isWithMsg')
+														}).getCount();
+														
+														if (withMsgCount) newCard.dockedItems.item(0).items.getByKey('ModeChanger').items.getByKey('Bonus').setBadge(withMsgCount);
+														
 														newCard.bonusProductStore.load({
 															limit: 0,
 															callback: function() {
