@@ -241,6 +241,15 @@ Ext.regApplication({
 			Ext.defer( getLocation, 15000 );
 			
 		};
+	},
+	
+	logEvent: function (eventData){
+		var model = Ext.ModelMgr.getModel('Eventlog');
+		
+		if (model) {
+			Ext.ModelMgr.create( eventData, model ).save();
+		}
+		
 	}
 	
 });
