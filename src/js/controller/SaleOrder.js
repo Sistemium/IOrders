@@ -827,7 +827,13 @@ Ext.regController('SaleOrder', {
 		;
 
 		if(!selectedBonus || tapedBonus.getId() != selectedBonus.getId()) {
-
+			
+			IOrders.logEvent({
+				module:'BonusFilter',
+				action: 'select' ,
+				data: 'BonusProgram:'+tapedBonus.get('id') + ', Customer:'+ view.saleOrder.get('customer')
+			});
+			
 			bonusList.selectSnapshot = tapedBonus;
 
 			view.bonusProductStore.filterBy(function(rec, id) {
