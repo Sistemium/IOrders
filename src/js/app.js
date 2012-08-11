@@ -32,9 +32,9 @@ Ext.regApplication({
 //    phoneStartupScreen: 'phone_startup.png',
 	
 	init: function() {
-
+		
 		IOrders.newDesign = localStorage.getItem('newDesign') == 'true' ? true : false;
-
+		
 		var store = Ext.getStore('tables');
 		
 		createModels(store);
@@ -63,6 +63,16 @@ Ext.regApplication({
 			listeners: {
 				dbstart: function(db) {
 					console.log('Database started: version=' + db.version);
+					
+					var toUploadConfig = {
+						fields: ['table_name', 'id', 'cnt', 'ts', 'pid', 'cs', {name: 'hasPhantom', type: 'boolean'}]
+					}
+					
+					if (db.supports.entity)
+						toUploadConfig.fields.push('visibleCnt')
+					;
+					
+					Ext.regModel('ToUpload', toUploadConfig);
 					
 					tStore.getProxy().data = this.metadata;
 					tStore.load(function() {IOrders.init();});
