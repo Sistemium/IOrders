@@ -40,7 +40,7 @@ var NavigatorView = Ext.extend(AbstractView, {
 					})
 				;
 				
-				p.count(new Ext.data.Operation(), function(o) {
+				p.count(new Ext.data.Operation({filters:[{property:'visibleCnt', value: 1}]}), function(o) {
 					if (o.wasSuccessful())
 						me.setBadge(me.cnt = o.result);
 				});
