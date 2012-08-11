@@ -67,6 +67,10 @@ Ext.regApplication({
 					tStore.getProxy().data = this.metadata;
 					tStore.load(function() {IOrders.init();});
 					IOrders.geoTrack();
+					IOrders.logEvent({
+						module: 'app',
+						action: 'dbstart'
+					});
 					
 				},
 				fail: function() {
