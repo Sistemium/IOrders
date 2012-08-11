@@ -963,7 +963,8 @@ Ext.regController('Navigator', {
 			},
 			recordSuccess: function(s) {
 				var sb = IOrders.viewport.getActiveItem().syncButton,
-					cnt = sb.cnt > 0 ? --sb.cnt : sb.cnt = null;
+					decrement = s.get('visibleCnt'),
+					cnt = sb.cnt > 0 ? sb.cnt = sb.cnt - (decrement? decrement : 0) : sb.cnt = null;
 				
 				sb.setBadge(cnt);
 			}
