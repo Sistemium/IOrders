@@ -964,7 +964,7 @@ Ext.regController('Navigator', {
 			recordSuccess: function(s) {
 				var sb = IOrders.viewport.getActiveItem().syncButton,
 					decrement = s.get('visibleCnt'),
-					cnt = sb.cnt > 0 ? sb.cnt = sb.cnt - (decrement? decrement : 0) : sb.cnt = null;
+					cnt = sb.cnt > 0 ? sb.cnt = sb.cnt - (decrement? decrement : (decrement==undefined ? 1 : 0)) : sb.cnt = null;
 				
 				sb.setBadge(cnt);
 			}
