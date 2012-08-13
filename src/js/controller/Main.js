@@ -5,7 +5,8 @@ Ext.regController('Main', {
 		var view = options.view,
 			redirectTo = this,
 			btn = options.btn,
-			action = options.action.replace('Button', btn.name + 'Button')
+			btnName = btn.name ? btn.name : btn.itemId,
+			action = options.action.replace('Button', btnName + 'Button')
 			;
 		
 		if ( view.isXType('navigatorview') || view.isXType('encashmentview') || view.isXType('uncashmentview')) {
