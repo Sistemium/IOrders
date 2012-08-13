@@ -79,7 +79,8 @@ Ext.regApplication({
 					IOrders.geoTrack();
 					IOrders.logEvent({
 						module: 'app',
-						action: 'dbstart'
+						action: 'dbstart',
+						data: 'dbversion:'+db.version
 					});
 					
 				},
