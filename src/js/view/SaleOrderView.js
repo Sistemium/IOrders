@@ -82,6 +82,8 @@ var SaleOrderView = Ext.extend(AbstractView, {
 		
 		this.dockedItems[0].items.push(
 			{xtype: 'spacer'},
+			{itemId: 'ClearFilter', text:'Снять фильтр акции', hidden:true, scope:this},
+			{xtype: 'spacer'},
 			{xtype: 'segmentedbutton', allowMultiple: true, itemId: 'ModeChanger',
 				items: [
 					{itemId: 'Active', text: 'Показать актив', altText: 'Скрыть актив', handler: Ext.emptyFn},
@@ -90,7 +92,6 @@ var SaleOrderView = Ext.extend(AbstractView, {
 				],
 				listeners: {
 					toggle: function(segBtn, btn, pressed) {
-
 						Ext.dispatch({
 							controller: 'SaleOrder',
 							action: 'onModeButtonTap',
