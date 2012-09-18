@@ -158,6 +158,8 @@ Ext.regController('Navigator', {
         } else {
             return false;
         }
+		
+		return undefined;
 	},
 
 	onTableLoad: function(table, willContinue) {
@@ -384,20 +386,22 @@ Ext.regController('Navigator', {
 	
 	onAddButtonTap: function(options) {
 		
-		var rec = undefined;
-
+		var rec = undefined,
+			restrictMsg
+		;
+		
 		if(options.view.isObjectView) {
-
+			
             var tableRec = Ext.getStore('tables').getById(options.view.objectRecord.modelName),
                 parentColumns = tableRec.getParentColumns()
             ;
-
+			
             rec = Ext.ModelMgr.create({serverPhantom: true}, options.view.objectRecord.modelName);
-
+			
             parentColumns.each(function(col) {
                 rec.set(col.get('name'), options.view.objectRecord.get(col.get('name')));
             });
-
+			
 		} else if(options.view.isSetView) {
 			rec = Ext.ModelMgr.create({serverPhantom: true}, options.view.tableRecord);
 			
@@ -411,14 +415,33 @@ Ext.regController('Navigator', {
 			rec.set('date', getNextWorkDay());
 		}
 		
-		var oldCard = IOrders.viewport.getActiveItem();
-		if(rec.modelName === 'Uncashment') {
-
-			Ext.dispatch(Ext.apply(options, {action: 'createUncashmentView'}));
-		} else {
-			IOrders.viewport.setActiveItem(Ext.create(Ext.apply(createNavigatorView(rec, oldCard, false, true), {isNew: true})));
-		}
+		var oldCard = IOrders.viewport.getActiveItem(),
+			viewOpen = function () {
+				if(rec) {
+					if (rec.modelName === 'Uncashment') {
+						Ext.dispatch(Ext.apply(options, {action: 'createUncashmentView'}));
+					} else {
+						IOrders.viewport.setActiveItem(Ext.create(Ext.apply(createNavigatorView(rec, oldCard, false, true), {isNew: true})));
+					}
+				} else if (restrictMsg) {
+					Ext.Msg.alert('Внимание', restrictMsg)
+				}
+			}
+		;
 		
+		if (rec.modelName === 'SaleOrder') {
+			var c = rec.get('customer');
+			Ext.ModelMgr.getModel('Customer').load(c, {
+				success: function(crec) {
+					if (crec.get('isBlockedPlong')) {
+						rec = undefined;
+						restrictMsg = 'Клиент заблокирован по просрочке';
+					}
+					
+					viewOpen();
+				}
+			});
+		} else viewOpen();
 		
 	},
 	
@@ -466,23 +489,44 @@ Ext.regController('Navigator', {
 						rec.set('date', getNextWorkDay())
 					;
 					
-					if(createdRecordModelName === 'Encashment') {
+					var restrictMsg, viewOpen = function() {
 						
-						Ext.dispatch(Ext.apply(options, {
-							action: 'createEncashmentView',
-							objectRecord: objectRecord
-						}));
-					} else if(createdRecordModelName === 'Uncashment') {
-
-						Ext.dispatch(Ext.apply(options, {action: 'createUncashmentView'}));
-					} else {
-						Ext.dispatch(Ext.apply(options, {
-							action: 'createAndActivateView',
-							record: rec,
-							editing: true
-						}));
-					}
-
+						if (restrictMsg) {
+							view.setLoading (false);
+							Ext.Msg.alert('Внимание', restrictMsg);
+							return;
+						}
+						
+						if(createdRecordModelName === 'Encashment') {
+							Ext.dispatch(Ext.apply(options, {
+								action: 'createEncashmentView',
+								objectRecord: objectRecord
+							}));
+						} else if(createdRecordModelName === 'Uncashment') {
+							Ext.dispatch(Ext.apply(options, {action: 'createUncashmentView'}));
+						} else {
+							Ext.dispatch(Ext.apply(options, {
+								action: 'createAndActivateView',
+								record: rec,
+								editing: true
+							}));
+						}
+					};
+					
+					if (rec.modelName === 'SaleOrder') {
+						var c = rec.get('customer');
+						Ext.ModelMgr.getModel('Customer').load(c, {
+							success: function(crec) {
+								if (crec.get('isBlockedPlong')) {
+									rec = undefined;
+									restrictMsg = 'Клиент заблокирован по просрочке';
+								}
+								
+								viewOpen();
+							}
+						});
+					} else viewOpen();
+					
 				}, 100);
 			}
 			

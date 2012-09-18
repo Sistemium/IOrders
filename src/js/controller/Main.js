@@ -274,10 +274,6 @@ Ext.regController('Main', {
 		IOrders.xi.download ( IOrders.dbeng );
 	},
 
-	onXiDownloadButtonTap: function(options) {
-		IOrders.xi.download ( IOrders.dbeng );
-	},
-
 	onXiLoginButtonTap: function(options) {
 		IOrders.xi.login ( this.prefsCb );
 	},
