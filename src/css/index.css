@@ -133,11 +133,7 @@
 }
 
 .x-list-item small {
-	color: silver;
-}
-
-.x-list-item small .gain, .x-list-item small .goal {
-color: gray;
+	color: grey;
 }
 
 .x-navigator-form .x-list-item-body > * > span {
