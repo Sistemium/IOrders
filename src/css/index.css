@@ -136,6 +136,10 @@
 	color: silver;
 }
 
+.x-list-item small .gain, .x-list-item small .goal {
+color: gray;
+}
+
 .x-navigator-form .x-list-item-body > * > span {
 	padding-right: 1em;
 }
