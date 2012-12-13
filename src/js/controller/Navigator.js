@@ -434,7 +434,7 @@ Ext.regController('Navigator', {
 			Ext.ModelMgr.getModel('Customer').load(c, {
 				success: function(crec) {
 					if (crec.get('isBlockedPlong')) {
-						rec = undefined;
+						//rec = undefined;
 						restrictMsg = 'Клиент заблокирован по просрочке';
 					}
 					
@@ -494,7 +494,7 @@ Ext.regController('Navigator', {
 						if (restrictMsg) {
 							view.setLoading (false);
 							Ext.Msg.alert('Внимание', restrictMsg);
-							return;
+							//return;
 						}
 						
 						if(createdRecordModelName === 'Encashment') {
@@ -515,10 +515,11 @@ Ext.regController('Navigator', {
 					
 					if (rec.modelName === 'SaleOrder') {
 						var c = rec.get('customer');
+						
 						Ext.ModelMgr.getModel('Customer').load(c, {
 							success: function(crec) {
 								if (crec.get('isBlockedPlong')) {
-									rec = undefined;
+									//rec = undefined;
 									restrictMsg = 'Клиент заблокирован по просрочке';
 								}
 								
