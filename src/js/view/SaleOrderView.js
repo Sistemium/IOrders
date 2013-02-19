@@ -53,8 +53,9 @@ var SaleOrderView = Ext.extend(AbstractView, {
 		var summTpl = new Ext.XTemplate(
 				'<p>'
 			+	'<tpl if="packageName"><small>Упаковка: {packageName}</small></tpl>'
-			+	'Сумма заказа: {totalCost}'
+			+	'Сумма заказа: <span <tpl if="totalGain &lt; 0">class="negative"</tpl> >{totalCost}</span>'
 			+	'<tpl if="bonusRemains"> Остаток бонуса: <span <tpl if="bonusRemains &lt; 0">class="negative"</tpl> >{bonusRemains}</span></tpl>'
+//			+	'<tpl if="totalSelfCost"> Выгода: <span <tpl if="totalGain &lt; 0">class="negative"</tpl> >{totalGain}</span></tpl>'
 			+	'</p>'
 		);
 		

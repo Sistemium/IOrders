@@ -42,10 +42,12 @@ Ext.regController('SaleOrder', {
 		//offerStore.clearFilter(true);
 		
 		Ext.each(offerStore.getUpdatedRecords(), function(rec) {
-			var posRec = saleOrderPosStore.findRecord('product', rec.get('product'), undefined, undefined, true, true);
+			var posRec = saleOrderPosStore.findRecord('product', rec.get('product'), undefined, undefined, true, true)
+				, safeSelfCost = rec.get('selfCost')
+				, selfCost = (safeSelfCost ? safeSelfCost : rec.get('price')) * rec.get('volume');
 			
 			if (!posRec) {
-				saleOrderPosStore.add (Ext.ModelMgr.create(Ext.apply({
+				saleOrderPosStore.add (posRec = Ext.ModelMgr.create(Ext.apply({
 							saleorder: view.saleOrder.getId()
 						}, rec.data
 					), 'SaleOrderPosition'
@@ -56,13 +58,18 @@ Ext.regController('SaleOrder', {
 				posRec.set('cost', rec.get('cost'));
 				posRec.editing = false;
 			}
+			
+			posRec.set('selfCost', selfCost);
+			
 			rec.commit(true);
 
 		});
 
-		var tc = saleOrderPosStore.sum('cost').toFixed(2);
+		var tc = saleOrderPosStore.sum('cost').toFixed(2)
+			, tsc = saleOrderPosStore.sum('selfCost').toFixed(2);
 
 		view.saleOrder.set ('totalCost', tc);
+		view.saleOrder.set ('totalSelfCost', tsc);
 
 		saleOrderPosStore.sync();
 
@@ -384,12 +391,16 @@ Ext.regController('SaleOrder', {
 		
 		var view = options.view,
 			btb = view.getDockedComponent('bottomToolbar'),
-			tc = view.saleOrder.get('totalCost') || 0
+			tc = view.saleOrder.get('totalCost') || 0,
+			tsc = view.saleOrder.get('totalSelfCost') || 0,
+			tg = tc - tsc - 500
 		;
 		
 		btb.getComponent('ShowCustomer').setText( btb.titleTpl.apply ({
 			totalCost: tc.toFixed(2),
-			bonusRemains: view.saleOrder.get('isBonus') ? (view.bonusCost - tc).toFixed(2): undefined
+			bonusRemains: view.saleOrder.get('isBonus') ? (view.bonusCost - tc).toFixed(2): undefined,
+			totalSelfCost: tsc,
+			totalGain: tg.toFixed(2)
 		}));
 	},
 	
