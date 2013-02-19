@@ -406,7 +406,7 @@ Ext.regController('Navigator', {
 			rec = Ext.ModelMgr.create({serverPhantom: true}, options.view.tableRecord);
 			
 			rec.set (
-				options.view.objectRecord.modelName.toLowerCase(),
+				lowercaseFirstLetter(options.view.objectRecord.modelName),
 				options.view.objectRecord.getId()
 			);
 		}
@@ -471,7 +471,7 @@ Ext.regController('Navigator', {
 						: list.getRecord(item).get('id'),
 					objectRecord = isTableList
 						? (list.modelForDeps && !Ext.getStore('tables').getById(tappedRec.modelName).hasIdColumn()
-								? Ext.getStore(list.modelForDeps).getById(tappedRec.get(list.modelForDeps.toLowerCase())) 
+								? Ext.getStore(list.modelForDeps).getById(tappedRec.get(lowercaseFirstLetter(list.modelForDeps))) 
 								: tappedRec)
 						: view.objectRecord
 				;
@@ -479,7 +479,7 @@ Ext.regController('Navigator', {
 				Ext.defer ( function () {
 					
 					rec = Ext.ModelMgr.create({serverPhantom: true}, createdRecordModelName);
-					rec.set( objectRecord.modelName.toLowerCase(), objectRecord.getId() );
+					rec.set( lowercaseFirstLetter(objectRecord.modelName), objectRecord.getId() );
 					
 					if (rec.modelName === 'SaleOrder')
 						rec.set('totalCost', '0')
@@ -546,7 +546,7 @@ Ext.regController('Navigator', {
 				controller: 'Navigator',
 				action: 'createAndActivateView',
 				record: list.modelForDeps && !Ext.getStore('tables').getById(tappedRec.modelName).hasIdColumn()
-						? Ext.getStore(list.modelForDeps).getById(tappedRec.get(list.modelForDeps.toLowerCase())) 
+						? Ext.getStore(list.modelForDeps).getById(tappedRec.get(lowercaseFirstLetter(list.modelForDeps))) 
 						: tappedRec,
 				tableRecord: dep.down('input').getAttribute('value'),
 				isSetView: true,
@@ -590,7 +590,7 @@ Ext.regController('Navigator', {
 			} else if(depStore.getCount() === 1 && !table.hasExtendableDep()) {
 
 				if(list.modelForDeps && !Ext.getStore('tables').getById(tappedRec.modelName).hasIdColumn()) {
-					Ext.ModelMgr.getModel(list.modelForDeps).load(tappedRec.get(list.modelForDeps.toLowerCase(), {
+					Ext.ModelMgr.getModel(list.modelForDeps).load(tappedRec.get(lowercaseFirstLetter(list.modelForDeps), {
 						success: function(record) {
 	
 							Ext.dispatch(Ext.apply(options, {
@@ -873,14 +873,18 @@ Ext.regController('Navigator', {
 			
 			if (newCard.objectRecord.modelName) {
 				
-				store.filters.add({property: newCard.objectRecord.modelName.toLowerCase(), value: newCard.objectRecord.getId()});
+				store.filters.add({
+					property: lowercaseFirstLetter(newCard.objectRecord.modelName),
+					value: newCard.objectRecord.getId()
+				});
+				
 				store.load({
 					limit: storeLimit,
 					callback: storeLoadCallback
 				});
-
+				
 			} else {
-
+				
 				store.load({
 					limit: storeLimit,
 					callback: storeLoadCallback
@@ -956,7 +960,7 @@ Ext.regController('Navigator', {
 		store.currentPage = 1;
 		
 		var filters = [];
-		options.filter && filters.push({property: filterRecord.modelName.toLowerCase(), value: field.getValue()});
+		options.filter && filters.push({property: lowercaseFirstLetter(filterRecord.modelName), value: field.getValue()});
 		
 		options.removeFilter && view.form.remove(0);
 		store.filter(filters);
