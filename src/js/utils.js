@@ -1,6 +1,12 @@
 Ext.util.Format.defaultDateFormat = 'd/m/Y';
 Date.monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
 
+var lowercaseFirstLetter = function (string) {
+	
+    return string.charAt(0).toLowerCase() + string.slice(1);
+
+};
+
 var getParentInfo = function(field, value) {
 
 	var parentStore = Ext.getStore(field[0].toUpperCase() + field.substring(1));
@@ -107,7 +113,7 @@ var getItemTplMeta = function(modelName, config) {
 
 		var keyColumns = columnStore.queryBy(function(rec) {
 			return rec.get(queryValue)
-				&& ( !filterObject || filterObject.modelName.toLowerCase() != rec.get('name').toLowerCase())
+				&& ( !filterObject || lowercaseFirstLetter(filterObject.modelName) != lowercaseFirstLetter(rec.get('name')))
 				&& groupField !== rec.get('name') ? true : false;
 		});
 
@@ -166,7 +172,7 @@ var getItemTplMeta = function(modelName, config) {
 				&& ( !groupField || (groupField !== colName
 						&& groupField[0].toLowerCase() + groupField.replace('_name', '').substring(1) !== colName)
 				)
-				&& ( !filterObject || filterObject.modelName.toLowerCase() != rec.get('name').toLowerCase())
+				&& ( !filterObject || lowercaseFirstLetter(filterObject.modelName) != lowercaseFirstLetter(rec.get('name')))
 				&& colName !== 'id' && colName !== 'name' && rec.get('label') ? true : false;
 		});
 		
@@ -471,18 +477,22 @@ var loadDepData = function(depRec, depTable, view, config, force) {
 
 	if(view && view.objectRecord.modelName != 'MainMenu') {
 		filters.push({
-			property: view.objectRecord.modelName.toLowerCase(),
+			property: lowercaseFirstLetter(view.objectRecord.modelName),
 			value: view.objectRecord.getId()
 		});
 		depRec.set('filtered', true);
 	} else if (isSetView) {
 		recordForDeps = config.list.modelForDeps && !config.hasIdColumn 
-			? Ext.getStore(config.list.modelForDeps).getById(config.record.get(config.list.modelForDeps[0].toLowerCase() + config.list.modelForDeps.substring(1))) 
+			? Ext.getStore(config.list.modelForDeps).getById(
+				config.record.get(
+					lowercaseFirstLetter(config.list.modelForDeps[0]) + config.list.modelForDeps.substring(1)
+				)
+			) 
 			: config.record;
 		
 		if(recordForDeps.modelName != 'MainMenu') {
 			filters.push({
-				property: recordForDeps.modelName.toLowerCase(),
+				property: lowercaseFirstLetter(recordForDeps.modelName),
 				value: recordForDeps.getId()
 			});
 			depRec.set('filtered', true);
