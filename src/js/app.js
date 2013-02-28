@@ -93,7 +93,7 @@ Ext.regApplication({
 		
 		IOrders.xi = new Ext.data.XmlInterface({
 			view: 'iorders',
-			noServer: ! (location.protocol == 'https:' || localStorage.getItem('realServer') == 'true')
+			noServer: !location.protocol == 'https:' || localStorage.getItem('realServer') == 'false'
 		});
 		
 		IOrders.getMetadata = {
