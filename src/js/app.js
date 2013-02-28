@@ -131,10 +131,11 @@ Ext.regApplication({
 						items: [
 					    	{
 								xtype: 'textfield', id: 'login', name: 'login', label: 'Логин',
-								autoCorrect: false, autoCapitalize: false
+								autoCorrect: false, autoCapitalize: false, value: 'demo'
 							},
 					    	{
 								xtype: 'passwordfield', id: 'password', name: 'password', label: 'Пароль'
+								, value: 'demo'
 							}
 						]
 					},
