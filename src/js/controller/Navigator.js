@@ -1029,7 +1029,7 @@ Ext.regController('Navigator', {
 				enter: 'right',
 				items: [
 					{ text: 'Закрыть панель настроек', name: 'PrefsClose'},
-					{ text: 'Запросить данные', name: 'XiDownload'},
+					//{ text: 'Запросить данные', name: 'XiDownload'},
 					{ text: 'Пересоздать БД', name: 'DbRebuild'},
 					{ text: 'Сервер-логин', name: 'XiLogin'},
 					{ text: 'Сервер-логоф', name: 'XiLogoff'},
@@ -1041,15 +1041,15 @@ Ext.regController('Navigator', {
 						{text: 'Enable logging', name: 'EnableLog', pressed: DEBUG},
 						{text: 'Disable logging', name: 'DisableLog', pressed: !DEBUG},
 					]},
-					{ xtype: 'segmentedbutton', layout: {align: 'none'}, items: [
+					/*{ xtype: 'segmentedbutton', layout: {align: 'none'}, items: [
  						{text: 'Новый дизайн', name: 'NewDesign', pressed: IOrders.newDesign},
  						{text: 'Старый дизайн', name: 'OldDesign', pressed: !IOrders.newDesign},
- 					]},
-					{ text: 'Включить Heartbeat', name: 'HeartbeatOn'},
+ 					]},*/
+					//{ text: 'Включить Heartbeat', name: 'HeartbeatOn'},
 					{ text: 'Запросить метаданные', name: 'XiMeta'},
 					{ text: 'Забыть пароль', name: 'ClearLocalStorage'},
-					{ text: 'Патч', name: 'ApplyPatch'},
-					{ text: 'Обновить кэш', name: 'CacheRefresh'},
+					//{ text: 'Патч', name: 'ApplyPatch'},
+					//{ text: 'Обновить кэш', name: 'CacheRefresh'},
 					{ text: 'Перезапустить', name: 'Reload'}
 				],
 				setDisabled: function(state) {
