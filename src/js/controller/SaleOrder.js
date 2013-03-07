@@ -48,7 +48,7 @@ Ext.regController('SaleOrder', {
 			
 			if (!posRec) {
 				saleOrderPosStore.add (posRec = Ext.ModelMgr.create(Ext.apply({
-							saleorder: view.saleOrder.getId()
+							saleOrder: view.saleOrder.getId()
 						}, rec.data
 					), 'SaleOrderPosition'
 				));
@@ -158,7 +158,7 @@ Ext.regController('SaleOrder', {
 								if(filters.contains && filters.contains(this.isFocusedFilter) || filters == this.isFocusedFilter) {
 									bonusProgramStore.filter({property: 'isFirstScreen', value: true});
 									bonusProductStore.filterBy(function(it) {
-										return bonusProgramStore.findExact('id', it.get('bonusprogram')) !== -1 ? true : false;
+										return bonusProgramStore.findExact('id', it.get('bonusProgram')) !== -1 ? true : false;
 									});
 								}
 
@@ -186,7 +186,7 @@ Ext.regController('SaleOrder', {
 						var saleOrderPositionStore = newCard.saleOrderPositionStore = createStore('SaleOrderPosition', {
 							remoteFilter: true,
 							filters: [{
-								property: 'saleorder',
+								property: 'saleOrder',
 								value: options.saleOrder.getId()
 							}]
 						});
@@ -288,7 +288,7 @@ Ext.regController('SaleOrder', {
 																	;
 																	bonusProgramStore.filter({property: 'isFirstScreen', value: true});
 																	bonusProductStore.filterBy(function(it) {
-																		return bonusProgramStore.findExact('id', it.get('bonusprogram')) !== -1 ? true : false;
+																		return bonusProgramStore.findExact('id', it.get('bonusProgram')) !== -1 ? true : false;
 																	});
 
 																	newCard.productStore.filter(newCard.productStore.isFocusedFilter);
@@ -400,7 +400,7 @@ Ext.regController('SaleOrder', {
 			totalCost: tc.toFixed(2),
 			bonusRemains: view.saleOrder.get('isBonus') ? (view.bonusCost - tc).toFixed(2): undefined,
 			totalSelfCost: tsc,
-			totalGain: tg.toFixed(2)
+			totalGain: view.saleOrder.get('isBonus') ? undefined : tg.toFixed(2)
 		}));
 	},
 	
@@ -756,7 +756,7 @@ Ext.regController('SaleOrder', {
 			view.bonusProductStore.filter({property: 'product', value: productRec.get('product')});
 			
 			view.bonusProgramStore.filterBy(function(item) {
-				return view.bonusProductStore.findExact('bonusprogram', item.getId()) !== -1;
+				return view.bonusProductStore.findExact('bonusProgram', item.getId()) !== -1;
 			});
 			
 			var bonusList = view.bonusPanel.getComponent('bonusList');
@@ -846,7 +846,7 @@ Ext.regController('SaleOrder', {
 			bonusList.selectSnapshot = tapedBonus;
 			
 			view.bonusProductStore.filterBy(function(rec, id) {
-				return tapedBonus.get('id') == rec.get('bonusprogram');
+				return tapedBonus.get('id') == rec.get('bonusProgram');
 			});
 			
 			view.productStore.bonusFilter = view.productStore.bonusFilter || new Ext.util.Filter({
