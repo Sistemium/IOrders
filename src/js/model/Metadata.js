@@ -1,29 +1,3 @@
-var addMainMenu = function(store, tables) {
-
-	var mainMenu = Ext.ModelMgr.create({
-		id: 'MainMenu',
-		name: 'Главное меню'
-	}, 'Table');
-
-	mainMenu.columns().add (
-		{id: 'MainMenuid', type: 'string', name: 'id', label: 'Логин', table_id: 'MainMenu'}
-	)
-
-	var mmDeps = mainMenu.deps();
-	
-	Ext.each(tables, function(table) {
-		if((table.deps().getCount() > 0 || table.get('mainMenu')) && table.get('nameSet')) {
-			mmDeps.add({
-				id: table.getId() + 'id',
-				table_id: table.getId()
-			});
-		}
-	});
-	
-	store.add(mainMenu);
-};
-
-
 Ext.regModel('Table', {
 	fields: [
 		{name: 'id', type: 'string'},
@@ -126,3 +100,28 @@ Ext.regStore('tables', {
 		}
 	}
 });
+
+var addMainMenu = function(store, tables) {
+
+	var mainMenu = Ext.ModelMgr.create({
+		id: 'MainMenu',
+		name: 'Главное меню'
+	}, 'Table');
+
+	mainMenu.columns().add (
+		{id: 'MainMenuid', type: 'string', name: 'id', label: 'Логин', table_id: 'MainMenu'}
+	)
+
+	var mmDeps = mainMenu.deps();
+	
+	Ext.each(tables, function(table) {
+		if((table.deps().getCount() > 0 || table.get('mainMenu')) && table.get('nameSet')) {
+			mmDeps.add({
+				id: table.getId() + 'id',
+				table_id: table.getId()
+			});
+		}
+	});
+	
+	store.add(mainMenu);
+};
