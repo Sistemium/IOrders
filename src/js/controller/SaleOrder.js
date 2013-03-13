@@ -155,7 +155,9 @@ Ext.regController('SaleOrder', {
 									bonusProgramStore = newCard.bonusProgramStore
 								;
 
-								if(filters.contains && filters.contains(this.isFocusedFilter) || filters == this.isFocusedFilter) {
+								if(bonusProgramStore && (
+										filters.contains && filters.contains(this.isFocusedFilter) || filters == this.isFocusedFilter)
+								) {
 									bonusProgramStore.filter({property: 'isFirstScreen', value: true});
 									bonusProductStore.filterBy(function(it) {
 										return bonusProgramStore.findExact('id', it.get('bonusProgram')) !== -1 ? true : false;
@@ -164,7 +166,9 @@ Ext.regController('SaleOrder', {
 
 								Ext.data.Store.prototype.filter.apply(this, arguments);
 
-								if(filters.contains && filters.contains(this.isFocusedFilter) || filters == this.isFocusedFilter) {
+								if(bonusProgramStore && (
+										filters.contains && filters.contains(this.isFocusedFilter) || filters == this.isFocusedFilter
+								)) {
 									bonusProductStore.clearFilter(true);
 									bonusProgramStore.clearFilter(true);
 								}
@@ -176,6 +180,7 @@ Ext.regController('SaleOrder', {
 							}),
 							isFocusedFilter: new Ext.util.Filter({
 								filterFn: function(item) {
+									if (!newCard.bonusProductStore) return false;
 									return newCard.bonusProductStore.findExact('product', item.get('product')) !== -1 ? true : false;
 								}
 							})
@@ -195,7 +200,12 @@ Ext.regController('SaleOrder', {
 							flex: 3, store: newCard.productStore, pinHeaders: false
 						}));
 						
-						newCard.productListIndexBar = newCard.productPanel.add(new HorizontalIndexBar({hidden: !newCard.indexBarMode, list: newCard.productList}));
+						newCard.productListIndexBar = newCard.productPanel.add(
+							new HorizontalIndexBar({
+								hidden: !newCard.indexBarMode,
+								list: newCard.productList}
+							)
+						);
 
 						newCard.productStore.load({
 							limit: 0,
@@ -251,17 +261,34 @@ Ext.regController('SaleOrder', {
 													bonusModelName = 'BonusProgram'
 												;
 												
-												newCard.bonusProgramStore = createStore(
-													bonusModelName,
-													getGroupConfig(bonusModelName)
-												);
-												
-												newCard.bonusProductStore = createStore('BonusProgramProduct', Ext.apply(getSortersConfig('BonusProgramProduct', {})));
+												if (!Ext.ModelMgr.getModel(bonusModelName)){
+													newCard.bonusProgramStore = undefined;
+												} else {
+													newCard.bonusProgramStore = createStore(
+														bonusModelName,
+														getGroupConfig(bonusModelName)
+													);
+													newCard.bonusProductStore = createStore(
+														'BonusProgramProduct',
+														Ext.apply(getSortersConfig('BonusProgramProduct', {}))
+													);
+												}
 												
 												if (bonusModelName == 'BonusProgramByCustomer')
-													newCard.bonusProgramStore.filters.add({property: 'customer', value: options.saleOrder.get('customer')});
+													newCard.bonusProgramStore.filters.add({
+														property: 'customer',
+														value: options.saleOrder.get('customer')
+													})
+												;
 												
-												newCard.bonusProgramStore.load({
+												var finishLoading = function () {
+													oldCard.setLoading(false);
+													IOrders.viewport.setActiveItem(newCard);
+													newCard.productListIndexBar.loadIndex();
+													newCard.productStore.filter(newCard.productStore.isFocusedFilter);
+												};
+												
+												if (newCard.bonusProgramStore) newCard.bonusProgramStore.load({
 													limit: 0,
 													callback: function() {
 														newCard.bonusProgramStore.remoteFilter = false;
@@ -291,7 +318,7 @@ Ext.regController('SaleOrder', {
 																		return bonusProgramStore.findExact('id', it.get('bonusProgram')) !== -1 ? true : false;
 																	});
 
-																	newCard.productStore.filter(newCard.productStore.isFocusedFilter);
+//																	newCard.productStore.filter(newCard.productStore.isFocusedFilter);
 
 																	bonusProductStore.clearFilter(true);
 																	bonusProgramStore.clearFilter(true);
@@ -308,16 +335,15 @@ Ext.regController('SaleOrder', {
 																		});
 																	});
 																}
-
-																oldCard.setLoading(false);
-																IOrders.viewport.setActiveItem(newCard);
-																newCard.productListIndexBar.loadIndex();
-
+																
+																finishLoading();
+																
 																Ext.dispatch(Ext.apply(options, {action: 'expandFocusedProduct', view: newCard}));
 															}
 														});
 													}
-												});
+												}); else finishLoading();
+												
 											} else failureCb('товаров');
 										}
 									});
