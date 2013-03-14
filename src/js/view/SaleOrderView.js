@@ -88,7 +88,9 @@ var SaleOrderView = Ext.extend(AbstractView, {
 			{xtype: 'segmentedbutton', allowMultiple: true, itemId: 'ModeChanger',
 				items: [
 					{itemId: 'Active', text: 'Показать актив', altText: 'Скрыть актив', handler: Ext.emptyFn},
-					{itemId: 'Bonus', text: 'По акциям', handler: Ext.emptyFn, disallowOther: ['ShowSaleOrder']},
+					{itemId: 'Bonus', text: 'По акциям', handler: Ext.emptyFn, disallowOther: ['ShowSaleOrder']
+						, hidden: metastore.getById('BonusProgram') ? false : true
+					},
 					{itemId: 'ShowSaleOrder', text: 'Показать заказ', altText: 'Показать все', handler: Ext.emptyFn, disallowOther: ['Bonus']}
 				],
 				listeners: {
