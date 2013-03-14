@@ -134,6 +134,10 @@ Ext.regController('SaleOrder', {
 			
 			oldCard.setLoading(true);
 			
+			if (Ext.ModelMgr.getModel('Price'))
+				newCard.hasPriceTable = true
+			;
+			
 			newCard.offerCategoryStore.load({
 				limit: 0,
 				callback: function(r, o, s){
@@ -457,7 +461,7 @@ Ext.regController('SaleOrder', {
 
 		if(!view.pricePanel) {
 
-			 view.pricePanel = Ext.create({
+			var cfg = {
 				xtype: 'tabpanel',
 				tabBarDock: 'top',
 				tabBar: {ui: 'light', height: 50},
@@ -474,13 +478,6 @@ Ext.regController('SaleOrder', {
 					},
 					{
 						xtype: 'list',
-						title: 'Цены',
-						itemId: 'priceList',
-						itemTpl: getItemTplMeta('Price', {useDeps: false, groupField: 'category', filterObject: {modelName: 'Product'}}).itemTpl,
-						store: createStore('Price', Ext.apply(getSortersConfig('Price', {})))
-					},
-					{
-						xtype: 'list',
 						title: 'Отгрузки',
 						itemId: 'shipmentList',
 						itemTpl: getItemTpl('ShipmentProduct'),
@@ -492,20 +489,31 @@ Ext.regController('SaleOrder', {
 						this.iel.removeCls('editing');
 					},
 					cardswitch: function(panel, newC, oldC) {
-
 						localStorage.setItem('productInfoTab', newC.itemId);
 					}
 				}
-			});
-
-			 view.cmpLinkArray.push(view.pricePanel);
+			};
+			
+			if (view.hasPriceTable)
+				cfg.items.push({
+						xtype: 'list',
+						title: 'Цены',
+						itemId: 'priceList',
+						itemTpl: getItemTplMeta('Price', {useDeps: false, groupField: 'category', filterObject: {modelName: 'Product'}}).itemTpl,
+						store: createStore('Price', Ext.apply(getSortersConfig('Price', {})))
+				})
+			;
+			
+			view.pricePanel = Ext.create(cfg);
+			
+			view.cmpLinkArray.push(view.pricePanel);
 		}
 
 		view.pricePanel.setHeight(list.getHeight() * 2 / 3);
 		view.pricePanel.iel = iel;
 
 		var productStore = view.pricePanel.getComponent('productList').store,
-			priceStore = view.pricePanel.getComponent('priceList').store,
+			priceStore = view.hasPriceTable ? view.pricePanel.getComponent('priceList').store : undefined,
 			shipmentStore = view.pricePanel.getComponent('shipmentList').store
 		;
 
@@ -517,40 +525,38 @@ Ext.regController('SaleOrder', {
 			limit: 0,
 			callback: function() {
 
-				priceStore.load({
-					filters: [{property: 'product', value: productRec.get('product')}],
+				shipmentStore.load({
 					scope: this,
 					limit: 0,
+					filters: [{property: 'customer', value: this.saleOrder.get('customer')}],
 					callback: function() {
-						
-						shipmentStore.load({
+
+						var shipPosStore = this.pricePanel.shipPositionStore = createStore('ShipmentPosition', {});
+						shipPosStore.load({
+							filters: [{property: 'product', value: productRec.get('product')}],
 							scope: this,
 							limit: 0,
-							filters: [{property: 'customer', value: this.saleOrder.get('customer')}],
 							callback: function() {
 
-								var shipPosStore = this.pricePanel.shipPositionStore = createStore('ShipmentPosition', {});
-								shipPosStore.load({
+								shipmentStore.filterBy(function(item) {
+									return shipPosStore.findExact('shipment', item.get('id')) !== -1;
+								}, this);
+
+								shipmentStore.each(function(rec) {
+
+									var pos = shipPosStore.findRecord('shipment', rec.getId(), undefined, undefined, true , true);
+									Ext.apply(rec.data, {name: productStore.getAt(0).get('name'), price: pos.get('price'), volume: pos.get('vol')});
+								});
+
+								this.pricePanel.showBy(iel, false, false);
+								this.pricePanel.setActiveItem(localStorage.getItem('productInfoTab'));
+
+								this.pricePanel.getComponent('shipmentList').refresh();
+								
+								this.hasPriceTable && priceStore.load({
 									filters: [{property: 'product', value: productRec.get('product')}],
 									scope: this,
-									limit: 0,
-									callback: function() {
-
-										shipmentStore.filterBy(function(item) {
-											return shipPosStore.findExact('shipment', item.get('id')) !== -1;
-										}, this);
-
-										shipmentStore.each(function(rec) {
-
-											var pos = shipPosStore.findRecord('shipment', rec.getId(), undefined, undefined, true , true);
-											Ext.apply(rec.data, {name: productStore.getAt(0).get('name'), price: pos.get('price'), volume: pos.get('vol')});
-										});
-
-										this.pricePanel.showBy(iel, false, false);
-										this.pricePanel.setActiveItem(localStorage.getItem('productInfoTab'));
-
-										this.pricePanel.getComponent('shipmentList').refresh();
-									}
+									limit: 0
 								});
 							}
 						});
