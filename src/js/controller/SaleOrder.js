@@ -624,7 +624,8 @@ Ext.regController('SaleOrder', {
 		Ext.each (view.productList.getEl().query('.x-list-item .active'), addActiveCls);
 
 		//categoryList
-		view.productCategoryList.scroller.enable();
+		view.productCategoryList.lockScrollOnExpand
+			&& view.productCategoryList.scroller.enable();
 		Ext.each(view.productCategoryList.getEl().query('.x-list-item .active'), addActiveCls);
 	},
 	
@@ -642,7 +643,8 @@ Ext.regController('SaleOrder', {
 		Ext.each(view.productList.getEl().query('.x-list-group-items'), removeActiveCls);
 
 		view.productCategoryList.scroller.scrollTo({y:0});
-		view.productCategoryList.scroller.disable();
+		view.productCategoryList.lockScrollOnExpand
+			&& view.productCategoryList.scroller.disable();
 		Ext.each(view.productCategoryList.getEl().query('.x-list-group-items'), removeActiveCls);
 	},
 
