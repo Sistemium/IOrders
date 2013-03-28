@@ -105,13 +105,12 @@ var SaleOrderView = Ext.extend(AbstractView, {
 			{
 				xtype: 'searchfield',
 				name: 'productSearch',
-				itemId: 'productSearch',
+				itemId: 'ProductSearcher',
 				listeners:{
 					change: applySearch
 				}
 			},
-			{xtype: 'spacer'},
-			{itemId: 'ClearFilter', text:'Снять фильтр акции', hidden:true, scope:this},
+			{itemId: 'ClearFilter', iconMask: true, iconCls:'delete', hidden:true, scope:this},
 			{xtype: 'spacer'},
 			{xtype: 'segmentedbutton', allowMultiple: true, itemId: 'ModeChanger',
 				items: [

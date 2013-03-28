@@ -673,8 +673,8 @@ Ext.regController('SaleOrder', {
 			
 		} else {
 			
-			view.productStore.productNameFiltersSnapshot
-				|| (view.productStore.productNameFiltersSnapshot = currentProductFilters)
+			view.productStore.filtersSnapshot
+				|| (view.productStore.filtersSnapshot = currentProductFilters)
 			;
 			
 			view.productCategoryList.deselect();
@@ -691,6 +691,11 @@ Ext.regController('SaleOrder', {
 				action: 'afterFilterProductStore',
 				filterSet: true
 			}));
+			
+			var cf = view.dockedItems.get(0).getComponent('ClearFilter');
+			
+			cf && cf.show('fade');
+			
 		}
 		
 		view.setLoading(false);
@@ -698,22 +703,8 @@ Ext.regController('SaleOrder', {
 
 	toggleProductNameFilterOff: function(options) {
 		
-		var view = options.view;
-		
-		view.setLoading(true);
-		
-		view.productStore.clearFilter(true);
-		view.productStore.productNameFiltersSnapshot
-			&& view.productStore.filter(view.productStore.productNameFiltersSnapshot)
-		;
-		
-		view.productCategoryList.deselect();
-		
-		view.offerCategoryStore.clearFilter();
-		
 		Ext.dispatch(Ext.apply(options, {
-			action: 'afterFilterProductStore',
-			filterSet: false
+			action: 'onClearFilterButtonTap'
 		}));
 		
 	},
@@ -988,7 +979,10 @@ Ext.regController('SaleOrder', {
 					}
 				}));
 				
-				view.bonusMode || Ext.dispatch(Ext.apply(options, {action: 'afterFilterProductStore'}));
+				view.bonusMode || Ext.dispatch(Ext.apply(options, {
+					action: 'afterFilterProductStore',
+					filterSet: true
+				}));
 				view.bonusMode = true;
 				
 				var cf = view.dockedItems.get(0).getComponent('ClearFilter');
@@ -1013,19 +1007,30 @@ Ext.regController('SaleOrder', {
 	onClearFilterButtonTap: function(options) {
 		var view=options.view,
 			btn = options.btn || view.dockedItems.get(0).getComponent('ClearFilter'),
-			bonusList = view.bonusPanel.getComponent('bonusList')
+			bonusList = view.bonusPanel.getComponent('bonusList'),
+			productSearcher = view.dockedItems.get(0).getComponent('ProductSearcher')
 		;
 		
+		productSearcher
+			&& productSearcher.reset()
+		;
 		view.productStore.clearFilter(true);
 		view.productStore.filter(view.productStore.filtersSnapshot);
 		
 		view.offerCategoryStore.clearFilter();
 		
-		view.bonusMode && Ext.dispatch(Ext.apply(options, {action: 'afterFilterProductStore'}));
+		Ext.dispatch(Ext.apply(options, {
+			action: 'afterFilterProductStore',
+			filterSet: false
+		}));
+		
 		view.bonusMode = false;
 		
-		bonusList.selectSnapshot = undefined;
-		bonusList.selModel.deselect(bonusList.selModel.getSelection());
+		if (bonusList) {
+			bonusList.selectSnapshot = undefined;
+			bonusList.selModel.deselect(bonusList.selModel.getSelection());
+		};
+		
 		btn.hide('fade');
 	},
 
