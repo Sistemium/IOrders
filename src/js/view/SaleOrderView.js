@@ -60,6 +60,25 @@ var SaleOrderView = Ext.extend(AbstractView, {
 			+	'</p>'
 		);
 		
+		var applySearch = function(field, event) {
+			if (field.getValue() == '') {
+				console.log ('SaleOrderSearch cleared');
+				Ext.dispatch({
+					controller: 'SaleOrder',
+					action: 'toggleProductNameFilterOff',
+					view: this.up('saleorderview')
+				});
+			} else {
+				console.log ('SaleOrderSearch: ' + field.getValue());
+				Ext.dispatch({
+					controller: 'SaleOrder',
+					action: 'toggleProductNameFilterOn',
+					view: this.up('saleorderview'),
+					searchFor: field.getValue()
+				});
+			}
+		};
+		
 		var bb = {
 			id: 'bottomToolbar', xtype: 'toolbar', dock: 'bottom',
 			items: [
@@ -83,6 +102,14 @@ var SaleOrderView = Ext.extend(AbstractView, {
 		this.dockedItems.push(bb);
 		
 		this.dockedItems[0].items.push(
+			{
+				xtype: 'searchfield',
+				name: 'productSearch',
+				itemId: 'productSearch',
+				listeners:{
+					change: applySearch
+				}
+			},
 			{xtype: 'spacer'},
 			{itemId: 'ClearFilter', text:'Снять фильтр акции', hidden:true, scope:this},
 			{xtype: 'spacer'},

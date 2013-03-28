@@ -648,6 +648,76 @@ Ext.regController('SaleOrder', {
 		Ext.each(view.productCategoryList.getEl().query('.x-list-group-items'), removeActiveCls);
 	},
 
+	toggleProductNameFilterOn: function(options) {
+		
+		var view = options.view
+			currentProductFilters = view.productStore.filters.items
+		;
+		
+		view.setLoading(true);
+		
+		view.productStore.clearFilter(true);
+		view.productStore.filter({
+			property: 'name',
+			value: options.searchFor,
+			anyMatch: true,
+			caseSensitive: false
+		});
+
+		if (view.productStore.getCount() > 50) {
+			
+			view.productStore.clearFilter(true);
+			currentProductFilters
+				&& view.productStore.filter(currentProductFilters)
+			;
+			
+		} else {
+			
+			view.productStore.productNameFiltersSnapshot
+				|| (view.productStore.productNameFiltersSnapshot = currentProductFilters)
+			;
+			
+			view.productCategoryList.deselect();
+			
+			view.offerCategoryStore.remoteFilter = false;
+			view.offerCategoryStore.clearFilter(true);
+			view.offerCategoryStore.filter(new Ext.util.Filter({
+				filterFn: function(item) {
+					return view.productStore.findExact('category', item.get('category')) > -1 ? true : false;
+				}
+			}));
+			
+			Ext.dispatch(Ext.apply(options, {
+				action: 'afterFilterProductStore',
+				filterSet: true
+			}));
+		}
+		
+		view.setLoading(false);
+	},
+
+	toggleProductNameFilterOff: function(options) {
+		
+		var view = options.view;
+		
+		view.setLoading(true);
+		
+		view.productStore.clearFilter(true);
+		view.productStore.productNameFiltersSnapshot
+			&& view.productStore.filter(view.productStore.productNameFiltersSnapshot)
+		;
+		
+		view.productCategoryList.deselect();
+		
+		view.offerCategoryStore.clearFilter();
+		
+		Ext.dispatch(Ext.apply(options, {
+			action: 'afterFilterProductStore',
+			filterSet: false
+		}));
+		
+	},
+	
 	toggleShowSaleOrderOn: function(options) {
 
 		Ext.dispatch(Ext.apply(options, {action: 'beforeShowSaleOrder', mode: true}));
@@ -663,13 +733,17 @@ Ext.regController('SaleOrder', {
 		);
 
 		view.offerCategoryStore.remoteFilter = false;
+		view.offerCategoryStore.clearFilter(true);
 		view.offerCategoryStore.filter(new Ext.util.Filter({
 			filterFn: function(item) {
 				return view.productStore.findExact('category', item.get('category')) > -1 ? true : false;
 			}
 		}));
 
-		Ext.dispatch(Ext.apply(options, {action: 'afterFilterProductStore'}));
+		Ext.dispatch(Ext.apply(options, {
+			action: 'afterFilterProductStore',
+			filterSet: true
+		}));
 	},
 
 	toggleShowSaleOrderOff: function(options) {
@@ -687,7 +761,10 @@ Ext.regController('SaleOrder', {
 		view.productStore.clearFilter(true);
 		view.productStore.filtersSnapshot && view.productStore.filter(view.productStore.filtersSnapshot);
 
-		Ext.dispatch(Ext.apply(options, {action: 'afterFilterProductStore'}));
+		Ext.dispatch(Ext.apply(options, {
+			action: 'afterFilterProductStore',
+			filterSet: false
+		}));
 	},
 
 	beforeShowSaleOrder: function(options) {
@@ -703,17 +780,23 @@ Ext.regController('SaleOrder', {
 		var view = options.view;
 
 		view.productCategoryList.scroller && view.productCategoryList.scroller.scrollTo({y: 0});
-		view.productCategoryList.el.toggleCls('expandable');
-
 		view.productList.scroller.scrollTo ({y:0});
-		view.productList.el.toggleCls('expandable');
-
+		
+		if (options.filterSet) {
+			view.productCategoryList.el.removeCls('expandable');
+			view.productList.el.removeCls('expandable');
+		}
+		else{
+			view.productCategoryList.el.addCls('expandable');
+			view.productList.el.addCls('expandable');
+		}
+		
 		view.productListIndexBar.loadIndex();
-
+		
 		Ext.dispatch(Ext.apply(options, {action: 'expandFocusedProduct'}));
-
+		
 		view.modeActive && Ext.dispatch(Ext.apply(options, {action: 'toggleActiveOn'}));
-
+		
 		view.setLoading(false);
 	},
 
