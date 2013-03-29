@@ -647,6 +647,29 @@ Ext.regController('SaleOrder', {
 			&& view.productCategoryList.scroller.disable();
 		Ext.each(view.productCategoryList.getEl().query('.x-list-group-items'), removeActiveCls);
 	},
+	
+	beforeFilterProductStore: function (options) {
+		
+		var view = options.view,
+			currentCategorySelection = view.productCategoryList.getSelectedRecords()
+		;
+		
+		view.productCategoryList.selectionSnaphot
+			|| (view.productCategoryList.selectionSnaphot = currentCategorySelection);
+		
+		view.productCategoryList.deselect(
+			currentCategorySelection
+		);
+		
+		view.offerCategoryStore.remoteFilter = false;
+		view.offerCategoryStore.clearFilter(true);
+		view.offerCategoryStore.filter(new Ext.util.Filter({
+			filterFn: function(item) {
+				return view.productStore.findExact('category', item.get('category')) > -1 ? true : false;
+			}
+		}));
+		
+	},
 
 	toggleProductNameFilterOn: function(options) {
 		
@@ -677,21 +700,8 @@ Ext.regController('SaleOrder', {
 				|| (view.productStore.filtersSnapshot = currentProductFilters)
 			;
 			
-			var currentCategorySelection = view.productCategoryList.getSelectedRecords();
-			
-			view.productCategoryList.selectionSnaphot
-				|| (view.productCategoryList.selectionSnaphot = currentCategorySelection);
-			
-			view.productCategoryList.deselect(
-				currentCategorySelection
-			);
-			
-			view.offerCategoryStore.remoteFilter = false;
-			view.offerCategoryStore.clearFilter(true);
-			view.offerCategoryStore.filter(new Ext.util.Filter({
-				filterFn: function(item) {
-					return view.productStore.findExact('category', item.get('category')) > -1 ? true : false;
-				}
+			Ext.dispatch(Ext.apply(options, {
+				action: 'beforeFilterProductStore'
 			}));
 			
 			Ext.dispatch(Ext.apply(options, {
@@ -984,12 +994,8 @@ Ext.regController('SaleOrder', {
 			
 			if(view.productStore.getCount() > 0) {
 				
-				view.offerCategoryStore.remoteFilter = false;
-				view.offerCategoryStore.clearFilter();
-				view.offerCategoryStore.filter(new Ext.util.Filter({
-					filterFn: function(item) {
-						return view.productStore.findExact('category', item.get('category')) > -1 ? true : false;
-					}
+				Ext.dispatch(Ext.apply(options, {
+					action: 'beforeFilterProductStore'
 				}));
 				
 				view.bonusMode || Ext.dispatch(Ext.apply(options, {
