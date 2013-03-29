@@ -677,7 +677,14 @@ Ext.regController('SaleOrder', {
 				|| (view.productStore.filtersSnapshot = currentProductFilters)
 			;
 			
-			view.productCategoryList.deselect();
+			var currentCategorySelection = view.productCategoryList.getSelectedRecords();
+			
+			view.productCategoryList.selectionSnaphot
+				|| (view.productCategoryList.selectionSnaphot = currentCategorySelection);
+			
+			view.productCategoryList.deselect(
+				currentCategorySelection
+			);
 			
 			view.offerCategoryStore.remoteFilter = false;
 			view.offerCategoryStore.clearFilter(true);
@@ -751,6 +758,9 @@ Ext.regController('SaleOrder', {
 
 		view.productStore.clearFilter(true);
 		view.productStore.filtersSnapshot && view.productStore.filter(view.productStore.filtersSnapshot);
+		
+		view.productStore.filtersSnapshot = undefined;
+		view.productCategoryList.selectionSnaphot = undefined;
 
 		Ext.dispatch(Ext.apply(options, {
 			action: 'afterFilterProductStore',
@@ -780,6 +790,9 @@ Ext.regController('SaleOrder', {
 		else{
 			view.productCategoryList.el.addCls('expandable');
 			view.productList.el.addCls('expandable');
+			Ext.each(view.productCategoryList.el.query('.x-item-selected'), function(el){
+				Ext.get(el).parent().addCls('expanded');
+			});
 		}
 		
 		view.productListIndexBar.loadIndex();
@@ -1008,21 +1021,36 @@ Ext.regController('SaleOrder', {
 		var view=options.view,
 			btn = options.btn || view.dockedItems.get(0).getComponent('ClearFilter'),
 			bonusList = view.bonusPanel.getComponent('bonusList'),
-			productSearcher = view.dockedItems.get(0).getComponent('ProductSearcher')
+			productSearcher = view.dockedItems.get(0).getComponent('ProductSearcher'),
+			segBtn = view.getDockedComponent('top').getComponent('ModeChanger'),
+			bonusBtn = segBtn.getComponent('Bonus')
 		;
 		
 		productSearcher
 			&& productSearcher.reset()
 		;
+		
+		
 		view.productStore.clearFilter(true);
 		view.productStore.filter(view.productStore.filtersSnapshot);
 		
 		view.offerCategoryStore.clearFilter();
 		
+		view.productCategoryList.selectionSnaphot
+			&& view.productCategoryList.getSelectionModel().select(
+				view.productCategoryList.selectionSnaphot
+			)
+		;
+		
+		view.productStore.filtersSnapshot = undefined;
+		view.productCategoryList.selectionSnaphot = undefined;
+		
 		Ext.dispatch(Ext.apply(options, {
 			action: 'afterFilterProductStore',
 			filterSet: false
 		}));
+		
+		segBtn.setPressed(bonusBtn, false);
 		
 		view.bonusMode = false;
 		
