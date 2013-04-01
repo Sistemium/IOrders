@@ -883,7 +883,7 @@ Ext.regController('SaleOrder', {
 			productRec = options.productRec,
 			customerBonusProgramStore = options.bonusStore || view.customerRecord.bonusProgramStore
 		;
-
+		
 		if(!view.bonusPanel) { 
 			view.bonusPanel = Ext.create({
 				xtype: 'panel',
@@ -1013,7 +1013,12 @@ Ext.regController('SaleOrder', {
 		var view = options.view,
 			bonusList = view.bonusPanel.getComponent('bonusList'),
 			tapedBonus = bonusList.getRecord(options.item),
-			selectedBonus = bonusList.selModel.getSelection()[0]
+			selectedBonus = bonusList.selModel.getSelection()[0],
+			segBtn = view.getDockedComponent('top').getComponent('ModeChanger'),
+			btnShowSaleOrder = segBtn.getComponent('ShowSaleOrder')
+		;
+		
+		btnShowSaleOrder.disable();
 		;
 		
 		if(!selectedBonus || tapedBonus.getId() != selectedBonus.getId()) {
@@ -1039,6 +1044,8 @@ Ext.regController('SaleOrder', {
 			view.bonusMode || (view.productStore.filtersSnapshot = view.productStore.filters.items);
 			view.productStore.clearFilter(true);
 			view.productStore.filter(view.productStore.bonusFilter);
+			
+			view.productSearchFilter = undefined;
 			
 			view.bonusProductStore.clearFilter(true);
 			
@@ -1079,7 +1086,11 @@ Ext.regController('SaleOrder', {
 			bonusList = view.bonusPanel.getComponent('bonusList'),
 			productSearcher = view.dockedItems.get(0).getComponent('ProductSearcher'),
 			segBtn = view.getDockedComponent('top').getComponent('ModeChanger'),
-			bonusBtn = segBtn.getComponent('Bonus')
+			bonusBtn = segBtn.getComponent('Bonus'),
+			btnShowSaleOrder = segBtn.getComponent('ShowSaleOrder')
+		;
+		
+		btnShowSaleOrder.enable();
 		;
 		
 		productSearcher
