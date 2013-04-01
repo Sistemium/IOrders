@@ -1,10 +1,9 @@
 var DEBUG = location.protocol == 'https:' ? false : localStorage.getItem('DEBUG') == 'true' ? true : false;
 var oldConsoLog = console.log;
 
-console.log = function() {
-	if (DEBUG) {
-		oldConsoLog.apply(this, arguments);
-	}
+
+if (!DEBUG) {
+	console.log = Ext.emptyFn;
 };
 
 applicationCache.addEventListener('updateready', function(a) {
