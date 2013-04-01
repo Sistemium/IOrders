@@ -75,7 +75,7 @@ Ext.regApplication({
 					
 					tStore.getProxy().data = this.metadata;
 					tStore.load(function() {IOrders.init();});
-					if (db.tables['Geolocation']) IOrders.geoTrack();
+					if (tStore.getById('Geolocation')) IOrders.geoTrack();
 					IOrders.logEvent({
 						module: 'app',
 						action: 'dbstart',
