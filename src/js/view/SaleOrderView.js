@@ -107,7 +107,10 @@ var SaleOrderView = Ext.extend(AbstractView, {
 				name: 'productSearch',
 				itemId: 'ProductSearcher',
 				listeners:{
-					change: applySearch
+					change: applySearch,
+					action: function(f,e) {
+						console.log ('SaleOrderSearch action');
+					}
 				}
 			},
 			{itemId: 'ClearFilter', iconMask: true, iconCls:'delete', hidden:true, scope:this},
