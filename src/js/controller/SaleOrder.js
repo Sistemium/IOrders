@@ -746,14 +746,25 @@ Ext.regController('SaleOrder', {
 
 		Ext.dispatch(Ext.apply(options, {action: 'beforeShowSaleOrder', mode: true}));
 
-		var view = options.view;
-
-		view.productStore.filtersSnapshot = view.productStore.filters.items;
+		var view = options.view,
+			btnClearFilter = view.dockedItems.get(0).getComponent('ClearFilter'),
+			productSearcher = view.dockedItems.get(0).getComponent('ProductSearcher'),
+			segBtn = view.getDockedComponent('top').getComponent('ModeChanger'),
+			activeBtn = segBtn.getComponent('Active'),
+			bonusBtn = segBtn.getComponent('Bonus')
+		;
+		
+		activeBtn.disable();
+		bonusBtn.disable();
+		btnClearFilter.disable();
+		productSearcher.disable();
+		
+		view.productStore.saleOrderModeFiltersSnapshot = view.productStore.filters.items;
 		view.productStore.clearFilter(true);
 		view.productStore.filter(view.productStore.volumeFilter);
 
 		view.productCategoryList.deselect(
-			view.productCategoryList.selectionSnaphot = view.productCategoryList.getSelectedRecords()
+			view.productCategoryList.saleOrderModeSelectionSnaphot = view.productCategoryList.getSelectedRecords()
 		);
 
 		view.offerCategoryStore.remoteFilter = false;
@@ -774,23 +785,46 @@ Ext.regController('SaleOrder', {
 
 		Ext.dispatch(Ext.apply(options, {action: 'beforeShowSaleOrder', mode: false}));
 
-		var view = options.view;
-
-		view.offerCategoryStore.clearFilter();
-
+		var view = options.view,
+			btnClearFilter = view.dockedItems.get(0).getComponent('ClearFilter'),
+			productSearcher = view.dockedItems.get(0).getComponent('ProductSearcher'),
+			segBtn = view.getDockedComponent('top').getComponent('ModeChanger'),
+			activeBtn = segBtn.getComponent('Active'),
+			bonusBtn = segBtn.getComponent('Bonus')
+		;
+		
+		activeBtn.enable();
+		bonusBtn.enable();
+		btnClearFilter.enable();
+		productSearcher.enable();
+		
+		view.productStore.clearFilter(true);
+		view.productStore.saleOrderModeFiltersSnapshot
+			&& view.productStore.filter(view.productStore.saleOrderModeFiltersSnapshot)
+		;
+		
+		view.offerCategoryStore.clearFilter(true);
+		
+		if (view.productSearchFilter)
+			view.offerCategoryStore.filter(new Ext.util.Filter({
+				filterFn: function(item) {
+				return view.productStore.findExact('category', item.get('category')) > -1 ? true : false;
+				}
+			}));
+		else
+			view.offerCategoryStore.fireEvent('datachanged',view.offerCategoryStore)
+		;
+		
 		view.productCategoryList.getSelectionModel().select(
-			view.productCategoryList.selectionSnaphot
+			view.productCategoryList.saleOrderModeSelectionSnaphot
 		);
 
-		view.productStore.clearFilter(true);
-		view.productStore.filtersSnapshot && view.productStore.filter(view.productStore.filtersSnapshot);
+		view.productStore.saleOrderModeFiltersSnapshot = undefined;
+		view.productCategoryList.saleOrderModeSelectionSnaphot = undefined;
 		
-		view.productStore.filtersSnapshot = undefined;
-		view.productCategoryList.selectionSnaphot = undefined;
-
 		Ext.dispatch(Ext.apply(options, {
 			action: 'afterFilterProductStore',
-			filterSet: false
+			filterSet: view.productSearchFilter ? true : false
 		}));
 	},
 
