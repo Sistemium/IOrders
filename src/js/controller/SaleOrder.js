@@ -686,21 +686,31 @@ Ext.regController('SaleOrder', {
 		view.setLoading(true);
 		
 		view.productStore.clearFilter(true);
+		view.productStore.suspendEvents();
 		view.productStore.filter( view.productSearchFilter = {
 			property: 'name',
 			value: options.searchFor,
 			anyMatch: true,
 			caseSensitive: false
 		});
-
-		if (view.productStore.getCount() > 50) {
+		
+		if (view.productStore.getCount() > 200) {
 			
-			view.productStore.clearFilter(true);
-			currentProductFilters
-				&& view.productStore.filter(currentProductFilters)
-			;
+			Ext.Msg.alert("Внимание", "Слишком много товаров подходит, введите больше букв в поиске", function() {
+				var productSearcher = view.dockedItems.get(0).getComponent('ProductSearcher');
+				productSearcher.reset();
+				view.productStore.clearFilter(true);
+				currentProductFilters
+					&& view.productStore.filter(currentProductFilters)
+				;
+				view.productStore.resumeEvents();		
+			});
 			
 		} else {
+			
+			view.productStore.resumeEvents();
+			
+			view.productStore.fireEvent('datachanged', view.productStore);
 			
 			view.productStore.filtersSnapshot
 				|| (view.productStore.filtersSnapshot = currentProductFilters)
