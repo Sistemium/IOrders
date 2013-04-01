@@ -588,6 +588,7 @@ Ext.regController('SaleOrder', {
 		
 		view.isShowSaleOrder && filters.push(productStore.volumeFilter);
 		view.bonusMode && filters.push(productStore.bonusFilter);
+		view.productSearchFilter && filters.push(view.productSearchFilter);
 
 		productStore.filter(filters);
 
@@ -685,7 +686,7 @@ Ext.regController('SaleOrder', {
 		view.setLoading(true);
 		
 		view.productStore.clearFilter(true);
-		view.productStore.filter({
+		view.productStore.filter( view.productSearchFilter = {
 			property: 'name',
 			value: options.searchFor,
 			anyMatch: true,
@@ -1041,6 +1042,7 @@ Ext.regController('SaleOrder', {
 			&& productSearcher.reset()
 		;
 		
+		view.productSearchFilter = undefined;
 		
 		view.productStore.clearFilter(true);
 		view.productStore.filter(view.productStore.filtersSnapshot);
