@@ -159,7 +159,7 @@ Ext.regController('SaleOrder', {
 									bonusProgramStore = newCard.bonusProgramStore
 								;
 								
-								if(bonusProgramStore && (
+								if(bonusProgramStore && filters && (
 										filters.contains && filters.contains(this.isFocusedFilter) || filters == this.isFocusedFilter)
 								) {
 									bonusProgramStore.filter({property: 'isFirstScreen', value: true});
@@ -170,7 +170,7 @@ Ext.regController('SaleOrder', {
 
 								Ext.data.Store.prototype.filter.apply(this, arguments);
 
-								if(bonusProgramStore && (
+								if(bonusProgramStore && filters && (
 										filters.contains && filters.contains(this.isFocusedFilter) || filters == this.isFocusedFilter
 								)) {
 									bonusProductStore.clearFilter(true);
