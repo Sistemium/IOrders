@@ -694,7 +694,15 @@ Ext.regController('SaleOrder', {
 			caseSensitive: false
 		});
 		
-		if (view.productStore.getCount() > 200) {
+		var foundCnt = view.productStore.getCount();
+		
+		IOrders.logEvent({
+			module:'SaleOrder',
+			action: 'ProductNameFilter' ,
+			data: 'value:' + options.searchFor + ', count:'+ foundCnt
+		});
+		
+		if ( foundCnt > 200) {
 			
 			Ext.Msg.alert("Внимание", "Слишком много товаров подходит, введите больше букв в поиске", function() {
 				var productSearcher = view.dockedItems.get(0).getComponent('ProductSearcher');
