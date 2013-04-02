@@ -75,12 +75,26 @@ Ext.regApplication({
 					
 					tStore.getProxy().data = this.metadata;
 					tStore.load(function() {IOrders.init();});
+					
 					if (tStore.getById('Geolocation')) IOrders.geoTrack();
+					
 					IOrders.logEvent({
 						module: 'app',
 						action: 'dbstart',
 						data: 'dbversion:'+db.version
 					});
+					
+					window.onerror = function(msg, url, line) {
+						
+						IOrders.logEvent({
+							module: url.slice(url.lastIndexOf('/js/')+4),
+							action: 'UnhandledException' ,
+							data: msg + ' at line ' + line
+						});
+						
+						return true;
+						
+					}
 					
 				},
 				fail: function() {
