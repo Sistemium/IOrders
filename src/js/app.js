@@ -86,7 +86,7 @@ Ext.regApplication({
 					
 					window.onerror = function(msg, url, line) {
 						
-						console.log ('UnhandledException' + msg);
+						console.log ('UnhandledException: ' + msg + ' at line ' + line);
 						
 						var part = '/js/',
 							modulePos = url.lastIndexOf(part),
@@ -118,7 +118,7 @@ Ext.regApplication({
 								+ msg + ' at line ' + line
 						});
 						
-						return true;
+						return false;
 						
 					}
 					
