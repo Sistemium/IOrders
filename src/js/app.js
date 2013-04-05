@@ -86,10 +86,36 @@ Ext.regApplication({
 					
 					window.onerror = function(msg, url, line) {
 						
+						console.log ('UnhandledException' + msg);
+						
+						var part = '/js/',
+							modulePos = url.lastIndexOf(part),
+							module = url,
+							viewTitle
+						;
+						
+						if (IOrders.viewport1) {
+							var ai = IOrders.viewport.getActiveItem();
+							
+							if (ai && ai.dockedItems) {
+								var tb = ai.dockedItems.getAt(0);
+								viewTitle = tb.title;
+							}
+						}
+						
+						if (modulePos < 0)
+							modulePos = url.lastIndexOf(part = '/')
+						;
+						
+						if (modulePos > 0)
+							module = url.slice(modulePos + part.length)
+						;
+						
 						IOrders.logEvent({
-							module: url.slice(url.lastIndexOf('/js/')+4),
+							module: module,
 							action: 'UnhandledException' ,
-							data: msg + ' at line ' + line
+							data: 'title: ' + viewTitle + ' '
+								+ msg + ' at line ' + line
 						});
 						
 						return true;
