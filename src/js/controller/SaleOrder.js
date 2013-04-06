@@ -291,6 +291,7 @@ Ext.regController('SaleOrder', {
 											
 											if (!Ext.ModelMgr.getModel(bonusModelName)){
 												newCard.bonusProgramStore = undefined;
+												console.log ('SaleOrder.launchOfferView bonusProgramStore = undefined');
 											} else {
 												newCard.bonusProgramStore = createStore(
 													bonusModelName,

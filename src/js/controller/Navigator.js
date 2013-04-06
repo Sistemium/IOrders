@@ -1155,7 +1155,7 @@ Ext.regController('Navigator', {
 					' data-header="false"></div>');
 		;
 		
-		(function(d, s, id) {
+		if (!window.FB) (function(d, s, id) {
 			var js,
 				fjs = d.getElementsByTagName(s)[0];
 		  
@@ -1168,21 +1168,29 @@ Ext.regController('Navigator', {
 			fjs.parentNode.insertBefore(js, fjs);
 		} (document, 'script', 'facebook-jssdk'));
 		
-		IOrders.viewport.facebookFeedPanel || (IOrders.viewport.facebookFeedPanel = Ext.create({
-			xtype: 'panel',
-			floating: true,
-			centered: true,
-			layout: 'fit',
-			width: view.getWidth() / 2,
-			height: view.getHeight() * 2 / 3,
-			html: htmlTpl.apply({width: view.getWidth() / 2 - 10, height: view.getHeight() * 2 / 3 - 10}),
-			listeners: {
-				hide: function () {
-					Ext.destroy (IOrders.viewport.facebookFeedPanel);
-					delete IOrders.viewport.facebookFeedPanel;
+		if (!IOrders.viewport.facebookFeedPanel) {
+			
+			var width = Math.ceil(view.getWidth() / 2),
+				height = Math.ceil(view.getHeight() * 2 / 3)
+			;
+			
+			IOrders.viewport.facebookFeedPanel = Ext.create({
+				xtype: 'panel',
+				floating: true,
+				centered: true,
+				layout: 'fit',
+				width: width,
+				height: height,
+				html: htmlTpl.apply({width: width - 10, height: height - 10}),
+				listeners: {
+					hide: function () {
+						Ext.destroy (IOrders.viewport.facebookFeedPanel);
+						delete IOrders.viewport.facebookFeedPanel;
+					}
 				}
-			}
-		}));
+			});
+			
+		};
 		
 		IOrders.viewport.facebookFeedPanel.show();
 		
