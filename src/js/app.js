@@ -1,6 +1,12 @@
-var DEBUG = location.protocol == 'https:' ? false : localStorage.getItem('DEBUG') == 'true' ? true : false;
-var oldConsoLog = console.log;
+var DEBUG = localStorage.getItem('DEBUG');
 
+if(DEBUG == null)
+	DEBUG = (location.protocol == 'https:' ? false : true);
+else
+	DEBUG = (DEBUG == 'true')
+;
+
+var oldConsoLog = console.log;
 
 if (!DEBUG) {
 	console.log = Ext.emptyFn;
