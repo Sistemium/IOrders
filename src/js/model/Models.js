@@ -53,9 +53,18 @@ var createModels = function(tablesStore) {
 	afterCreateModels();
 };
 
-function afterCreateModels() {
+function overrideModelIfExists (modelName, overrideWith) {
+	
+	var model;
+	
+	(model = Ext.ModelMgr.getModel(modelName)) && Ext.override(model, overrideWith);
+	
+}
 
-	Ext.override(Ext.ModelMgr.getModel('Customer'), {
+
+function afterCreateModels() {
+	
+	overrideModelIfExists('Customer', {
 		getCustomerBonusProgram: function(callback) {
 			
 			var store = createStore('CustomerBonusProgram', {
@@ -72,9 +81,15 @@ function afterCreateModels() {
 		}
 	});
 	
-	Ext.override(Ext.ModelMgr.getModel('SaleOrder'), {
+	overrideModelIfExists('SaleOrder', {
 		name: function() {
 			return this.get('Customer_name') + ' от ' + this.get('date').dateFormat('d/m/Y') + ' на ' + this.get('totalCost') + ' руб.';
+		}
+	});
+	
+	overrideModelIfExists('Uncashment', {
+		name: function() {
+			return this.get('totalSumm') + ' руб. ' + this.get('datetime');
 		}
 	});
 	
