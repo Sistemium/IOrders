@@ -71,6 +71,13 @@ function afterCreateModels() {
 			});
 		}
 	});
+	
+	Ext.override(Ext.ModelMgr.getModel('SaleOrder'), {
+		name: function() {
+			return this.get('Customer_name') + ' от ' + this.get('date').dateFormat('d/m/Y') + ' на ' + this.get('totalCost') + ' руб.';
+		}
+	});
+	
 };
 
 function continueLoad (store,r,s){
