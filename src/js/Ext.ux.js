@@ -3,6 +3,25 @@ Ext.override(Ext.Interaction, {controller: 'Main'});
 /**
  * Scope указывает на панель, в которой лежит кнопка
  */
+
+Ext.override(Ext.DataView, {
+
+	prepareData: function(data, index, record) {
+        
+		if (record) {
+            Ext.apply(data, this.prepareAssociatedData(record));
+			
+			if (record.name && typeof record.name == 'function')
+				Ext.apply(data, {name: record.name()})
+			;
+			
+        }
+		
+        return data;
+    }
+
+});
+
 Ext.override (Ext.util.Stateful, {
 	get: function(field) {
 		if ( typeof this[field] == 'function')
@@ -15,10 +34,10 @@ Ext.override (Ext.util.Stateful, {
 
 Ext.override(Ext.Button, {
 	handler: function(btn, e) {
-
 		Ext.dispatch({action: 'onButtonTap', view: this, btn: btn, event: e});
 	}
 });
+
 
 Ext.override(Ext.form.Select, {
 
