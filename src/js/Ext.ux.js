@@ -3,6 +3,16 @@ Ext.override(Ext.Interaction, {controller: 'Main'});
 /**
  * Scope указывает на панель, в которой лежит кнопка
  */
+Ext.override (Ext.util.Stateful, {
+	get: function(field) {
+		if ( typeof this[field] == 'function')
+			return this[field]();
+		else
+			return this[this.persistanceProperty][field];
+	}
+});
+
+
 Ext.override(Ext.Button, {
 	handler: function(btn, e) {
 
