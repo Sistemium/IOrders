@@ -309,7 +309,9 @@ var createFieldSet = function(columnsStore, modelName, view) {
 	var fsItems = [];
 
 	columnsStore.each(function(column) {
+		
 		if (column.get('label') && column.get('name') !== 'processing') {
+			
 			var field = {
 				name: column.get('name'),
 				itemId: column.get('name'),
@@ -318,6 +320,7 @@ var createFieldSet = function(columnsStore, modelName, view) {
 			};
 			
 			var fieldConfig;
+			
 			switch(column.get('type')) {
 				case 'boolean' : {
 					fieldConfig = {
@@ -371,14 +374,15 @@ var createFieldSet = function(columnsStore, modelName, view) {
 						onFieldInputTap: true,
 						getListPanel: function() {
 							Ext.form.Select.prototype.getListPanel.apply(this, arguments);
-
 							this.setItemTplWithTitle();
-
 							return this.listPanel;
 						}
-					} : fieldConfig
+					}
+					: fieldConfig
 			);
+			
 			fsItems.push(field);
+			
 		}
 	});
 
@@ -776,6 +780,9 @@ var unavailBtnFuncMessage = function(btn, view) {
 			
 		}
 	}
+	
+	return undefined;
+	
 };
 
 var checkRecordInUpload = function(xid) {
