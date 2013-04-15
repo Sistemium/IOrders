@@ -99,14 +99,15 @@ var NavigatorView = Ext.extend(AbstractView, {
 					});
 				}
 			});
-
+			
 			this.cls = 'objectView';
-
+			
 			formItems.push(createFieldSet(table.columns(), this.objectRecord.modelName, this));
-
+			
 			var spacerExist = false,
 				btnLockByStatus = this.objectRecord.fields.getByKey('processing')
-					&& this.objectRecord.get('processing') !== 'draft' && !this.objectRecord.get('serverPhantom')
+					&& this.objectRecord.get('processing') !== 'draft'
+					&& !this.objectRecord.get('serverPhantom')
 			;
 			
 			if ( table.get('deletable') ) {
@@ -129,16 +130,14 @@ var NavigatorView = Ext.extend(AbstractView, {
 			if(table.get('editable') || (this.editing && table.get('extendable'))) {
 				
 				spacerExist || this.dockedItems[0].items.push({xtype: 'spacer'});
-				this.dockedItems[0].items.push(
-//					{cls: 'x-hidden-display', itemId: 'Cancel', name: 'Cancel', text: 'Отменить', hidden: true, scope: this},
-					{
-						itemId: 'SaveEdit',
-						name: this.editing ? 'Save' : 'Edit',
-						text: this.editing ? 'Сохранить' : 'Редактировать',
-						cls: !this.editing && btnLockByStatus ? 'disable' : '',
-						scope: this
-					}
-				);
+				this.dockedItems[0].items.push({
+					itemId: 'SaveEdit',
+					name: this.editing ? 'Save' : 'Edit',
+					text: this.editing ? 'Сохранить' : 'Редактировать',
+					cls: !this.editing && btnLockByStatus ? 'disable' : '',
+					scope: this
+				});
+				
 			}
 			
 			table.get('extendable') && !table.get('belongs') && this.dockedItems[0].items.push({
@@ -161,21 +160,26 @@ var NavigatorView = Ext.extend(AbstractView, {
 			}
 			
 			if (!this.editable || this.objectRecord.modelName == 'SaleOrder')
-				formItems.push(createDepsList(table.deps(), tablesStore, this));
-
+				formItems.push(createDepsList(table.deps(), tablesStore, this))
+			;
+			
 			if(IOrders.newDesign && table.hasNameColumn()) {
-
-				var store = createStore(this.objectRecord.modelName, getSortersConfig(this.objectRecord.modelName, getSortersConfig(this.objectRecord.modelName, {})));
-
+				
+				var store = createStore(
+					this.objectRecord.modelName,
+					getSortersConfig(this.objectRecord.modelName, getSortersConfig(this.objectRecord.modelName, {}))
+				);
+				
 				var limit = 0, curPage = 1;
+				
 				if(me.ownerViewConfig.tableRecord.modelName === me.objectRecord.modelName) {
-
 					limit = me.ownerViewConfig.storeLimit;
 					curPage = me.ownerViewConfig.storePage;
-				}
-				store.load({limit:  limit});
+				};
+				
+				store.load({limit: limit});
 				store.currentPage = curPage;
-
+				
 				this.items.push(me.objectList = Ext.create ({
 					
 					xtype: 'list',
@@ -224,7 +228,7 @@ var NavigatorView = Ext.extend(AbstractView, {
 					}
 				}));
 			}
-
+			
 		} else if (this.isSetView) {
 			
 			this.cls = 'setView';
@@ -295,35 +299,39 @@ var NavigatorView = Ext.extend(AbstractView, {
 	 */
 	
 	initComponent: function() {
-
+		
 		NavigatorView.superclass.initComponent.apply(this, arguments);
 		this.mon (this,'show', this.loadData);
 		this.addEvents ('saved');
+		
 	},
 	
 	loadData: function() {
-
+		
 		this.form.loadRecord(this.objectRecord);
 		this.form.recordLoaded = true;
 		this.isObjectView && this.setFieldsDisabled(!this.editing);
+		
 	},
 	
 	setFieldsDisabled: function(disable) {
-
+		
 		if(this.isObjectView) {
-
+			
 			var table = Ext.getStore('tables').getById(this.objectRecord.modelName),
 				columnStore = table.columns(),
 				fields = this.form.getFields()
 			;
-
+			
 			Ext.iterate(fields, function(fieldName, field) {
-
+				
 				var column = columnStore.getById(table.getId() + fieldName);
-
+				
 				field.setDisabled(!column.get('editable') || disable);
 			});
+			
 		}
+		
 	},
 	
 	statusButtonsConfig: function (me, cName, c) {
