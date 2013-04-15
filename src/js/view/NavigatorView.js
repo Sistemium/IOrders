@@ -94,83 +94,9 @@ var NavigatorView = Ext.extend(AbstractView, {
 				var cName = c.get('name');
 				
 				if (String.right(cName, 10) == 'processing') {
-					var statusButtons = [],
-						state = me.objectRecord.get(cName) || 'draft',
-						btnCfg = {
-							onTapStart: function() {
-								
-								if(!checkRecordInUpload(me.objectRecord.get('xid'))) {
-									Ext.Button.prototype.onTapStart.apply(this, arguments);
-									if(this.disabled) {
-										Ext.Msg.alert('', 'Невозможно перейти в статус ' + this.text);
-									}
-								} else {
-									Ext.Msg.alert('', 'Нельзя изменить статус. Запись отправляется на сервер');
-								}
-							}
-						}
-					;
-					
-					statusButtons =  [
-						{text: 'Черновик', itemId: 'draft', name: 'draft', canEnable: function(s) { return s == 'upload'; },
-							desc: 'Заказ-черновик не отправится на склад пока вы не измените его статус на "В работу"'},
-						{text: 'В работу', itemId: 'upload', name: 'upload', canEnable: function(s) { return s == 'draft'; },
-							desc: 'При первой же синхронизации с сервером заказ отправится на склад (если в заказе есть товары)'},
-						{text: 'Проверка', itemId: 'processing', name: 'processing',
-							desc: 'Заказ обрабатывается на сервере. Изменить его через iOrders уже нельзя.'},
-						{text: 'На складе', itemId: 'done', name: 'done',
-							desc: 'Заказ успешно принят на склад.'}
-					];
-
-					var btnPressed = undefined;
-					
-					statusButtons.forEach( function(b) { if (b.name) b.cls = 'make-'+b.name } );
-					
-					if(me.objectRecord.phantom || me.isNew) {
-						state = me.saleOrderStatus || c.get('init');
-					}
-
-					if (me.objectRecord) Ext.each (statusButtons, function(b) {
-
-						Ext.apply(b, btnCfg);
-						
-						b.pressed = (b.name == state);
-						
-						b.disabled = true;
-						
-						if (b.canEnable) b.disabled = !b.canEnable(state);
-						
-						if (b.pressed) {
-							b.disabled = false;
-							btnPressed = b;
-						}
+					Ext.each(me.statusButtonsConfig (me, cName, c), function(item, idx) {
+						formItems.push (item);
 					});
-					
-					formItems.push({
-						xtype: 'toolbar',
-						itemId: 'statusToolbar',
-						dock: 'top',
-						ui: 'none',
-						items:[{
-							xtype: 'segmentedbutton',
-							itemId: cName,
-							items: statusButtons,
-							name: cName, cls: 'statuses',
-							listeners: {
-								toggle: function (segBtn, btn, pressed) {
-									pressed && segBtn.up('panel').getComponent('statusDesc').update(btn);
-								},
-								afterLayout: function (me) {
-									me.fireEvent ('toggle', me, me.getComponent(btnPressed.name), true);
-								}
-							}
-						}]},{
-							xtype: 'panel',
-							itemId: 'statusDesc',
-							cls: 'statusDesc',
-							tpl: '<div class="{name}">{desc}</div>'
-						}
-					);
 				}
 			});
 
@@ -398,6 +324,87 @@ var NavigatorView = Ext.extend(AbstractView, {
 				field.setDisabled(!column.get('editable') || disable);
 			});
 		}
+	},
+	
+	statusButtonsConfig: function (me, cName, c) {
+		
+		var state = me.objectRecord.get(cName) || 'draft',
+			btnCfg = {
+				onTapStart: function() {
+					
+					if(!checkRecordInUpload(me.objectRecord.get('xid'))) {
+						Ext.Button.prototype.onTapStart.apply(this, arguments);
+						if(this.disabled) {
+							Ext.Msg.alert('', 'Невозможно перейти в статус ' + this.text);
+						}
+					} else {
+						Ext.Msg.alert('', 'Нельзя изменить статус. Запись отправляется на сервер');
+					}
+				}
+			}
+		;
+		
+		var statusButtons =  [
+			{text: 'Черновик', itemId: 'draft', name: 'draft', canEnable: function(s) { return s == 'upload'; },
+				desc: 'Заказ-черновик не отправится на склад пока вы не измените его статус на "В работу"'},
+			{text: 'В работу', itemId: 'upload', name: 'upload', canEnable: function(s) { return s == 'draft'; },
+				desc: 'При первой же синхронизации с сервером заказ отправится на склад (если в заказе есть товары)'},
+			{text: 'Проверка', itemId: 'processing', name: 'processing',
+				desc: 'Заказ обрабатывается на сервере. Изменить его через iOrders уже нельзя.'},
+			{text: 'На складе', itemId: 'done', name: 'done',
+				desc: 'Заказ успешно принят на склад.'}
+		];
+
+		var btnPressed = undefined;
+		
+		statusButtons.forEach( function(b) { if (b.name) b.cls = 'make-'+b.name } );
+		
+		if(me.objectRecord.phantom || me.isNew) {
+			state = me.saleOrderStatus || c.get('init');
+		}
+
+		if (me.objectRecord) Ext.each (statusButtons, function(b) {
+
+			Ext.apply(b, btnCfg);
+			
+			b.pressed = (b.name == state);
+			
+			b.disabled = true;
+			
+			if (b.canEnable) b.disabled = !b.canEnable(state);
+			
+			if (b.pressed) {
+				b.disabled = false;
+				btnPressed = b;
+			}
+		});
+		
+		return Array({
+			xtype: 'toolbar',
+			itemId: 'statusToolbar',
+			dock: 'top',
+			ui: 'none',
+			items:[{
+				xtype: 'segmentedbutton',
+				itemId: cName,
+				items: statusButtons,
+				name: cName, cls: 'statuses',
+				listeners: {
+					toggle: function (segBtn, btn, pressed) {
+						pressed && segBtn.up('panel').getComponent('statusDesc').update(btn);
+					},
+					afterLayout: function (me) {
+						me.fireEvent ('toggle', me, me.getComponent(btnPressed.name), true);
+					}
+				}
+			}]},{
+				xtype: 'panel',
+				itemId: 'statusDesc',
+				cls: 'statusDesc',
+				tpl: '<div class="{name}">{desc}</div>'
+			}
+		);
+		
 	}
 	
 });
