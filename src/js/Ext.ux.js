@@ -41,6 +41,33 @@ Ext.override(Ext.Button, {
 
 Ext.override(Ext.form.Select, {
 
+    showComponent: function() {
+        if (Ext.is.Phone) {
+            var picker = this.getPicker(),
+                name   = this.name,
+                value  = {};
+                
+            value[name] = this.getValue();
+            picker.show();
+            picker.setValue(value);
+        }
+        else {
+            var listPanel = this.getListPanel(),
+                index = this.store.findExact(this.valueField, this.value);
+			
+			if (this.store.getCount() > 0) {
+				listPanel.showBy(this.el, 'fade', false);
+				var selectionModel = listPanel.down('#list').getSelectionModel();
+				
+				if (index >= 0)
+					selectionModel.select(index, false, true);
+				else
+					selectionModel.deselectAll()
+				;
+			}
+        }
+    },
+	
 	onListSelect: function(selModel, selected) {
         if (selected) {
             this.setValue(selected.get(this.valueField));
@@ -94,30 +121,80 @@ Ext.override(Ext.form.Select, {
     },
 
 	setItemTplWithTitle: function() {
-
+		
 		var list = this.listPanel.getComponent('list'),
 			table = Ext.getStore('tables').getById(this.store.model.prototype.modelName),
-			titleColumns = table.getTitleColumns()
+			titleColumns = table.getTitleColumns(),
+			clsColumn = this.clsColumn = table.get('clsColumn')
 		;
-
-		list.itemTpl = ['<div class="x-list-label">{' + this.displayField + '}</div>'];
+		
+		list.itemTpl = ['<div class="x-list-label'
+			+ (clsColumn ? ' {'+clsColumn+'}' : '')
+			+ '">{' + this.displayField + '}</div>'];
 		titleColumns.each(function(col) {list.itemTpl.push('<div>{' + col.get('name') + '}</div>');});
 		list.itemTpl.push('<span class="x-list-selected"></span>');
-
+		
 		list.tpl = '<tpl for="."><div class="x-list-item ' + list.itemCls + '"><div class="x-list-item-body">' + list.itemTpl.join('') + '</div>';
 		list.tpl += '</div></tpl>';
 		list.tpl = new Ext.XTemplate(list.tpl);
-	}
+	},
+	
+    setValue: function(value) {
+        var idx = -1,
+            hiddenField = this.hiddenField,
+            record
+		;
+
+        if (value) {
+            idx = this.store.findExact(this.valueField, value)
+        } 
+        record = this.store.getAt(idx);
+
+        if (record && this.rendered) {
+            this.fieldEl.dom.value = record.get(this.displayField);
+            this.value = record.get(this.valueField);
+            if (hiddenField) {
+                hiddenField.dom.value = this.value;
+            }
+        } else {
+            if (this.rendered) {
+                this.fieldEl.dom.value = value;
+            }
+            this.value = value;
+        }
+
+        
+        if (this.picker) {
+            var pickerValue = {};
+            pickerValue[this.name] = this.value;
+            this.picker.setValue(pickerValue);
+        }
+		
+		if (this.rendered) {
+			if (this.oldColumnCls)
+				this.fieldEl.removeCls(this.oldColumnCls)
+			;
+			if (record && this.clsColumn){
+				this.oldColumnCls = record.get(this.clsColumn);
+				this.oldColumnCls && this.fieldEl.addCls(this.oldColumnCls)
+			}
+		}
+        
+        return this;
+    }
+	
 });
 
+
 Ext.override(Ext.form.Toggle, {
-	setValue: function(value) {
 	
+	setValue: function(value) {
+		
 		value = (value === true || value === 1 ? 1 : 0);
 		Ext.form.Toggle.superclass.setValue.call(this, value, this.animationDuration);
-	
+		
 		var fieldEl = this.fieldEl;
-	
+		
 		if(this.constrain(value) === this.minValue) {
 			fieldEl.addCls(this.minValueCls);
 			fieldEl.removeCls(this.maxValueCls);
@@ -126,9 +203,8 @@ Ext.override(Ext.form.Toggle, {
 			fieldEl.removeCls(this.minValueCls);
 		}
 	}
+	
 });
-
-
 
 
 Ext.override(Ext.form.FormPanel, {
