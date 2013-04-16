@@ -870,35 +870,19 @@ Ext.regController('Navigator', {
 		};
 		
 		if (newCard.objectRecord.modelName != 'MainMenu') {
-			
-			if (newCard.objectRecord.modelName) {
-				
+			if (newCard.objectRecord.modelName)
 				store.filters.add({
 					property: lowercaseFirstLetter(newCard.objectRecord.modelName),
 					value: newCard.objectRecord.getId()
-				});
-				
-				store.load({
-					limit: storeLimit,
-					callback: storeLoadCallback
-				});
-				
-			} else {
-				
-				store.load({
-					limit: storeLimit,
-					callback: storeLoadCallback
-				});
-				
-			}
-		} else {
-			
-			store.load({
-				limit: storeLimit,
-				callback: storeLoadCallback
-			});
-			
+				})
+			;
 		}
+		
+		store.load({
+			limit: storeLimit,
+			callback: storeLoadCallback
+		});
+		
 	},
 	
 	scrollToLastSelectedRecord: function(options) {
