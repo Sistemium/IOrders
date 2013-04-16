@@ -9,8 +9,9 @@ var NavigatorView = Ext.extend(AbstractView, {
 	
 	createItems: function() {
 		
-		var tablesStore = Ext.getStore('tables'),
-		    table = tablesStore.getById(this.objectRecord.modelName),
+		var tablesStore = Ext.getStore('tables')
+			modelName = this.objectRecord.modelName,
+		    table = tablesStore.getById(modelName),
 		    formItems = [],
 			me = this,
 			statusesStore = Ext.getStore('statuses'),
@@ -102,7 +103,64 @@ var NavigatorView = Ext.extend(AbstractView, {
 			
 			this.cls = 'objectView';
 			
-			formItems.push(createFieldSet(table.columns(), this.objectRecord.modelName, this));
+			var columnsStore = table.columns(),
+				fieldSet = createFieldSet(columnsStore, modelName, this),
+				useForSelectFilters = new Ext.util.MixedCollection();
+			;
+			
+			Ext.each (fieldSet.items, function(field) {
+				if (field.xtype == 'selectfield' && field.store) {
+					
+					var parentColumns = tablesStore.getById(field.store.model.modelName).columns();
+					
+					parentColumns.each(function(parentColumn) {
+						
+						var grandParent = parentColumn.get('name'),
+							id = modelName+grandParent;
+						
+						if (parentColumn.get('parent') && columnsStore.getById(id)){
+							useForSelectFilters.add(id, {
+								name: grandParent,
+								store: field.store,
+								property: parentColumn.get('name')
+							});
+						}
+						
+					});
+					
+				}
+			});
+			
+			var filterFn = function (store, property, value) {
+				store.clearFilter(true);
+				store.filter({
+					property: property,
+					value: value
+				});
+			};
+			
+			useForSelectFilters.each(function (c) {
+				
+				var value = me.objectRecord.get(c.name);
+				
+				fieldSet.items.forEach(function(field) {
+					if (field.name == c.name) field.listeners = {
+						change: function(field, value) {
+							console.log('Select value changed: ' + value);
+							useForSelectFilters.each(function (c) {
+								if (c.name == field.name) 
+									filterFn (c.store, c.property, value)
+								;
+							});
+						}
+					}
+				});
+				
+				filterFn (c.store, c.property, value);
+				
+			});
+			
+			formItems.push(fieldSet);
 			
 			var spacerExist = false,
 				btnLockByStatus = this.objectRecord.fields.getByKey('processing')
