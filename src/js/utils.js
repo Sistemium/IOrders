@@ -322,7 +322,8 @@ var createFieldSet = function(columnsStore, modelName, view) {
 			var fieldConfig;
 			
 			switch(column.get('type')) {
-				case 'boolean' : {
+				
+				case 'boolean':
 					fieldConfig = {
 						xtype: 'togglefield',
 						listeners: {
@@ -337,9 +338,9 @@ var createFieldSet = function(columnsStore, modelName, view) {
 							}
 						}
 					};
-					break;
-				}
-				case 'date' : {
+				break;
+				
+				case 'date':
 					fieldConfig = {
 						xtype: 'datepickerfield',
 						picker: {
@@ -348,44 +349,50 @@ var createFieldSet = function(columnsStore, modelName, view) {
 							slotOrder: ['day', 'month', 'year']
 						}
 					};
-					break;
-				}
-				default : {
+				break;
+				
+				default :
 					if(column.get('name') == 'name' && !IOrders.newDesign) {
 						var selectStore = createStore(modelName, getSortersConfig(modelName, {}));
 						selectStore.load();
 						selectStore.add(view.objectRecord);
-
-						fieldConfig = {xtype: 'pagingselectfield', name: 'id', store: selectStore, valueField: 'id', displayField: 'name'};
+						fieldConfig = {
+							xtype: 'pagingselectfield',
+							name: 'id',
+							store: selectStore,
+							valueField: 'id', displayField: 'name'
+						};
 					} else {
 						fieldConfig = {xtype: 'textfield'};
 					}
-					break;
-				}
+				break;
 			}
 			
-			Ext.apply(field, column.get('parent') 
-					? {
-						xtype: 'selectfield',
-						store: Ext.getStore(column.get('parent')),
-						valueField: 'id',
-						displayField: 'name',
-						onFieldLabelTap: true,
-						onFieldInputTap: true,
-						getListPanel: function() {
-							Ext.form.Select.prototype.getListPanel.apply(this, arguments);
-							this.setItemTplWithTitle();
-							return this.listPanel;
-						}
-					}
-					: fieldConfig
-			);
+			var parentStore = Ext.getStore(column.get('parent'));
 			
-			fsItems.push(field);
+			if (parentStore) {
+				
+				fieldConfig = {
+					xtype: 'selectfield',
+					store: parentStore,
+					valueField: 'id',
+					displayField: 'name',
+					onFieldLabelTap: true,
+					onFieldInputTap: true,
+					getListPanel: function() {
+						Ext.form.Select.prototype.getListPanel.apply(this, arguments);
+						this.setItemTplWithTitle();
+						return this.listPanel;
+					}
+				}
+				
+			}
+			
+			fsItems.push(Ext.apply(field,fieldConfig));
 			
 		}
 	});
-
+	
 	return { xtype: 'fieldset', items: fsItems , itemId: 'formFields'};
 };
 
