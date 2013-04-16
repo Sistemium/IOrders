@@ -17,6 +17,7 @@ Ext.regModel('Table', {
 		{name: 'aggregates', type: 'string'},
 		{name: 'stats', type: 'string'},
 		{name: 'hidden', type: 'boolean'},
+		{name: 'clsColumn', type: 'string'},
 		{name: 'loading', type: 'boolean'},
 		{name: 'filtered', type: 'boolean'}
 	],
