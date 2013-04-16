@@ -28,9 +28,10 @@ var createModels = function(tablesStore) {
 			if (String.right(cName, 3) == 'ing')
 				fieldConfig.defaultValue = 'draft';
 			
-			cName == 'date'
+			(column.get('parent') || cName == 'date') && column.get('label')
 				&& validations.push({
-					type: 'length', field: cName, min: 1, message: 'обязательное для заполнения'
+					type: 'length', field: cName, min: 1,
+					message: 'Поле "' + column.get('label') + '" обязательно нужно заполнить'
 				})
 			;
 			

@@ -124,9 +124,9 @@ Ext.regController('Main', {
 							} else {
 								var msg = '';
 								errors.each(function(err) {
-									msg += 'Поле ' + err.field + ' ' + err.message;
+									msg += err.message + '<br/>';
 								});
-								Ext.Msg.alert('Ошибка валидации', msg, Ext.emptyFn);
+								Ext.Msg.alert('Некорректные данные', msg, Ext.emptyFn);
 							}
 						}
 						
