@@ -80,7 +80,8 @@ Ext.regModel('Column', {
 			{name: 'editable', type: 'boolean'},
 			{name: 'title', type: 'boolean'},
 			{name: 'init', type: 'string'},
-			{name: 'serverPhantom', type: 'boolean'}
+			{name: 'serverPhantom', type: 'boolean'},
+			{name: 'importFields', type: 'string'}
 	],
 	associations: [
 		{type: 'belongsTo', model: 'Table'}

@@ -390,6 +390,15 @@ var createFieldSet = function(columnsStore, modelName, view) {
 					}
 				}
 				
+				var importFields = column.get('importFields');
+				
+				if (importFields) {
+					fieldConfig.importFields = [];
+					Ext.each(importFields.split(' '), function(fieldToImport) {
+						fieldConfig.importFields.push({name: fieldToImport});
+					})
+				}
+				
 			}
 			
 			fsItems.push(Ext.apply(field,fieldConfig));

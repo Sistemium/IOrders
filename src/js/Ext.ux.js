@@ -179,6 +179,10 @@ Ext.override(Ext.form.Select, {
 				this.oldColumnCls && this.fieldEl.addCls(this.oldColumnCls)
 			}
 		}
+		
+		record && Ext.each(this.importFields, function(extraField) {
+			extraField.value = record.get(extraField.name);
+		});
         
         return this;
     }
