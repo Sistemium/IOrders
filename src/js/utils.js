@@ -31,7 +31,7 @@ var getItemTplMeta = function(modelName, config) {
 	var templateString = '<div class="hbox {cls}">'
 				+		'<div class="data">'
 				+			'<tpl if="hasName">'
-				+				'<p class="name">\\{name\\}</p>'
+				+				'<p class="name<tpl if="clsColumn"> \\{{clsColumn}\\}</tpl>">\\{name\\}</p>'
 				+			'</tpl>'
 				+			'<tpl if="!hasName && keyColumnsLength &gt; 0">'
 				+				'<p class="key">'
@@ -99,7 +99,8 @@ var getItemTplMeta = function(modelName, config) {
 		otherColumnsLength: 0,
 		otherColumns: [],
 		buttons: useDeps && !onlyKey ? buttons : '',
-		cls: '<tpl if="needUpload">needUpload</tpl>'
+		cls: '<tpl if="needUpload">needUpload</tpl>',
+		clsColumn: tableRecord.get('clsColumn')
 	};
 	
 	var idColExist = columnStore.findExact('name', 'id') === -1 ? false : true;
@@ -368,7 +369,9 @@ var createFieldSet = function(columnsStore, modelName, view) {
 				break;
 			}
 			
-			var parentStore = Ext.getStore(column.get('parent'));
+			var parentName = column.get('parent'),
+				parentStore = Ext.getStore(parentName)
+			;
 			
 			if (parentStore) {
 				
@@ -379,6 +382,7 @@ var createFieldSet = function(columnsStore, modelName, view) {
 					displayField: 'name',
 					onFieldLabelTap: true,
 					onFieldInputTap: true,
+					clsColumn: tableProperty(parentName,'clsColumn'),
 					getListPanel: function() {
 						Ext.form.Select.prototype.getListPanel.apply(this, arguments);
 						this.setItemTplWithTitle();
@@ -700,6 +704,11 @@ var tableHasColumn = function (tbl, column) {
 		columns = table.columns()
 	;
 	return columns.getById(table.getId() + column)
+}
+
+var tableProperty = function (tbl, property) {
+	var table = Ext.getStore('tables').getById(tbl);
+	return table.get(property);
 }
 
 var getSortersConfig = function(model, storeConfig) {
