@@ -84,7 +84,11 @@ function afterCreateModels() {
 	
 	overrideModelIfExists('SaleOrder', {
 		name: function() {
-			return this.get('Customer_name') + ' от ' + this.get('date').dateFormat('d/m/Y') + ' на ' + this.get('totalCost') + ' руб.';
+			var dt = this.get('date');
+			return this.get('Customer_name')
+				+ (dt ? (' от ' + dt.dateFormat('d/m/Y')) : '')
+				+ ' на ' + this.get('totalCost') + ' руб.'
+			;
 		}
 	});
 	
