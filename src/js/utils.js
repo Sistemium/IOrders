@@ -615,12 +615,24 @@ var getGroupConfig = function(model) {
 		case 'EncashmentRequest':
 		case 'Shipment':
 		case 'SaleOrder' : {
+			
+			var sorterProperty = 'date',
+				grouperFunction = function(rec) {
+					return Ext.util.Format.date(rec.get(sorterProperty));
+				}
+			;
+			
+			if (tableHasColumn (model, 'customerDeliveryOption')) {
+				sorterProperty = 'customerDeliveryOption';
+				grouperFunction = function(rec) {
+					return rec.get('CustomerDeliveryOption_name');
+				}
+			}
+			
 			return {
-				getGroupString: function(rec) {
-					return Ext.util.Format.date(rec.get('date'));
-				},
-				sorters: [{property: 'date', direction: 'DESC'}],
-				field: 'date'
+				getGroupString: grouperFunction,
+				sorters: [{property: sorterProperty, direction: 'DESC'}],
+				field: sorterProperty
 			};
 		}
 		case 'BonusProgramByCustomer' : {

@@ -411,9 +411,12 @@ Ext.regController('Navigator', {
 			);
 		}
 		
-		if (rec.modelName === 'SaleOrder' || rec.modelName === 'EncashmentRequest') {
-			rec.set('date', getNextWorkDay());
-		}
+		if (
+			(rec.modelName === 'SaleOrder' && !tableHasColumn (rec.modelName, 'customerDeliveryOption'))
+			|| rec.modelName === 'EncashmentRequest'
+		)
+			rec.set('date', getNextWorkDay())
+		;
 		
 		var oldCard = IOrders.viewport.getActiveItem(),
 			viewOpen = function () {
@@ -485,7 +488,10 @@ Ext.regController('Navigator', {
 						rec.set('totalCost', '0')
 					;
 					
-					if (rec.modelName === 'SaleOrder' || rec.modelName === 'EncashmentRequest')
+					if (
+						(rec.modelName === 'SaleOrder' && !tableHasColumn (rec.modelName, 'customerDeliveryOption'))
+						|| rec.modelName === 'EncashmentRequest'
+					)
 						rec.set('date', getNextWorkDay())
 					;
 					
