@@ -125,7 +125,7 @@ Ext.override(Ext.form.Select, {
 		var list = this.listPanel.getComponent('list'),
 			table = Ext.getStore('tables').getById(this.store.model.prototype.modelName),
 			titleColumns = table.getTitleColumns(),
-			clsColumn = this.clsColumn = table.get('clsColumn')
+			clsColumn = this.clsColumn
 		;
 		
 		list.itemTpl = ['<div class="x-list-label'
