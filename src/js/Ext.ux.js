@@ -4,6 +4,51 @@ Ext.override(Ext.Interaction, {controller: 'Main'});
  * Scope указывает на панель, в которой лежит кнопка
  */
 
+Ext.override(Ext.form.FormPanel, {
+	
+    getValues: function(enabled) {
+        var fields = this.getFields(),
+            field,
+            values = {},
+            name;
+		
+        for (name in fields) {
+            if (fields.hasOwnProperty(name)) {
+                if (Ext.isArray(fields[name])) {
+                    values[name] = [];
+					
+                    fields[name].forEach(function(field) {
+                        if (field.isChecked() && !(enabled && field.disabled)) {
+                            if (field instanceof Ext.form.Radio) {
+                                values[name] = field.getValue();
+                            } else {
+                                values[name].push(field.getValue());
+                            }
+                        }
+                    });
+                } else {
+                    field = fields[name];
+                    
+                    if (!(enabled && field.disabled)) {
+                        if (field instanceof Ext.form.Checkbox) {
+                            values[name] = (field.isChecked()) ? field.getValue() : null;
+                        } else {
+                            values[name] = field.getValue();
+                        }
+                    }
+					
+					Ext.each(field.importFields, function(imported) {
+						values[imported.name] = imported.value;
+					})
+                }
+            }
+        }
+        return values;
+    }
+	
+});
+
+
 Ext.override(Ext.DataView, {
 
 	prepareData: function(data, index, record) {
