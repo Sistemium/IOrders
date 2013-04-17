@@ -116,7 +116,16 @@ var addMainMenu = function(store, tables) {
 	var mmDeps = mainMenu.deps();
 	
 	Ext.each(tables, function(table) {
-		if((table.deps().getCount() > 0 || table.get('mainMenu')) && table.get('nameSet')) {
+		if((table.deps().getCount() > 0 || table.get('mainMenu'))
+			&& table.get('nameSet')
+			&& (function(table){
+				var cnt = 0;
+				Ext.each(table.raw.columns, function(column) {
+					cnt += column.key ? 1 : 0;
+				});
+				return cnt;
+			}) (table) == 1
+		) {
 			mmDeps.add({
 				id: table.getId() + 'id',
 				table_id: table.getId()
