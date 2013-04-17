@@ -17,78 +17,15 @@ var NavigatorView = Ext.extend(AbstractView, {
 			statusesStore = Ext.getStore('statuses'),
 			formConfig = {}
 		;
-
+		
 		this.items = [];
-
+		
 		this.dockedItems[0].title = table.get('name');
-
-		var sb = this.syncButton = new Ext.Button ({
-			
-			iconMask: true,
-			name: 'Sync',
-			iconCls: 'action',
-			scope: this,
-			
-			checkDisabled: function(){
-				this.setDisabled(IOrders.xi.isBusy())
-			},
-			
-			rebadge: function(){
-				var me = sb,
-					p = new Ext.data.SQLiteProxy({
-						engine: IOrders.dbeng,
-						model: 'ToUpload'
-					})
-				;
-				
-				p.count(new Ext.data.Operation({filters:[{property:'visibleCnt', value: 1}]}), function(o) {
-					if (o.wasSuccessful())
-						me.setBadge(me.cnt = o.result);
-				});
-			}
-			
-		});
+		this.dockedItems[0].items.push (this.syncButton = this.createSyncButton());
 		
-		sb.checkDisabled();
-		
-		sb.mon (
-			this,
-			'saved',
-			sb.rebadge,
-			sb
-		);
-		
-		sb.mon (
-			IOrders.xi.connection,
-			'beforerequest',
-			sb.setDisabled,
-			sb
-		);
-		sb.mon (
-			IOrders.xi.connection,
-			'requestcomplete',
-			function () {
-				sb.checkDisabled();
-				if (sb.getBadgeText() == '!!')
-					sb.setBadge(sb.cnt);
-			},
-			sb, {delay: 1000}
-		);
-		sb.mon (
-			IOrders.xi.connection,
-			'requestexception',
-			function () {
-				sb.checkDisabled();
-				sb.setBadge('!!');
-			},
-			sb, {delay: 1000}
-		);
-		
-		this.dockedItems[0].items.push (this.syncButton);
-
 		this.fbBtn = Ext.create({xtype: 'button', name: 'FacebookFeed', text: 'Новости', scope: this});
 		this.dockedItems[0].items.push(this.fbBtn);
-
+		
 		if(this.isObjectView) {
 			
 			table.columns().each( function (c) {
@@ -122,6 +59,7 @@ var NavigatorView = Ext.extend(AbstractView, {
 							useForSelectFilters.add(id, {
 								name: grandParent,
 								store: field.store,
+								field: field.name,
 								property: parentColumn.get('name')
 							});
 						}
@@ -148,9 +86,11 @@ var NavigatorView = Ext.extend(AbstractView, {
 						change: function(field, value) {
 							console.log('Select value changed: ' + value);
 							useForSelectFilters.each(function (c) {
-								if (c.name == field.name) 
-									filterFn (c.store, c.property, value)
-								;
+								if (c.name == field.name) {
+									filterFn (c.store, c.property, value);
+									var f = field.ownerCt.items.getByKey(c.field);
+									f && f.reset();
+								}
 							});
 						}
 					}
@@ -471,6 +411,73 @@ var NavigatorView = Ext.extend(AbstractView, {
 			}
 		);
 		
+	},
+	
+	createSyncButton: function() {
+		
+		var me = this, sb = new Ext.Button ({
+			
+			iconMask: true,
+			name: 'Sync',
+			iconCls: 'action',
+			scope: this,
+			
+			checkDisabled: function(){
+				this.setDisabled(IOrders.xi.isBusy())
+			},
+			
+			rebadge: function(){
+				var me = sb,
+					p = new Ext.data.SQLiteProxy({
+						engine: IOrders.dbeng,
+						model: 'ToUpload'
+					})
+				;
+				
+				p.count(new Ext.data.Operation({filters:[{property:'visibleCnt', value: 1}]}), function(o) {
+					if (o.wasSuccessful())
+						me.setBadge(me.cnt = o.result);
+				});
+			}
+			
+		});
+		
+		sb.checkDisabled();
+		
+		sb.mon (
+			this,
+			'saved',
+			sb.rebadge,
+			sb
+		);
+		
+		sb.mon (
+			IOrders.xi.connection,
+			'beforerequest',
+			sb.setDisabled,
+			sb
+		);
+		sb.mon (
+			IOrders.xi.connection,
+			'requestcomplete',
+			function () {
+				sb.checkDisabled();
+				if (sb.getBadgeText() == '!!')
+					sb.setBadge(sb.cnt);
+			},
+			sb, {delay: 1000}
+		);
+		sb.mon (
+			IOrders.xi.connection,
+			'requestexception',
+			function () {
+				sb.checkDisabled();
+				sb.setBadge('!!');
+			},
+			sb, {delay: 1000}
+		);
+		
+		return sb;
 	}
 	
 });
