@@ -222,20 +222,20 @@
 	color: blue;
 }
 
-.negative, .isBlockedPlong, .isOverdue, .red, .caution{
-	color: red !important;
-}
-
-.blue {
-	color: blue !important;
+.green {
+	color: green !important;
 }
 
 .yellow {
 	color: yellow !important;
 }
 
-.green {
-	color: green !important;
+.blue {
+	color: blue !important;
+}
+
+.negative, .isBlockedPlong, .isOverdue, .red, .caution{
+	color: red !important;
 }
 
 .prefsheet .x-layout-box > .x-button  {

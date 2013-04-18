@@ -11,10 +11,12 @@ Ext.regController('SaleOrder', {
 	},
 
 	onShowCustomerButtonTap: function(options) {
-
+		
 		var customer = options.view.customerRecord;
-
-		Ext.Msg.alert('', 'Клиент: ' + customer.get('name').replace(/"/g, '') + '<br/>' +'Адрес: ' + customer.get('address'));
+		
+		Ext.Msg.alert('', 'Клиент: ' + customer.get('name').replace(/"/g, '')
+			+ '<br/>' +'Адрес: ' + customer.get('address')
+		);
 	},
 
 	onSaveButtonTap: function(options) {
@@ -451,14 +453,16 @@ Ext.regController('SaleOrder', {
 			btb = view.getDockedComponent('bottomToolbar'),
 			tc = view.saleOrder.get('totalCost') || 0,
 			tsc = view.saleOrder.get('totalSelfCost') || 0,
-			tg = tc - tsc - view.dohodThreshold
+			tg = tc - tsc - view.dohodThreshold - (view.saleOrder.get('deliveryCost') || 0),
+			orderThreshold = view.saleOrder.get('orderThreshold') || 0
 		;
 		
 		btb.getComponent('ShowCustomer').setText( btb.titleTpl.apply ({
 			totalCost: tc.toFixed(2),
 			bonusRemains: view.saleOrder.get('isBonus') ? (view.bonusCost - tc).toFixed(2): undefined,
 			totalSelfCost: tsc,
-			totalGain: view.saleOrder.get('isBonus') ? undefined : tg.toFixed(2)
+			totalGain: view.saleOrder.get('isBonus') ? undefined : tg.toFixed(2),
+			orderThreshold: orderThreshold
 		}));
 	},
 	
