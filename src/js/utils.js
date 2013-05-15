@@ -15,6 +15,10 @@ var getParentInfo = function(field, value) {
 	return new Ext.XTemplate(getItemTplMeta(rec.modelName, {useDeps: false}).itemTpl).apply(rec.data);
 };
 
+var getBoolText = function (value) {
+	return value ? 'Да' : 'Нет';
+}
+
 var getItemTplMeta = function(modelName, config) {
 
 	var tableStore = Ext.getStore('tables'),
@@ -43,7 +47,15 @@ var getItemTplMeta = function(modelName, config) {
 				+							'<div class="parent-info">\\{[getParentInfo("{name}", values.{name})]\\}</div>'
 				+						'</tpl>'
 				+						'<tpl if="!parent">'
-				+							'<span class="{cls}">\\{{name}\\}<tpl if="!end"> : </tpl></span>&nbsp;'
+				+							'<tpl if="boolType">'
+				+								'<span>{label}-'
+				+								'\\{\\[getBoolText(values.{name})\\]\\}'
+				+								'</span>'
+				+							'</tpl>'
+				+							'<tpl if="!boolType">'
+				+								'<span class="{cls}">\\{{name}\\}</span>'
+				+							'</tpl>'
+				+							'<tpl if="!end"><span> : </span></tpl>'
 				+						'</tpl>'
 				+					'</tpl>'
 				+				'</p>'
@@ -143,7 +155,9 @@ var getItemTplMeta = function(modelName, config) {
 					name: col.get('name'),
 					name_br: col.get('parent') ? parentName + '_name' : col.get('name'),
 					parentInfo: parentInfo,
-					end: keyColumns.indexOf(col) + 1 >= length
+					end: keyColumns.indexOf(col) + 1 >= length,
+					boolType: col.get('type') == 'boolean',
+					label: col.get('label')
 				});
 
 				titleCols && !parentInfo && titleCols.each(function(tCol) {
@@ -292,8 +306,10 @@ function getItemTpl (modelName) {
 						+'<tpl if="BonusProgram_tag"><span class="crec {BonusProgram_tagColor}">{BonusProgram_tag}</span></tpl>'
 					 +'</p>'
 				     + '<small><span class="price">Цена: {price} руб. </span>'
+					   + '<tpl if="discount0 != null"><span class="green">Скидка: {discount0}({discount1})% </span></tpl>'
 					   + '<tpl if="rel &gt; 1"><span>Вложение: {rel}; </span></tpl>'
 					   + '<span>Кратность: {factor} </span>'
+					   + '<tpl if="stockLevel &gt; 2"><span>Остаток: {stockLevel}; </span></tpl>'
 					   + '<span>Стоимость: <span class="cost">{cost}</span></span>'
 				     + '</small>'
 				   + '</div>'
