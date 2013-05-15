@@ -169,6 +169,18 @@ Ext.regController('SaleOrder', {
 				
 				if (!s) failureCb('категорий'); else {
 					
+					var startFilters = [{
+						property: 'customer',
+						value: options.saleOrder.get('customer')
+					}];
+					
+					if (tableHasColumn ('Offer', 'saleOrder')) {
+						startFilters.push({
+							property: 'saleOrder',
+							value: newCard.saleOrder.get('id')
+						})
+					};
+					
 					newCard.productStore = createStore('Offer', {
 						remoteFilter: true,
 						remoteSort: false,
@@ -177,7 +189,7 @@ Ext.regController('SaleOrder', {
 							return rec.get(this.groupField).replace(/ /g, '_');
 						},
 						sorters: [{property: 'firstName', direction: 'ASC'}, {property: 'name', direction: 'ASC'}],
-						filters: [{property: 'customer', value: options.saleOrder.get('customer')}],
+						filters: startFilters,
 						filter: function(filters, value) {
 
 							var bonusProductStore = newCard.bonusProductStore,
@@ -250,20 +262,32 @@ Ext.regController('SaleOrder', {
 									limit: 0,
 									callback: function(records, operation, s) {
 										if(s) {
-
+											
+											var tc = 0;
+											
 											Ext.each(records, function(rec, idx, all) {
 												var offerRec = newCard.productStore.findRecord('product', rec.get('product'), undefined, undefined, true, true);
-
+												
 												if (offerRec) {
-
+													
 													offerRec.editing = true;
 													offerRec.set('volume', rec.get('volume'));
-													offerRec.set('cost', rec.get('cost'));
+													
+													var c =  offerRec.get('rel')
+														* offerRec.get('price')
+														* rec.get('volume')
+													;
+													
+													tc += c;
+													rec.set('cost',c);
+													offerRec.set('cost',c);
 													offerRec.commit(true);
-
 												}
 												
 											});
+											
+											newCard.saleOrder.set('totalCost',tc);
+											newCard.saleOrder.commit(true);
 											
 											var customer = newCard.saleOrder.get('customer');
 											
