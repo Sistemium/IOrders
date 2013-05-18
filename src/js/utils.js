@@ -425,13 +425,26 @@ var createFieldSet = function(columnsStore, modelName, view) {
 	return { xtype: 'fieldset', items: fsItems , itemId: 'formFields'};
 };
 
-var createFilterField = function(objectRecord) {
+var createFilterField = function(objectRecord, onLoadCallback) {
 
 	var modelName = objectRecord.modelName;	
 	var selectStore = createStore(modelName, getSortersConfig(modelName, {}));
-	selectStore.load();
-	selectStore.add(objectRecord);
-
+	
+	selectStore.load(function(records, operation, success) {
+		
+	    if (success) {
+			
+			if (! this.data.findBy(function(o) { return o.get('id') == objectRecord.getId() }))
+				selectStore.add(objectRecord)
+			;
+			
+			if (typeof onLoadCallback == 'function') {
+				onLoadCallback(this.arguments)
+			}
+		}
+		
+	});
+	
 	return {
 		xtype: 'fieldset',
 		items: {
