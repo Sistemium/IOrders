@@ -40,67 +40,7 @@ var NavigatorView = Ext.extend(AbstractView, {
 			
 			this.cls = 'objectView';
 			
-			var columnsStore = table.columns(),
-				fieldSet = createFieldSet(columnsStore, modelName, this),
-				useForSelectFilters = new Ext.util.MixedCollection();
-			;
-			
-			Ext.each (fieldSet.items, function(field) {
-				if (field.xtype == 'selectfield' && field.store) {
-					
-					var parentColumns = tablesStore.getById(field.store.model.modelName).columns();
-					
-					parentColumns.each(function(parentColumn) {
-						
-						var grandParent = parentColumn.get('name'),
-							id = modelName+grandParent;
-						
-						if (parentColumn.get('parent') && columnsStore.getById(id)){
-							useForSelectFilters.add(id, {
-								name: grandParent,
-								store: field.store,
-								field: field.name,
-								property: parentColumn.get('name')
-							});
-						}
-						
-					});
-					
-				}
-			});
-			
-			var filterFn = function (store, property, value) {
-				store.clearFilter(true);
-				store.filter({
-					property: property,
-					value: value
-				});
-			};
-			
-			useForSelectFilters.each(function (c) {
-				
-				var value = me.objectRecord.get(c.name);
-				
-				fieldSet.items.forEach(function(field) {
-					if (field.name == c.name) field.listeners = {
-						change: function(field, value) {
-							console.log('Select value changed: ' + value);
-							useForSelectFilters.each(function (c) {
-								if (c.name == field.name) {
-									filterFn (c.store, c.property, value);
-									var f = field.ownerCt.items.getByKey(c.field);
-									f && f.reset();
-								}
-							});
-						}
-					}
-				});
-				
-				filterFn (c.store, c.property, value);
-				
-			});
-			
-			formItems.push(fieldSet);
+			formItems.push(this.fieldSetConfig(this, table, modelName));
 			
 			var spacerExist = false,
 				btnLockByStatus = this.objectRecord.fields.getByKey('processing')
@@ -139,7 +79,9 @@ var NavigatorView = Ext.extend(AbstractView, {
 			}
 			
 			table.get('extendable') && !table.get('belongs') && this.dockedItems[0].items.push({
-				itemId: 'Add', ui: 'plain', iconMask: true, name: 'Add', iconCls: 'add', scope: this, disabled: this.editing
+				ui: 'plain', iconMask: true,
+				itemId: 'Add', name: 'Add', iconCls: 'add',
+				scope: this, disabled: this.editing
 			});
 			
 			if (this.objectRecord.modelName === 'MainMenu') {
@@ -161,71 +103,10 @@ var NavigatorView = Ext.extend(AbstractView, {
 				formItems.push(createDepsList(table.deps(), tablesStore, this))
 			;
 			
-			if(IOrders.newDesign && table.hasNameColumn()) {
-				
-				var store = createStore(
-					this.objectRecord.modelName,
-					getSortersConfig(this.objectRecord.modelName, getSortersConfig(this.objectRecord.modelName, {}))
-				);
-				
-				var limit = 0, curPage = 1;
-				
-				if(me.ownerViewConfig.tableRecord.modelName === me.objectRecord.modelName) {
-					limit = me.ownerViewConfig.storeLimit;
-					curPage = me.ownerViewConfig.storePage;
-				};
-				
-				store.load({limit: limit});
-				store.currentPage = curPage;
-				
-				this.items.push(me.objectList = Ext.create ({
-					
-					xtype: 'list',
-					cls: 'sidefilter',
-					flex: 1,
-					plugins: limit !== 0 ? new Ext.plugins.ListPagingPlugin({autoPaging: true}) : undefined, 
-					itemTpl: getItemTplMeta(this.objectRecord.modelName, {useDeps: false, onlyKey: true}).itemTpl,
-					store: store,
-					
-					initComponent: function() {
-						var scroll = this.scroll;
-						Ext.List.prototype.initComponent.apply(this, arguments);
-						if (typeof scroll == 'object')
-							this.scroll = scroll;
-					},
-					
-					listeners: {
-						
-						scope: this,
-						
-						refresh: function(list) {
-							if(list.store.getCount() > 1) {
-								
-								var idx = list.store.findExact('id', this.objectRecord.getId());
-								
-								list.selModel.select(idx);
-								
-								item = Ext.fly(list.getNode(idx));
-								item && list.scroller.setOffset({
-									y: -item.getOffsetsTo(list.scrollEl)[1]
-								});
-							}
-						},
-						
-						selectionchange: function(selModel, recs) {
-							
-							if(recs.length) {
-								Ext.dispatch ({
-									controller: 'Navigator',
-									action: 'onObjectListItemSelect',
-									selected: recs[0],
-									view: me
-								})
-							}
-						}
-					}
-				}));
-			}
+			if(IOrders.newDesign && table.hasNameColumn())
+				this.createSideFilter()
+			;
+			
 			
 		} else if (this.isSetView) {
 			
@@ -330,6 +211,79 @@ var NavigatorView = Ext.extend(AbstractView, {
 			
 		}
 		
+	},
+	
+	createSideFilter: function() {
+		
+		var store = createStore(
+			
+			this.objectRecord.modelName,
+			
+			getSortersConfig(
+				this.objectRecord.modelName,
+				getSortersConfig(this.objectRecord.modelName,{})
+			)
+			
+		);
+		
+		var limit = 0, curPage = 1, me=this;
+		
+		if(me.ownerViewConfig.tableRecord.modelName === me.objectRecord.modelName) {
+			limit = me.ownerViewConfig.storeLimit;
+			curPage = me.ownerViewConfig.storePage;
+		};
+		
+		store.load({limit: limit});
+		store.currentPage = curPage;
+		
+		this.items.push(me.objectList = Ext.create ({
+			
+			xtype: 'list',
+			cls: 'sidefilter',
+			flex: 1,
+			plugins: limit !== 0 ? new Ext.plugins.ListPagingPlugin({autoPaging: true}) : undefined, 
+			itemTpl: getItemTplMeta(this.objectRecord.modelName, {useDeps: false, onlyKey: true}).itemTpl,
+			store: store,
+			
+			initComponent: function() {
+				var scroll = this.scroll;
+				Ext.List.prototype.initComponent.apply(this, arguments);
+				if (typeof scroll == 'object')
+					this.scroll = scroll;
+			},
+			
+			listeners: {
+				
+				scope: this,
+				
+				refresh: function(list) {
+					if(list.store.getCount() > 1) {
+						
+						var idx = list.store.findExact('id', this.objectRecord.getId());
+						
+						list.selModel.select(idx);
+						
+						var item = Ext.fly(list.getNode(idx));
+						
+						item && list.scroller.setOffset({
+							y: -item.getOffsetsTo(list.scrollEl)[1]
+						});
+					}
+				},
+				
+				selectionchange: function(selModel, recs) {
+					
+					if(recs.length) {
+						Ext.dispatch ({
+							controller: 'Navigator',
+							action: 'onObjectListItemSelect',
+							selected: recs[0],
+							view: me
+						})
+					}
+				}
+			}
+		}));
 	},
 	
 	statusButtonsConfig: function (me, cName, c) {
@@ -478,6 +432,72 @@ var NavigatorView = Ext.extend(AbstractView, {
 		);
 		
 		return sb;
+	},
+	
+	fieldSetConfig: function (me, table, modelName) {
+		
+		var columnsStore = table.columns(),
+			tablesStore = Ext.getStore('tables'),
+			fieldSet = createFieldSet(columnsStore, modelName, this),
+			useForSelectFilters = new Ext.util.MixedCollection()
+		;
+		
+		Ext.each (fieldSet.items, function(field) {
+			if (field.xtype == 'selectfield' && field.store) {
+				
+				var parentColumns = tablesStore.getById(field.store.model.modelName).columns();
+				
+				parentColumns.each(function(parentColumn) {
+					
+					var grandParent = parentColumn.get('name'),
+						id = modelName+grandParent;
+					
+					if (parentColumn.get('parent') && columnsStore.getById(id)){
+						useForSelectFilters.add(id, {
+							name: grandParent,
+							store: field.store,
+							field: field.name,
+							property: parentColumn.get('name')
+						});
+					}
+					
+				});
+				
+			}
+		});
+		
+		var filterFn = function (store, property, value) {
+			store.clearFilter(true);
+			store.filter({
+				property: property,
+				value: value
+			});
+		};
+		
+		useForSelectFilters.each(function (c) {
+			
+			var value = me.objectRecord.get(c.name);
+			
+			fieldSet.items.forEach(function(field) {
+				if (field.name == c.name) field.listeners = {
+					change: function(field, value) {
+						console.log('Select value changed: ' + value);
+						useForSelectFilters.each(function (c) {
+							if (c.name == field.name) {
+								filterFn (c.store, c.property, value);
+								var f = field.ownerCt.items.getByKey(c.field);
+								f && f.reset();
+							}
+						});
+					}
+				}
+			});
+			
+			filterFn (c.store, c.property, value);
+			
+		});
+		
+		return fieldSet;
 	}
 	
 });
