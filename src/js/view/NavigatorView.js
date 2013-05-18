@@ -117,49 +117,15 @@ var NavigatorView = Ext.extend(AbstractView, {
 				formItems.push(createFilterField(this.objectRecord));
 			}
 			
-			var listGroupedConfig = getGroupConfig(this.tableRecord);
-			var sortersConfig = getSortersConfig(this.tableRecord, listGroupedConfig);
-			
-			this.setViewStore = createStore(this.tableRecord, Ext.apply(listGroupedConfig, sortersConfig));
-			
-			formItems.push(Ext.apply({
-				xtype: 'list',
-				itemId: 'list',
-				plugins: function (view) {
-					var res = [
-						new Ext.plugins.ListPagingPlugin({autoPaging: true})
-					];
-					
-					if (me.objectRecord.modelName == 'MainMenu')
-						res.push(new Ext.plugins.PullRefreshPlugin({
-							isLoading: tablesStore.getById(view.tableRecord).get('loading'),
-							render: function() {
-								Ext.plugins.PullRefreshPlugin.prototype.render.apply(this, arguments);
-								
-								if(this.isLoading)
-									this.setViewState('loading');
-							},
-							refreshFn: function(onCompleteCallback, pullPlugin) {
-								this.list.pullPlugin = pullPlugin;
-								IOrders.xi.fireEvent('pullrefresh', this.list.store.model.modelName, onCompleteCallback);
-							}
-						}));
-						
-					return res;
-				} (this),
-				scroll: false,
-				cls: 'x-table-list',
-				grouped: listGroupedConfig.field ? true : false,
-				disableSelection: true,
-				onItemDisclosure: true,
-				store: this.setViewStore
-			}, getItemTplMeta(this.tableRecord, {filterObject: this.objectRecord, groupField: listGroupedConfig.field})));
+			formItems.push(this.theSetListConfig());
 			
 			var table = tablesStore.getById(this.tableRecord);
 			
-			table.get('extendable') && !table.get('belongs') && this.dockedItems[0].items.push({xtype: 'spacer'}, {
-				ui: 'plain', iconMask: true, name: 'Add', iconCls: 'add', scope: this
-			});
+			table.get('extendable') && !table.get('belongs')
+				&& this.dockedItems[0].items.push({xtype: 'spacer'}, {
+					ui: 'plain', iconMask: true, name: 'Add', iconCls: 'add', scope: this
+				}
+			);
 		}
 		
 		this.mon (this, 'activate', this.syncButton.rebadge);
@@ -211,6 +177,72 @@ var NavigatorView = Ext.extend(AbstractView, {
 			
 		}
 		
+	},
+	
+	theSetListConfig: function () {
+		
+		var tablesStore = Ext.getStore('tables'),
+			listGroupedConfig = getGroupConfig(this.tableRecord),
+			sortersConfig = getSortersConfig(this.tableRecord, listGroupedConfig)
+		;
+		
+		this.setViewStore = createStore(this.tableRecord, Ext.apply(listGroupedConfig, sortersConfig));
+		
+		var config = {
+			xtype: 'list',
+			itemId: 'list',
+			plugins: function (view) {
+				
+				var res = [
+					new Ext.plugins.ListPagingPlugin({autoPaging: true})
+				];
+				
+				if (me.objectRecord.modelName == 'MainMenu')
+					res.push(new Ext.plugins.PullRefreshPlugin({
+						
+						isLoading: tablesStore.getById(view.tableRecord).get('loading'),
+						
+						render: function() {
+							Ext.plugins.PullRefreshPlugin.prototype.render.apply(this, arguments);
+							
+							if(this.isLoading)
+								this.setViewState('loading');
+						},
+						
+						refreshFn: function(onCompleteCallback, pullPlugin) {
+							this.list.pullPlugin = pullPlugin;
+							IOrders.xi.fireEvent(
+								'pullrefresh',
+								this.list.store.model.modelName,
+								onCompleteCallback
+							);
+						}
+						
+					}))
+				;
+				
+				return res;
+				
+			} (this),
+			
+			scroll: false,
+			cls: 'x-table-list',
+			grouped: listGroupedConfig.field ? true : false,
+			disableSelection: true,
+			onItemDisclosure: true,
+			store: this.setViewStore
+		};
+		
+		return Ext.apply( config,
+			getItemTplMeta(
+				this.tableRecord,
+				{
+					filterObject: this.objectRecord,
+					groupField: listGroupedConfig.field
+				}
+			)
+		)
+	
 	},
 	
 	createSideFilter: function() {
