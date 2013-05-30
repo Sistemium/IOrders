@@ -429,15 +429,47 @@ Ext.regController('SaleOrder', {
 		
 		!volume && (volume = 0);
 		
-		options.event
-			&& options.event.target
-			&& options.event.target.className == 'packageRel'
-			&& (factor=rec.get('packageRel'))
-		;
+		if (options.event && options.event.target) {
+			
+			switch (options.event.target.className) {
+				
+				case 'price':
+					
+					var discount0 = rec.get('discount0'),
+						discount1 = rec.get('discount1'),
+						priceOrigin = rec.get('priceOrigin')
+					;
+					
+					if (priceOrigin) {
+						
+						discount0 = discount0 - sign;
+						priceOrigin *= (1.0 - discount0/100.0);
+						
+						rec.editing=true;
+						rec.set ({
+							price: priceOrigin.toFixed(2),
+							discount0: discount0,
+							discount1: discount1 ? discount1 : 0
+						});
+						rec.editing=false;
+						rec.commit();
+					}
+					
+				break;
+				
+				case 'packageRel':
+					factor=rec.get('packageRel');
+					
+				default:
+					volume += sign * factor;
+				break;
+				
+			}
+		}
 		
 		Ext.dispatch (Ext.apply(options, {
 			action: 'setVolume',
-			volume: volume + sign * factor,
+			volume: volume,
 			rec: rec
 		}));
 
