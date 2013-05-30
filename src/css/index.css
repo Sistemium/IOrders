@@ -79,10 +79,17 @@
 	padding: 0.25em 0.4em;
 }
 
-.x-list-item .hbox .volume, .x-list-item .hbox .encashSumm {
+.x-list-item .hbox .rightbox, .x-list-item .hbox .encashSumm {
 	color: green;
 	padding: 10px 16px 0;
 	font-weight: bold;
+}
+
+.x-list-item .hbox .leftbox {
+	margin-left: -9px;
+	color: gray;
+	width: 4em;
+	text-align: center;
 }
 
 .x-list-item--- .hbox .cost {
