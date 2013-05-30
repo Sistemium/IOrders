@@ -1255,7 +1255,7 @@ Ext.regController('SaleOrder', {
 	onClearFilterButtonTap: function(options) {
 		var view=options.view,
 			btn = options.btn || view.dockedItems.get(0).getComponent('ClearFilter'),
-			bonusList = view.bonusPanel.getComponent('bonusList'),
+			bonusList = view.bonusPanel && view.bonusPanel.getComponent('bonusList'),
 			productSearcher = view.dockedItems.get(0).getComponent('ProductSearcher'),
 			segBtn = view.getDockedComponent('top').getComponent('ModeChanger'),
 			bonusBtn = segBtn.getComponent('Bonus'),
