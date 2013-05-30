@@ -426,9 +426,21 @@ Ext.regController('SaleOrder', {
 			factor = parseInt(rec.get('factor')),
 			sign = options.event.direction === 'left' ? -1 : 1
 		;
-
+		
 		!volume && (volume = 0);
-
+		
+		var src;
+		
+		options.event
+			&& options.event.touches
+			&& options.event.touches.length
+			&& (src = Ext.get (options.event.touches[0].srcElement))
+		;
+		
+		src && src.dom && src.dom.className == 'packageRel'
+			&& (factor=rec.get('packageRel'))
+		;
+		
 		Ext.dispatch (Ext.apply(options, {
 			action: 'setVolume',
 			volume: volume + sign * factor,

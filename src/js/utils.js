@@ -311,7 +311,7 @@ function getItemTpl (modelName) {
 							   +'<tpl if="BonusProgram_tag"><span class="crec {BonusProgram_tagColor}">{BonusProgram_tag}</span></tpl>'
 							+'</p>'
 							+ '<small><span class="price">Цена: {price} руб. </span>'
-							  + '<tpl if="packageRel &gt; 1"><span class="package">В коробке: {packageRel} </span></tpl>'
+							  + '<tpl if="packageRel &gt; 1"><span class="packageRel">В коробке: {packageRel} </span></tpl>'
 							  + '<tpl if="discount0 != null"><span class="green">Скидка: {discount0}({discount1})% </span></tpl>'
 							  + '<tpl if="rel &gt; 1"><span>Вложение: {rel}; </span></tpl>'
 							  + '<tpl if="factor &gt; 1"><span>Кратность: {factor} </span></tpl>'
@@ -319,7 +319,7 @@ function getItemTpl (modelName) {
 							  + '<span>Стоимость: <span class="cost">{cost}</span></span>'
 							+ '</small>'
 						+ '</div>'
-						+ '<div class="rightbox">{volume}</div>'
+						+ '<div class="rightbox volume">{volume}</div>'
 				 + '</div>';
 		}
 	}
