@@ -56,8 +56,7 @@ Ext.regController('SaleOrder', {
 				));
 			} else {
 				posRec.editing = true;
-				posRec.set('volume', rec.get('volume'));
-				posRec.set('cost', rec.get('cost'));
+				posRec.set(rec.data);
 				posRec.editing = false;
 			}
 			
@@ -273,20 +272,25 @@ Ext.regController('SaleOrder', {
 													offerRec.editing = true;
 													offerRec.set('volume', rec.get('volume'));
 													
-													var c =  offerRec.get('rel')
-														* offerRec.get('price')
-														* rec.get('volume')
+													var c =
+														offerRec.get('rel')
+															* offerRec.get('price')
+															* rec.get('volume')
 													;
 													
 													tc += c;
-													rec.set('cost',c);
-													offerRec.set('cost',c);
+													
+													offerRec.set('cost',c.toFixed(2));
+													offerRec.editing = false;
 													offerRec.commit(true);
+													
+													rec.set(offerRec.data);
+													
 												}
 												
 											});
 											
-											newCard.saleOrder.set('totalCost',tc);
+											newCard.saleOrder.set('totalCost',tc.toFixed(2));
 											newCard.saleOrder.commit(true);
 											
 											var customer = newCard.saleOrder.get('customer');
