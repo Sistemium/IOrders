@@ -257,6 +257,43 @@ Ext.regController('SaleOrder', {
 								newCard.productPanel.doLayout(); 	
 								newCard.productStore.remoteFilter = false;
 								
+								var sname = '',
+									needle
+								;
+								
+								Ext.each (r, function(rec) {
+									
+									sname = rec.data['name'];
+									sname = sname.replace (/(\".*\")/, '<span class="quoted">$1</span>');
+									
+									needle = rec.data['pieceVolume'];
+									
+									if (needle) {
+										
+										needle == Math.round(needle)
+											&& (needle = needle.toFixed(1))
+										;
+										
+										sname = sname.replace (
+											RegExp ('('+needle+'0*)'),
+											'<span class="needle">$1</span>'
+										);
+									}
+									
+									sname = sname.replace (
+										/(красн\.|красное)/i,
+										'<span class="taste red">$1</span>'
+									);
+									
+									sname = sname.replace (
+										/(бел\.|белое)/i,
+										'<span class="taste white">$1</span>'
+									);
+									
+									rec.data['name'] = sname;
+									
+								});
+								
 								saleOrderPositionStore.load({
 									limit: 0,
 									callback: function(records, operation, s) {
@@ -423,17 +460,19 @@ Ext.regController('SaleOrder', {
 		
 		var rec = options.list.store.getAt(options.idx),
 			volume = parseInt(rec.get('volume') ? rec.get('volume') : '0'),
+			volume1 = parseInt(rec.get('volume1') ? rec.get('volume1') : '0'),
 			factor = parseInt(rec.get('factor')),
 			sign = options.event.direction === 'left' ? -1 : 1
 		;
 		
 		!volume && (volume = 0);
+		!volume1 && (volume1 = 0);
 		
 		if (options.event && options.event.target) {
 			
 			switch (options.event.target.className) {
 				
-				case 'price':
+				case 'swipable price':
 					
 					var discount0 = rec.get('discount0'),
 						discount1 = rec.get('discount1'),
@@ -457,44 +496,60 @@ Ext.regController('SaleOrder', {
 					
 				break;
 				
-				case 'packageRel':
+				case 'swipable volume1':
+					volume1 -= sign * factor;
+				break;
+				
+				case 'swipable packageRel':
 					factor=rec.get('packageRel');
 					
-				default:
+				case 'swipable volume':
 					volume += sign * factor;
 				break;
 				
+				default: return;
+				
 			}
+			
+			Ext.dispatch (Ext.apply(options, {
+				action: 'setVolume',
+				volume: volume,
+				volume1: volume1,
+				rec: rec
+			}));
 		}
-		
-		Ext.dispatch (Ext.apply(options, {
-			action: 'setVolume',
-			volume: volume,
-			rec: rec
-		}));
-
 	},
 	
 	setVolume: function (options) {
-		var volume = options.volume;
 		
 		var rec = options.rec,
 			oldCost = rec.get('cost'),
 		    view = options.list.up('saleorderview')
 		;
 		
+		var volume = options.volume || parseInt (rec.get('volume') || '0'),
+			volume1 = options.volume1 || parseInt (rec.get('volume1') || '0')
+		;
+		
+		
 		oldCost > 0 || (oldCost = 0);
 		
 //		options.list.scroller.disable();
 		
 		volume < 0 && (volume = 0);
+		volume1 < 0 && (volume1 = 0);
+		
+		volume1 > volume && (volume1 = volume);
 		
 		var cost = volume * parseInt(rec.get('rel')) * parseFloat(rec.get('price'));
 		
 		rec.editing=true;
 		rec.set('volume', volume);		
 		rec.set('cost', cost.toFixed(2));
+		rec.set('volume1', volume1);
+		rec.set('volume0', volume - volume1);
 		rec.editing = false;
+		rec.commit();
 		
 		Ext.dispatch(Ext.apply(options, {
 			action: 'saveOffer',
@@ -506,8 +561,9 @@ Ext.regController('SaleOrder', {
 		}));
 		
 		var iel = Ext.get(options.item); 
-		iel.down('.cost').dom.innerHTML = rec.get('cost');
-		iel.down('.volume').dom.innerHTML = rec.get('volume');
+		//iel.down('.cost').dom.innerHTML = rec.get('cost');
+		//iel.down('.volume').dom.innerHTML = rec.get('volume');
+		//iel.down('.volume1').dom.innerHTML = rec.get('volume1');
 		
 //		options.list.scroller.enable();
 		

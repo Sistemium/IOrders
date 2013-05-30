@@ -81,15 +81,54 @@
 
 .x-list-item .hbox .rightbox, .x-list-item .hbox .encashSumm {
 	color: green;
-	padding: 10px 16px 0;
+	width: 4em;
+	margin-right: -9px;
+	text-align: center;
 	font-weight: bold;
+	padding-top: 0.5em;
 }
 
 .x-list-item .hbox .leftbox {
+	padding-top: 0.5em;
 	margin-left: -9px;
 	color: gray;
 	width: 4em;
 	text-align: center;
+}
+
+.x-list-item .swipable {
+	background-color: #EEEEEE;
+}
+.x-list-item small .swipable {
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+
+.x-list-item .quoted{
+	font-weight: bold;
+}
+
+.x-list-item .needle{
+	font-weight: bold;
+	color: blue;
+}
+
+.x-list-item .info small > span {
+	margin-right: 0.5em;
+	display: inline-block;
+}
+
+.x-list-item .info .taste {
+	background-color: silver;
+}
+
+.swipable.discount {
+	color: #22D022;
+}
+
+.x-field-toggle.isWhite .x-toggle-off {
+	background-color: #FF6000;
+	background-image: none;
 }
 
 .x-list-item--- .hbox .cost {
@@ -229,6 +268,10 @@
 	color: blue;
 }
 
+.white {
+	color: white;
+}
+
 .green {
 	color: green !important;
 }
@@ -335,10 +378,6 @@
 	margin: 1px;
 }
 
-.x-product-selected .price, .x-product-selected .cost {
-	font-weight: bold;
-	color: black;
-}
 
 .x-button.disable {
 	opacity: 0.5;

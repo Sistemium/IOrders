@@ -1,6 +1,18 @@
 Ext.util.Format.defaultDateFormat = 'd/m/Y';
 Date.monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
 
+var tableHasColumn = function (tbl, column) {
+	var table = Ext.getStore('tables').getById(tbl),
+		columns = table && table.columns()
+	;
+	return columns && columns.getById(table.getId() + column)
+}
+
+var tableProperty = function (tbl, property) {
+	var table = Ext.getStore('tables').getById(tbl);
+	return table.get(property);
+}
+
 var lowercaseFirstLetter = function (string) {
 	
     return string.charAt(0).toLowerCase() + string.slice(1);
@@ -242,10 +254,10 @@ var getItemTplMeta = function(modelName, config) {
 	return res;
 };
 
-function getItemTpl (modelName) {
+var getItemTpl = function (modelName) {
 
 	switch(modelName) {
-		case 'BonusProgramByCustomer': {
+		case 'BonusProgramByCustomer':
 			return '<div class="hbox"><div class="data">'
 						+'<p class="name">{name}</p>'
 						+'<div>'
@@ -256,26 +268,26 @@ function getItemTpl (modelName) {
 							+'</small>'
 						+'</div>'
 					+'</div></div>'
-			;
-		}
-		case 'Dep': {
+		;
+		case 'Dep':
 			return '<div class="hbox dep <tpl if="loading">loading</tpl>">'
 					+	'<div class="count"><tpl if="count &gt; 0">{count}</tpl></div>'
 					+	'<div class="stats"><tpl if="stats != \'0\'">{stats}</tpl></div>'
 					+	'<div class="data">{nameSet}</div>'
 					+	'<div class="aggregates">{aggregates}</div>'
 					+	'<tpl if="extendable && (!editing && !contains || editing && contains)"><div class="x-button extend add">+</div></tpl>'
-				 + '</div>';
-		}
-		case 'Debt' : {
+				 + '</div>'
+		;
+		case 'Debt' :
 			return '<div class="hbox dep">'
 					+ '<div class="data">'
 					+	'<div>Дата: {[Ext.util.Format.date(values.ddate)]} Документ№: {ndoc} Сумма: {[values.fullSumm]} <tpl if="isWhite">Нужен чек</tpl></div>'
 					+	'<div>Остаток задолженности: {[parseFloat(values.remSumm).toFixed(2)]}</div>'
 					+ '</div>'
 					+ '<div class="encashSumm"><tpl if="encashSumm &gt; 0">{[parseFloat(values.encashSumm).toFixed(2)]}</tpl></div>'
-				 + '</div>';
-		}
+				 + '</div>'
+		;
+		
 		case 'OfferCategory': {
 			return '<div class="hbox">'
 				 + '<div class="data <tpl if="lastActive || minLastActive">active</tpl>">{name}</div>'
@@ -284,7 +296,7 @@ function getItemTpl (modelName) {
 				 + '</div>'
 			;
 		}
-		case 'ShipmentProduct': {
+		case 'ShipmentProduct':
 			return '<div class="data">'
 				+		'<div class="date">Дата: {[Ext.util.Format.date(values.date)]}</div>'
 				+		'<small>'
@@ -293,16 +305,16 @@ function getItemTpl (modelName) {
 				+			'<div class="volume">Количество: {volume}</div>'
 				+		'</small>'
 				+	'</div>';
-		}
-		case 'OfferProduct': {
+		;
+		case 'OfferProduct':
 			return '<div class="hbox '
 						+'<tpl if="lastActive"> active</tpl>'
 						+'<tpl if="isNonHidable"> isNonHidable</tpl>'
 						+'<tpl if="BonusProgram_tag.search(\'Ф\') != -1"> focused</tpl>">'
 						+'<tpl if="pieceVolume">'
-						+'<div class="leftbox">'
-							+'{pieceVolume}'
-						+'</div>'
+//						+'<div class="leftbox">'
+//							+'{pieceVolume}'
+//						+'</div>'
 						+'</tpl>'
 						+'<div class="info {cls} data ' + '<tpl if="stockLevel==1">caution</tpl>' + '">'
 							+ '<p>{name}'
@@ -310,18 +322,29 @@ function getItemTpl (modelName) {
 							   +'<tpl if="lastActive"><span class="green"> ({lastActive})</span></tpl>'
 							   +'<tpl if="BonusProgram_tag"><span class="crec {BonusProgram_tagColor}">{BonusProgram_tag}</span></tpl>'
 							+'</p>'
-							+ '<small><span class="price">Цена: {price} руб. </span>'
-							  + '<tpl if="packageRel &gt; 1"><span class="packageRel">В коробке: {packageRel} </span></tpl>'
-							  + '<tpl if="discount0 != null"><span class="green">Скидка: {discount0}({discount1})% </span></tpl>'
-							  + '<tpl if="rel &gt; 1"><span>Вложение: {rel}; </span></tpl>'
-							  + '<tpl if="factor &gt; 1"><span>Кратность: {factor} </span></tpl>'
-							  + '<tpl if="stockLevel &gt; 2"><span>Остаток: {stockLevel} </span></tpl>'
-							  + '<span>Стоимость: <span class="cost">{cost}</span></span>'
+							+ '<small>'
+							  + '<span class="swipable price">Цена: {price}'
+							  + '</span>'
+							  + '<tpl if="discount0 != null || discount1 != null">'
+								+ '<span class="swipable discount"> ({discount0}%)</span>'
+								+ '<span class="swipable discount"> ({discount1}%)</span>'
+							  + '</tpl>'
+							  + '<tpl if="rel &gt; 1"><span>Вложение: {rel}</span></tpl>'
+							  + '<tpl if="factor &gt; 1"><span>Кратность: {factor}</span></tpl>'
+							  + '<tpl if="packageRel &gt; 1"><span class="swipable packageRel">В коробе: {packageRel}</span></tpl>'
+							+ '</small>'
+							+ '<small>'
+							  //+ '<tpl if="stockLevel &gt; 2"><span>Остаток: {stockLevel}</span></tpl>'
+							  + '<tpl if="volume"><span class="swipable volume1">Разделить: {volume1} + {volume0}</span></tpl>'
+							  + '<tpl if="cost"><span>Стоимость: <span class="cost">{cost}</span></span></tpl>'
 							+ '</small>'
 						+ '</div>'
-						+ '<div class="rightbox volume">{volume}</div>'
-				 + '</div>';
-		}
+						//+ '<tpl if="volume1 != null">'
+						//+ '</tpl>'
+						+ '<div class="swipable rightbox volume">{volume}</div>'
+				 + '</div>'
+		;
+		
 	}
 	
 	return getItemTplMeta(modelName, {useDeps:false}).itemTpl;
@@ -742,18 +765,6 @@ var getGroupConfig = function(model) {
 		}
 	}
 };
-
-var tableHasColumn = function (tbl, column) {
-	var table = Ext.getStore('tables').getById(tbl),
-		columns = table.columns()
-	;
-	return columns.getById(table.getId() + column)
-}
-
-var tableProperty = function (tbl, property) {
-	var table = Ext.getStore('tables').getById(tbl);
-	return table.get(property);
-}
 
 var getSortersConfig = function(model, storeConfig) {
 

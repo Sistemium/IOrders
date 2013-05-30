@@ -28,40 +28,67 @@ var offerProductList = {
 			var rec = list.getRecord (item);
 			
 			if (rec) {
-				var volume = rec.get('volume'),
-					iel = Ext.get(item);
-					
-				iel.addCls('editing');
 				
-				if(!this.keyboard) {
-					this.keyboard = Ext.create({
-						xtype: 'numkeyboard',
-						value: volume,
-						onConfirmButtonTap: function(button, value) {
-							
-							if (this.iel) {
-								this.iel.removeCls('editing');
-								this.iel = false;
-							}
-							
-							if (button == 'ok') {
-								Ext.dispatch (Ext.apply({
-									controller: 'SaleOrder',
-									action: 'setVolume',
-									volume: value || 0
-								}, this.options));
-							};
-							//this.hide();
-						}
-					});
-
-					this.up('saleorderview').cmpLinkArray.push(this.keyboard);
+				var valueField,
+					iel = Ext.get(el.target)
+				;
+				
+				switch (el.target.className) {
+					
+					case 'swipable rightbox volume':
+						valueField = 'volume'
+					break;
+					
+					case 'swipable volume1':
+						valueField = 'volume1'
+					break;
+					
 				}
 				
-				this.keyboard.showBy(iel.down('.volume'), false, false);
-				this.keyboard.iel = iel;
-				this.keyboard.setValue(volume);
-				this.keyboard.options = {item: item, list: list, rec: rec};
+				if (valueField) {
+					
+					var value = rec.get(valueField),
+						keyboard = valueField + 'Kbd'
+					;
+					
+					iel.addCls('editing');
+					
+					if(!this[keyboard]) {
+						
+						this[keyboard] = Ext.create({
+							
+							xtype: 'numkeyboard',
+							value: value,
+							
+							onConfirmButtonTap: function(button, value) {
+								
+								if (this.iel) {
+									this.iel.removeCls('editing');
+									this.iel = false;
+								}
+								
+								if (button == 'ok') {
+									
+									this.options [valueField] = value || 0;
+									
+									Ext.dispatch (Ext.apply({
+										controller: 'SaleOrder',
+										action: 'setVolume'
+									}, this.options));
+								};
+								
+							}
+						});
+						
+						this.up('saleorderview').cmpLinkArray.push(this.keyboard);
+					}
+					
+					this[keyboard].showBy(iel, false, false);
+					this[keyboard].iel = iel;
+					this[keyboard].setValue(value);
+					this[keyboard].options = {item: item, list: list, rec: rec};
+				}
+				
 			}
 		},
 

@@ -475,6 +475,9 @@ var NavigatorView = Ext.extend(AbstractView, {
 		;
 		
 		Ext.each (fieldSet.items, function(field) {
+			
+			field.cls = field.name;
+			
 			if (field.xtype == 'selectfield' && field.store) {
 				
 				var parentColumns = tablesStore.getById(field.store.model.modelName).columns();
