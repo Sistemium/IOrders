@@ -429,15 +429,9 @@ Ext.regController('SaleOrder', {
 		
 		!volume && (volume = 0);
 		
-		var src;
-		
 		options.event
-			&& options.event.touches
-			&& options.event.touches.length
-			&& (src = Ext.get (options.event.touches[0].srcElement))
-		;
-		
-		src && src.dom && src.dom.className == 'packageRel'
+			&& options.event.target
+			&& options.event.target.className == 'packageRel'
 			&& (factor=rec.get('packageRel'))
 		;
 		
