@@ -317,7 +317,7 @@ var getItemTpl = function (modelName) {
 //						+'</div>'
 						+'</tpl>'
 						+'<div class="info {cls} data ' + '<tpl if="stockLevel==1">caution</tpl>' + '">'
-							+ '<p>{name}'
+							+ '<p class="name">{name}'
 							   +'<tpl if="extraLabel"><span class="blue"> [{extraLabel}]</span></tpl>'
 							   +'<tpl if="lastActive"><span class="green"> ({lastActive})</span></tpl>'
 							   +'<tpl if="BonusProgram_tag"><span class="crec {BonusProgram_tagColor}">{BonusProgram_tag}</span></tpl>'

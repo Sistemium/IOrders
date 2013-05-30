@@ -470,9 +470,17 @@ Ext.regController('SaleOrder', {
 		
 		if (options.event && options.event.target) {
 			
-			switch (options.event.target.className) {
+			var clss = options.event.target.className;
+			var classes = [];
+			
+			if (clss) {
+				classes = clss.split(' ');
+				classes.length && (clss = classes [classes.length - 1]);
+			}
+			
+			switch (clss) {
 				
-				case 'swipable price':
+				case 'price':
 					
 					var discount0 = rec.get('discount0'),
 						discount1 = rec.get('discount1'),
@@ -496,18 +504,16 @@ Ext.regController('SaleOrder', {
 					
 				break;
 				
-				case 'swipable volume1':
+				case 'volume1':
 					volume1 -= sign * factor;
 				break;
 				
-				case 'swipable packageRel':
+				case 'packageRel':
 					factor=rec.get('packageRel');
 					
-				case 'swipable volume':
+				default:
 					volume += sign * factor;
 				break;
-				
-				default: return;
 				
 			}
 			
@@ -527,8 +533,16 @@ Ext.regController('SaleOrder', {
 		    view = options.list.up('saleorderview')
 		;
 		
-		var volume = options.volume || parseInt (rec.get('volume') || '0'),
-			volume1 = options.volume1 || parseInt (rec.get('volume1') || '0')
+		var volume = options.volume, 
+			volume1 = options.volume1
+		;
+		
+		if (volume == undefined)
+			volume = parseInt (rec.get('volume') || '0')
+		;
+		
+		if (volume1 == undefined)
+			volume1 = parseInt (rec.get('volume1') || '0')
 		;
 		
 		
@@ -549,7 +563,6 @@ Ext.regController('SaleOrder', {
 		rec.set('volume1', volume1);
 		rec.set('volume0', volume - volume1);
 		rec.editing = false;
-		rec.commit();
 		
 		Ext.dispatch(Ext.apply(options, {
 			action: 'saveOffer',
@@ -559,6 +572,8 @@ Ext.regController('SaleOrder', {
 		Ext.dispatch(Ext.apply(options, {
 			action: 'calculateTotalCost'
 		}));
+		
+		rec.commit();
 		
 		var iel = Ext.get(options.item); 
 		//iel.down('.cost').dom.innerHTML = rec.get('cost');
