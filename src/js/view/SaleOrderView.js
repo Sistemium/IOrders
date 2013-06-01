@@ -139,7 +139,8 @@ var SaleOrderView = Ext.extend(AbstractView, {
 					}
 				}
 			},
-			{ui: 'save', name: 'Save', text: 'Сохранить', scope: this}
+			{ui: 'save', name: 'Save', text: 'Сохранить', scope: this},
+			{ui: 'plain', iconMask: true, name: 'Add', iconCls: 'add', scope: this}
 		);
 	},
 	

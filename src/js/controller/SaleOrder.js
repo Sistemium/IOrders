@@ -2,14 +2,81 @@ Ext.regController('SaleOrder', {
 
 	onBackButtonTap: function(options) {
 		
-		options.view.ownerViewConfig.editing = !(options.closeEditing || false);
-		options.view.ownerViewConfig.isNew = options.view.isNew;
-		options.view.ownerViewConfig.saleOrderStatus = options.view.saleOrderStatus;
+		var view = options.view;
 		
-		IOrders.viewport.setActiveItem(Ext.create(options.view.ownerViewConfig), IOrders.viewport.anims.back);
+		view.ownerViewConfig.editing = !(options.closeEditing || false);
+		view.ownerViewConfig.isNew = view.isNew;
+		view.ownerViewConfig.saleOrderStatus = view.saleOrderStatus;
+		view.ownerViewConfig.objectRecord = view.saleOrder;
+		
+		IOrders.viewport.setActiveItem(
+			Ext.create(view.ownerViewConfig)
+			, IOrders.viewport.anims.back
+		);
 		
 	},
 
+	onAddButtonTap: function (options) {
+		
+		var saleOrder = options.view.saleOrder,
+			view = options.view,
+			rec
+		;
+		
+		view.isNew && saleOrder.set('processing', view.saleOrderStatus);
+		
+		Ext.dispatch(Ext.apply(options, {
+			action: 'saveOffer'
+		}));
+		
+		view.isNew = true;
+		
+		var tableRec = Ext.getStore('tables').getById('SaleOrder'),
+			parentColumns = tableRec.getParentColumns()
+		;
+		
+		rec = Ext.ModelMgr.create({serverPhantom: true}, 'SaleOrder');
+		
+		rec.editing = true;
+		tableRec.columns().each(function(col) {
+			if (col.get('editable')) {
+				var colName = col.get('name');
+				rec.set(colName, saleOrder.get(colName));
+			}
+		});
+		rec.editing = false;
+		rec.commit();
+		
+		rec.save ({ success: function(rec) {
+			
+			view.saleOrder = rec;
+			
+			view.saleOrderPositionStore.load({
+				limit: 0,
+				remoteFilter: true,
+				filters: [{
+					property: 'saleOrder',
+					value: rec.getId()
+				}]		
+			});
+			
+			(function (store) {
+				
+				store.remoteFilter = false;
+				store.filterOnLoad = true;
+				store.snapshot = false;
+				
+				store.load({
+					limit: 0,
+					remoteFilter: true,
+					filters: view.startFilters (rec)
+				});
+				
+			}) (view.offerProductStore);
+			
+		}});
+	},
+	
 	onShowCustomerButtonTap: function(options) {
 		
 		var customer = options.view.customerRecord;
@@ -37,7 +104,7 @@ Ext.regController('SaleOrder', {
 
 	saveOffer: function(options) {
 		var view = options.view,
-		    offerStore = view.productStore,
+		    offerStore = view.offerProductStore,
 		    saleOrderPosStore = view.saleOrderPositionStore
 		;
 		
@@ -168,100 +235,42 @@ Ext.regController('SaleOrder', {
 				
 				if (!s) failureCb('категорий'); else {
 					
-					var startFilters = [{
-						property: 'customer',
-						value: options.saleOrder.get('customer')
-					}];
+					newCard.startFilters = function(saleOrder) {
+						
+						var result = [{
+							property: 'customer',
+							value: saleOrder.get('customer')
+						}];
+						
+						if (tableHasColumn ('Offer', 'saleOrder')) {
+							result.push({
+								property: 'saleOrder',
+								value: saleOrder.get('id')
+							})
+						};
+						
+						return result;
+					}
 					
-					if (tableHasColumn ('Offer', 'saleOrder')) {
-						startFilters.push({
-							property: 'saleOrder',
-							value: newCard.saleOrder.get('id')
-						})
-					};
-					
-					newCard.productStore = createStore('Offer', {
+					newCard.offerProductStore = createStore('Offer', {
+						
 						remoteFilter: true,
 						remoteSort: false,
 						groupField: 'firstName',
+						
 						getGroupString: function(rec) {
 							return rec.get(this.groupField).replace(/ /g, '_');
 						},
-						sorters: [{property: 'firstName', direction: 'ASC'}, {property: 'name', direction: 'ASC'}],
-						filters: startFilters,
-						filter: function(filters, value) {
-
-							var bonusProductStore = newCard.bonusProductStore,
-								bonusProgramStore = newCard.bonusProgramStore
-							;
+						
+						listeners: {
 							
-							if(bonusProgramStore && filters && (
-									filters.contains && filters.contains(this.isFocusedFilter) || filters == this.isFocusedFilter)
-							) {
-								bonusProgramStore.filter({property: 'isFirstScreen', value: true});
-								bonusProductStore.filterBy(function(it) {
-									return bonusProgramStore.findExact('id', it.get('bonusProgram')) !== -1 ? true : false;
-								});
-							}
-
-							Ext.data.Store.prototype.filter.apply(this, arguments);
-
-							if(bonusProgramStore && filters && (
-									filters.contains && filters.contains(this.isFocusedFilter) || filters == this.isFocusedFilter
-							)) {
-								bonusProductStore.clearFilter(true);
-								bonusProgramStore.clearFilter(true);
-							}
-							
-						},
-						volumeFilter: new Ext.util.Filter({
-							filterFn: function(item) {
-								return item.get('volume') > 0;
-							}
-						}),
-						isFocusedFilter: new Ext.util.Filter({
-							filterFn: function(item) {
-								if (!newCard.bonusProductStore) return false;
-								return newCard.bonusProductStore.findExact('product', item.get('product')) !== -1 ? true : false;
-							}
-						})
-					});
-
-					newCard.productStore.on('load', newCard.offerCategoryStore.initLastActive, newCard.offerCategoryStore);
-
-					var saleOrderPositionStore = newCard.saleOrderPositionStore = createStore('SaleOrderPosition', {
-						remoteFilter: true,
-						filters: [{
-							property: 'saleOrder',
-							value: options.saleOrder.getId()
-						}]
-					});
-					
-					newCard.productList = newCard.productPanel.add(Ext.apply(offerProductList, {
-						flex: 3, store: newCard.productStore, pinHeaders: false
-					}));
-					
-					newCard.productListIndexBar = newCard.productPanel.add(
-						new HorizontalIndexBar({
-							hidden: !newCard.indexBarMode,
-							list: newCard.productList}
-						)
-					);
-
-					newCard.productStore.load({
-						limit: 0,
-						callback: function(r, o, s) {
-							
-							if (s) {
-
-								newCard.productPanel.doLayout(); 	
-								newCard.productStore.remoteFilter = false;
+							load: function (store, records) {
 								
 								var sname = '',
 									needle
 								;
 								
-								Ext.each (r, function(rec) {
+								Ext.each (records, function(rec) {
 									
 									sname = rec.data['name'];
 									sname = sname.replace (/(\".*\")/, '<span class="quoted">$1</span>');
@@ -278,6 +287,7 @@ Ext.regController('SaleOrder', {
 											RegExp ('('+needle+'0*)'),
 											'<span class="needle">$1</span>'
 										);
+										
 									}
 									
 									sname = sname.replace (
@@ -294,160 +304,106 @@ Ext.regController('SaleOrder', {
 									
 								});
 								
-								saleOrderPositionStore.load({
-									limit: 0,
-									callback: function(records, operation, s) {
-										if(s) {
-											
-											var tc = 0;
-											
-											Ext.each(records, function(rec, idx, all) {
-												var offerRec = newCard.productStore.findRecord('product', rec.get('product'), undefined, undefined, true, true);
-												
-												if (offerRec) {
-													
-													offerRec.editing = true;
-													offerRec.set('volume', rec.get('volume'));
-													
-													var c =
-														offerRec.get('rel')
-															* offerRec.get('price')
-															* rec.get('volume')
-													;
-													
-													tc += c;
-													
-													offerRec.set('cost',c.toFixed(2));
-													offerRec.editing = false;
-													offerRec.commit(true);
-													
-													rec.set(offerRec.data);
-													
-												}
-												
-											});
-											
-											newCard.saleOrder.set('totalCost',tc.toFixed(2));
-											newCard.saleOrder.commit(true);
-											
-											var customer = newCard.saleOrder.get('customer');
-											
-											if (customer) {
-												Ext.ModelMgr.getModel('Customer').load(customer, {
-													success: function(rec) {
-														newCard.customerRecord = rec;
-														if (newCard.saleOrder.get('isBonus')){
-															newCard.bonusCost = rec.get('bonusCost') + newCard.saleOrder.get('totalCost');
-														};
-														Ext.dispatch({
-															controller: 'SaleOrder',
-															action: 'calculateTotalCost',
-															view: newCard
-														});
-													}
-												});
-											} else {
-												console.log ('SaleOrder: empty customer');
-											}
-											
-											var bonusModelName = 'BonusProgramByCustomer';
-											
-											if (!Ext.ModelMgr.getModel(bonusModelName))
-												bonusModelName = 'BonusProgram'
-											;
-											
-											if (!Ext.ModelMgr.getModel(bonusModelName)){
-												newCard.bonusProgramStore = undefined;
-												console.log ('SaleOrder.launchOfferView bonusProgramStore = undefined');
-											} else {
-												newCard.bonusProgramStore = createStore(
-													bonusModelName,
-													getGroupConfig(bonusModelName)
-												);
-												newCard.bonusProductStore = createStore(
-													'BonusProgramProduct',
-													Ext.apply(getSortersConfig('BonusProgramProduct', {}))
-												);
-											}
-											
-											if (bonusModelName == 'BonusProgramByCustomer')
-												newCard.bonusProgramStore.filters.add({
-													property: 'customer',
-													value: options.saleOrder.get('customer')
-												})
-											;
-											
-											var finishLoading = function () {
-												
-												newCard.productStore.filter(newCard.productStore.isFocusedFilter);
-												newCard.productListIndexBar.loadIndex();
-												
-												IOrders.viewport.setActiveItem(newCard);
-												
-												oldCard.setLoading(false);
-												
-											};
-											
-											if (newCard.bonusProgramStore) newCard.bonusProgramStore.load({
-												limit: 0,
-												callback: function() {
-													
-													newCard.bonusProgramStore.remoteFilter = false;
-													newCard.bonusProgramStore.clearFilter(true);
-													
-													var withMsgCount = newCard.bonusProgramStore.queryBy(function(rec){
-														return rec.get('isWithMsg')
-													}).getCount();
-													
-													if (withMsgCount) newCard.dockedItems.get(0).items.getByKey('ModeChanger').items.getByKey('Bonus').setBadge(withMsgCount);
-													
-													newCard.bonusProductStore.load({
-														limit: 0,
-														callback: function() {
-															
-															newCard.bonusProductStore.remoteFilter = false;
-															
-															if(records.length) {
-																newCard.productStore.filter(newCard.productStore.volumeFilter);
-															} else {
-																
-																var bonusProductStore = newCard.bonusProductStore,
-																	bonusProgramStore = newCard.bonusProgramStore
-																;
-																bonusProgramStore.filter({property: 'isFirstScreen', value: true});
-																bonusProductStore.filterBy(function(it) {
-																	return bonusProgramStore.findExact('id', it.get('bonusProgram')) !== -1 ? true : false;
-																});
-																
-																bonusProductStore.clearFilter(true);
-																bonusProgramStore.clearFilter(true);
-																
-																newCard.on('activate', function() {
-																	newCard.customerRecord.getCustomerBonusProgram(function(bonusStore) {
-																		newCard.customerRecord.bonusProgramStore = bonusStore;
-																		Ext.dispatch(Ext.apply(options, {
-																			action: 'toggleBonusOn',
-																			view: newCard,
-																			atStart: true,
-																			bonusStore: bonusStore
-																		}));
-																	});
-																});
-																
-															}
-															
-															finishLoading();
-															
-															Ext.dispatch(Ext.apply(options, {action: 'expandFocusedProduct', view: newCard}));
-														}
-													});
-												}
-											}); else finishLoading();
-											
-										} else failureCb('товаров');
-									}
+							}
+							
+						},
+						
+						sorters: [{property: 'firstName', direction: 'ASC'}, {property: 'name', direction: 'ASC'}],
+						filters: newCard.startFilters(options.saleOrder),
+						filter: function(filters, value) {
+							
+							var bonusofferProductStore = newCard.bonusofferProductStore,
+								bonusProgramStore = newCard.bonusProgramStore
+							;
+							
+							if(bonusProgramStore && filters && (
+									filters.contains && filters.contains(this.isFocusedFilter) || filters == this.isFocusedFilter)
+							) {
+								bonusProgramStore.filter({property: 'isFirstScreen', value: true});
+								bonusofferProductStore.filterBy(function(it) {
+									return bonusProgramStore.findExact('id', it.get('bonusProgram')) !== -1 ? true : false;
 								});
-							} else failureCb('остатков');
+							}
+
+							Ext.data.Store.prototype.filter.apply(this, arguments);
+
+							if(bonusProgramStore && filters && (
+									filters.contains && filters.contains(this.isFocusedFilter) || filters == this.isFocusedFilter
+							)) {
+								bonusofferProductStore.clearFilter(true);
+								bonusProgramStore.clearFilter(true);
+							}
+							
+						},
+						volumeFilter: new Ext.util.Filter({
+							filterFn: function(item) {
+								return item.get('volume') > 0;
+							}
+						}),
+						isFocusedFilter: new Ext.util.Filter({
+							filterFn: function(item) {
+								if (!newCard.bonusofferProductStore) return false;
+								return newCard.bonusofferProductStore.findExact('product', item.get('product')) !== -1 ? true : false;
+							}
+						})
+					});
+
+					newCard.offerProductStore.on ( 'load'
+						, newCard.offerCategoryStore.initLastActive
+						, newCard.offerCategoryStore
+					);
+
+					var saleOrderPositionStore = newCard.saleOrderPositionStore
+						= createStore('SaleOrderPosition', {
+							remoteFilter: true,
+							filters: [{
+								property: 'saleOrder',
+								value: options.saleOrder.getId()
+						}]}
+					);
+					
+					newCard.productList = newCard.productPanel.add(Ext.apply(offerProductList, {
+						flex: 3, store: newCard.offerProductStore, pinHeaders: false
+					}));
+					
+					newCard.productListIndexBar = newCard.productPanel.add(
+						new HorizontalIndexBar({
+							hidden: !newCard.indexBarMode,
+							list: newCard.productList}
+						)
+					);
+
+					newCard.offerProductStore.load({
+						limit: 0,
+						callback: function(r, o, s) {
+							
+							if (s) {
+								
+								newCard.productPanel.doLayout(); 	
+								newCard.offerProductStore.remoteFilter = false;
+								
+								Ext.dispatch ( Ext.apply ( options, {
+									action: 'onOfferLoad'
+									, view: newCard
+									, callback: function () {
+										
+										newCard.offerProductStore.filter (
+											newCard.offerProductStore.isFocusedFilter
+										);
+										
+										newCard.productListIndexBar.loadIndex();
+										
+										IOrders.viewport.setActiveItem (newCard);
+										
+										oldCard.setLoading(false);
+										
+									}
+								}));
+								
+							} else {
+								failureCb('остатков')
+							}
+							
 						}
 					});
 				}
@@ -456,6 +412,218 @@ Ext.regController('SaleOrder', {
 		
 	},
 	
+	onOfferLoad: function (options) {
+		
+		var view = options.view
+			, callback = options.callback
+		;
+		
+		var saleOrderPositionStore = view.saleOrderPositionStore;
+		
+		saleOrderPositionStore.load({
+			limit: 0,
+			callback: function(records, operation, s) {
+				if(s) {
+					
+					var tc = 0;
+					
+					// Sync with offer
+					Ext.each(records, function(rec, idx, all) {
+						
+						var offerRec = view.offerProductStore.findRecord ( 'product'
+							, rec.get('product'), undefined, undefined, true, true
+						);
+						
+						if (offerRec) {
+							
+							offerRec.editing = true;
+							offerRec.set('volume', rec.get('volume'));
+							
+							var c =
+								offerRec.get('rel')
+									* offerRec.get('price')
+									* rec.get('volume')
+							;
+							
+							tc += c;
+							
+							offerRec.set('cost',c.toFixed(2));
+							offerRec.editing = false;
+							offerRec.commit(true);
+							
+							rec.set(offerRec.data);
+							
+						}
+						
+					});
+					
+					view.saleOrder.set('totalCost',tc.toFixed(2));
+					view.saleOrder.commit(true);
+					
+					var customer = view.saleOrder.get('customer');
+					
+					if (customer) {
+						Ext.ModelMgr.getModel('Customer').load(customer, {
+							success: function(rec) {
+								view.customerRecord = rec;
+								if (view.saleOrder.get('isBonus')){
+									view.bonusCost = rec.get('bonusCost') + view.saleOrder.get('totalCost');
+								};
+								Ext.dispatch({
+									controller: 'SaleOrder',
+									action: 'calculateTotalCost',
+									view: view
+								});
+							}
+						});
+					} else {
+						console.log ('SaleOrder: empty customer');
+					}
+					
+					Ext.dispatch ( Ext.apply ( options , {
+						action: 'setUpBonusProgramming',
+						callback: callback
+					}));
+					
+				} else failureCb('товаров');
+			}
+		});
+		
+	},
+	
+	
+	setUpBonusProgramming: function (options) {
+		
+		var view = options.view,
+			callback = options.callback
+		;
+		
+		var bonusModelName = 'BonusProgramByCustomer';
+		
+		if (!Ext.ModelMgr.getModel(bonusModelName))
+			bonusModelName = 'BonusProgram'
+		;
+		
+		if (!Ext.ModelMgr.getModel(bonusModelName)){
+			
+			view.bonusProgramStore = undefined;
+			console.log ('SaleOrder.launchOfferView bonusProgramStore = undefined');
+			
+		} else {
+			
+			view.bonusProgramStore = createStore(
+				bonusModelName,
+				getGroupConfig(bonusModelName)
+			);
+			
+			view.bonusofferProductStore = createStore(
+				'BonusProgramProduct',
+				Ext.apply(getSortersConfig('BonusProgramProduct', {}))
+			);
+			
+		}
+		
+		if (bonusModelName == 'BonusProgramByCustomer')
+			view.bonusProgramStore.filters.add({
+				property: 'customer',
+				value: options.saleOrder.get('customer')
+			})
+		;
+		
+		if (view.bonusProgramStore)
+			
+			Ext.dispatch ( Ext.apply ( options , {
+				action: 'toggleBonusStartUp',
+				callback: callback
+			}));
+			
+		else
+			callback.call()
+		;
+		
+	},
+
+	
+	toggleBonusStartUp: function (options) {
+		
+		var callback = options.callback || Ext.emptyFn
+			, view = options.view
+			, me = this
+		;
+		
+		view.bonusProgramStore.load({
+			limit: 0,
+			callback: function() {
+				
+				view.bonusProgramStore.remoteFilter = false;
+				view.bonusProgramStore.clearFilter(true);
+				
+				var withMsgCount = view.bonusProgramStore.queryBy(function(rec){
+					return rec.get('isWithMsg')
+				}).getCount();
+				
+				if (withMsgCount)
+					view.dockedItems.get(0).items.getByKey('ModeChanger')
+						.items.getByKey('Bonus').setBadge(withMsgCount)
+				;
+				
+				view.bonusofferProductStore.load({
+					limit: 0,
+					callback: function(records) {
+						
+						view.bonusofferProductStore.remoteFilter = false;
+						
+						if(records.length) {
+							
+							view.offerProductStore.filter (view.offerProductStore.volumeFilter);
+							
+						} else {
+							
+							var bonusofferProductStore = view.bonusofferProductStore,
+								bonusProgramStore = view.bonusProgramStore
+							;
+							
+							bonusProgramStore.filter({
+								property: 'isFirstScreen'
+								, value: true
+							});
+							
+							bonusofferProductStore.filterBy(function(it) {
+								return bonusProgramStore.findExact ( 'id'
+									, it.get('bonusProgram')) !== -1 ? true : false
+								;
+							});
+							
+							bonusofferProductStore.clearFilter(true);
+							bonusProgramStore.clearFilter(true);
+							
+							view.on('activate', function() {
+								view.customerRecord.getCustomerBonusProgram(function(bonusStore) {
+									view.customerRecord.bonusProgramStore = bonusStore;
+									Ext.dispatch(Ext.apply(options, {
+										action: 'toggleBonusOn',
+										view: view,
+										atStart: true,
+										bonusStore: bonusStore
+									}));
+								});
+							});
+							
+						}
+						
+						callback.call(this);
+						
+						Ext.dispatch (Ext.apply (options, {
+							action: 'expandFocusedProduct'
+							, view: view
+						}));
+					}
+				});
+			}
+		})
+		
+	},
+
 	onListItemSwipe: function(options) {
 		
 		var rec = options.list.store.getAt(options.idx),
@@ -681,14 +849,14 @@ Ext.regController('SaleOrder', {
 		view.pricePanel.setHeight(list.getHeight() * 2 / 3);
 		view.pricePanel.iel = iel;
 
-		var productStore = view.pricePanel.getComponent('productList').store,
+		var offerProductStore = view.pricePanel.getComponent('productList').store,
 			priceStore = view.hasPriceTable ? view.pricePanel.getComponent('priceList').store : undefined,
 			shipmentStore = view.pricePanel.getComponent('shipmentList').store
 		;
 
 		shipmentStore.clearFilter(true);
 		
-		productStore.load({
+		offerProductStore.load({
 			filters: [{property: 'id', value: productRec.get('product')}],
 			scope: view,
 			limit: 0,
@@ -714,7 +882,7 @@ Ext.regController('SaleOrder', {
 								shipmentStore.each(function(rec) {
 
 									var pos = shipPosStore.findRecord('shipment', rec.getId(), undefined, undefined, true , true);
-									Ext.apply(rec.data, {name: productStore.getAt(0).get('name'), price: pos.get('price'), volume: pos.get('vol')});
+									Ext.apply(rec.data, {name: offerProductStore.getAt(0).get('name'), price: pos.get('price'), volume: pos.get('vol')});
 								});
 
 								this.pricePanel.showBy(iel, false, false);
@@ -739,22 +907,22 @@ Ext.regController('SaleOrder', {
 		
 		var rec = options.categoryRec,
 			view = options.view,
-		    productStore = view.productStore,
+		    offerProductStore = view.offerProductStore,
 		    filters = []
 		;
 		
-		productStore.clearFilter(true);
+		offerProductStore.clearFilter(true);
 		
 		rec && filters.push({
 			property: 'category',
 			value: rec.get('category')
 		});
 		
-		view.isShowSaleOrder && filters.push(productStore.volumeFilter);
-		view.bonusMode && filters.push(productStore.bonusFilter);
+		view.isShowSaleOrder && filters.push(offerProductStore.volumeFilter);
+		view.bonusMode && filters.push(offerProductStore.bonusFilter);
 		view.productSearchFilter && filters.push(view.productSearchFilter);
 
-		productStore.filter(filters);
+		offerProductStore.filter(filters);
 
 		view.productListIndexBar.loadIndex();
 		view.productList.scroller.scrollTo ({y:0});
@@ -818,7 +986,7 @@ Ext.regController('SaleOrder', {
 		Ext.each(view.productCategoryList.getEl().query('.x-list-group-items'), removeActiveCls);
 	},
 	
-	beforeFilterProductStore: function (options) {
+	beforeFilterofferProductStore: function (options) {
 		
 		var view = options.view,
 			currentCategorySelection = view.productCategoryList.getSelectedRecords()
@@ -835,7 +1003,7 @@ Ext.regController('SaleOrder', {
 		view.offerCategoryStore.clearFilter(true);
 		view.offerCategoryStore.filter(new Ext.util.Filter({
 			filterFn: function(item) {
-				return view.productStore.findExact('category', item.get('category')) > -1 ? true : false;
+				return view.offerProductStore.findExact('category', item.get('category')) > -1 ? true : false;
 			}
 		}));
 		
@@ -844,21 +1012,21 @@ Ext.regController('SaleOrder', {
 	toggleProductNameFilterOn: function(options) {
 		
 		var view = options.view
-			currentProductFilters = view.productStore.filters.items
+			currentProductFilters = view.offerProductStore.filters.items
 		;
 		
 		view.setLoading(true);
 		
-		view.productStore.clearFilter(true);
-		view.productStore.suspendEvents();
-		view.productStore.filter( view.productSearchFilter = {
+		view.offerProductStore.clearFilter(true);
+		view.offerProductStore.suspendEvents();
+		view.offerProductStore.filter( view.productSearchFilter = {
 			property: 'name',
 			value: options.searchFor,
 			anyMatch: true,
 			caseSensitive: false
 		});
 		
-		var foundCnt = view.productStore.getCount();
+		var foundCnt = view.offerProductStore.getCount();
 		
 		IOrders.logEvent({
 			module:'SaleOrder',
@@ -871,29 +1039,29 @@ Ext.regController('SaleOrder', {
 			Ext.Msg.alert("Внимание", "Слишком много товаров подходит, введите больше букв в поиске", function() {
 				var productSearcher = view.dockedItems.get(0).getComponent('ProductSearcher');
 				productSearcher.reset();
-				view.productStore.clearFilter(true);
+				view.offerProductStore.clearFilter(true);
 				currentProductFilters
-					&& view.productStore.filter(currentProductFilters)
+					&& view.offerProductStore.filter(currentProductFilters)
 				;
-				view.productStore.resumeEvents();		
+				view.offerProductStore.resumeEvents();		
 			});
 			
 		} else {
 			
-			view.productStore.resumeEvents();
+			view.offerProductStore.resumeEvents();
 			
-			view.productStore.fireEvent('datachanged', view.productStore);
+			view.offerProductStore.fireEvent('datachanged', view.offerProductStore);
 			
-			view.productStore.filtersSnapshot
-				|| (view.productStore.filtersSnapshot = currentProductFilters)
+			view.offerProductStore.filtersSnapshot
+				|| (view.offerProductStore.filtersSnapshot = currentProductFilters)
 			;
 			
 			Ext.dispatch(Ext.apply(options, {
-				action: 'beforeFilterProductStore'
+				action: 'beforeFilterofferProductStore'
 			}));
 			
 			Ext.dispatch(Ext.apply(options, {
-				action: 'afterFilterProductStore',
+				action: 'afterFilterofferProductStore',
 				filterSet: true
 			}));
 			
@@ -931,9 +1099,9 @@ Ext.regController('SaleOrder', {
 		btnClearFilter.disable();
 		productSearcher.disable();
 		
-		view.productStore.saleOrderModeFiltersSnapshot = view.productStore.filters.items;
-		view.productStore.clearFilter(true);
-		view.productStore.filter(view.productStore.volumeFilter);
+		view.offerProductStore.saleOrderModeFiltersSnapshot = view.offerProductStore.filters.items;
+		view.offerProductStore.clearFilter(true);
+		view.offerProductStore.filter(view.offerProductStore.volumeFilter);
 
 		view.productCategoryList.deselect(
 			view.productCategoryList.saleOrderModeSelectionSnaphot = view.productCategoryList.getSelectedRecords()
@@ -943,12 +1111,12 @@ Ext.regController('SaleOrder', {
 		view.offerCategoryStore.clearFilter(true);
 		view.offerCategoryStore.filter(new Ext.util.Filter({
 			filterFn: function(item) {
-				return view.productStore.findExact('category', item.get('category')) > -1 ? true : false;
+				return view.offerProductStore.findExact('category', item.get('category')) > -1 ? true : false;
 			}
 		}));
 
 		Ext.dispatch(Ext.apply(options, {
-			action: 'afterFilterProductStore',
+			action: 'afterFilterofferProductStore',
 			filterSet: true
 		}));
 	},
@@ -970,9 +1138,9 @@ Ext.regController('SaleOrder', {
 		btnClearFilter.enable();
 		productSearcher.enable();
 		
-		view.productStore.clearFilter(true);
-		view.productStore.saleOrderModeFiltersSnapshot
-			&& view.productStore.filter(view.productStore.saleOrderModeFiltersSnapshot)
+		view.offerProductStore.clearFilter(true);
+		view.offerProductStore.saleOrderModeFiltersSnapshot
+			&& view.offerProductStore.filter(view.offerProductStore.saleOrderModeFiltersSnapshot)
 		;
 		
 		view.offerCategoryStore.clearFilter(true);
@@ -980,7 +1148,7 @@ Ext.regController('SaleOrder', {
 		if (view.productSearchFilter)
 			view.offerCategoryStore.filter(new Ext.util.Filter({
 				filterFn: function(item) {
-				return view.productStore.findExact('category', item.get('category')) > -1 ? true : false;
+				return view.offerProductStore.findExact('category', item.get('category')) > -1 ? true : false;
 				}
 			}));
 		else
@@ -991,11 +1159,11 @@ Ext.regController('SaleOrder', {
 			view.productCategoryList.saleOrderModeSelectionSnaphot
 		);
 
-		view.productStore.saleOrderModeFiltersSnapshot = undefined;
+		view.offerProductStore.saleOrderModeFiltersSnapshot = undefined;
 		view.productCategoryList.saleOrderModeSelectionSnaphot = undefined;
 		
 		Ext.dispatch(Ext.apply(options, {
-			action: 'afterFilterProductStore',
+			action: 'afterFilterofferProductStore',
 			filterSet: view.productSearchFilter ? true : false
 		}));
 	},
@@ -1008,7 +1176,7 @@ Ext.regController('SaleOrder', {
 		view.isShowSaleOrder = options.mode;
 	},
 
-	afterFilterProductStore: function(options) {
+	afterFilterofferProductStore: function(options) {
 
 		var view = options.view;
 
@@ -1085,7 +1253,7 @@ Ext.regController('SaleOrder', {
 							segBtn.setPressed(btn, false, true);
 							changeBtnText(btn);
 						}
-						view.bonusProductStore.clearFilter(true);
+						view.bonusofferProductStore.clearFilter(true);
 						view.bonusProgramStore.clearFilter(true);
 					}
 				}
@@ -1106,10 +1274,10 @@ Ext.regController('SaleOrder', {
 		
 		if(productRec) {
 			
-			view.bonusProductStore.filter({property: 'product', value: productRec.get('product')});
+			view.bonusofferProductStore.filter({property: 'product', value: productRec.get('product')});
 			
 			view.bonusProgramStore.filterBy(function(item) {
-				return view.bonusProductStore.findExact('bonusProgram', item.getId()) !== -1;
+				return view.bonusofferProductStore.findExact('bonusProgram', item.getId()) !== -1;
 			});
 			
 			var bonusList = view.bonusPanel.getComponent('bonusList');
@@ -1147,10 +1315,10 @@ Ext.regController('SaleOrder', {
 
 		var view = options.view;
 
-		view.productStore.groupField = 'lastName';
-		view.productStore.sorters.removeAll();
-		view.productStore.remoteSort = false;
-		view.productStore.sort([{property: 'lastName', direction: 'ASC'}, {property: 'name', direction: 'ASC'}]);
+		view.offerProductStore.groupField = 'lastName';
+		view.offerProductStore.sorters.removeAll();
+		view.offerProductStore.remoteSort = false;
+		view.offerProductStore.sort([{property: 'lastName', direction: 'ASC'}, {property: 'name', direction: 'ASC'}]);
 
 		view.productList.refresh();
 
@@ -1161,10 +1329,10 @@ Ext.regController('SaleOrder', {
 
 		var view = options.view;
 
-		view.productStore.groupField = 'firstName';
-		view.productStore.sorters.removeAll();
-		view.productStore.remoteSort = false;
-		view.productStore.sort([{property: 'firstName', direction: 'ASC'}, {property: 'name', direction: 'ASC'}]);
+		view.offerProductStore.groupField = 'firstName';
+		view.offerProductStore.sorters.removeAll();
+		view.offerProductStore.remoteSort = false;
+		view.offerProductStore.sort([{property: 'firstName', direction: 'ASC'}, {property: 'name', direction: 'ASC'}]);
 
 		view.productList.refresh();
 
@@ -1203,32 +1371,32 @@ Ext.regController('SaleOrder', {
 			
 			bonusList.selectSnapshot = tapedBonus;
 			
-			view.bonusProductStore.filterBy(function(rec, id) {
+			view.bonusofferProductStore.filterBy(function(rec, id) {
 				return tapedBonus.get('id') == rec.get('bonusProgram');
 			});
 			
-			view.productStore.bonusFilter = view.productStore.bonusFilter || new Ext.util.Filter({
+			view.offerProductStore.bonusFilter = view.offerProductStore.bonusFilter || new Ext.util.Filter({
 				filterFn: function(item) {
-					return view.bonusProductStore.findExact('product', item.get('product')) != -1;
+					return view.bonusofferProductStore.findExact('product', item.get('product')) != -1;
 				}
 			});
 			
-			view.bonusMode || (view.productStore.filtersSnapshot = view.productStore.filters.items);
-			view.productStore.clearFilter(true);
-			view.productStore.filter(view.productStore.bonusFilter);
+			view.bonusMode || (view.offerProductStore.filtersSnapshot = view.offerProductStore.filters.items);
+			view.offerProductStore.clearFilter(true);
+			view.offerProductStore.filter(view.offerProductStore.bonusFilter);
 			
 			view.productSearchFilter = undefined;
 			
-			view.bonusProductStore.clearFilter(true);
+			view.bonusofferProductStore.clearFilter(true);
 			
-			if(view.productStore.getCount() > 0) {
+			if(view.offerProductStore.getCount() > 0) {
 				
 				Ext.dispatch(Ext.apply(options, {
-					action: 'beforeFilterProductStore'
+					action: 'beforeFilterofferProductStore'
 				}));
 				
 				view.bonusMode || Ext.dispatch(Ext.apply(options, {
-					action: 'afterFilterProductStore',
+					action: 'afterFilterofferProductStore',
 					filterSet: true
 				}));
 				view.bonusMode = true;
@@ -1240,8 +1408,8 @@ Ext.regController('SaleOrder', {
 			} else {
 				
 				Ext.Msg.alert('Нет товаров', 'По выбранной акции нет товаров для заказа');
-				view.productStore.clearFilter(true);
-				view.productStore.filter(view.productStore.filtersSnapshot);
+				view.offerProductStore.clearFilter(true);
+				view.offerProductStore.filter(view.offerProductStore.filtersSnapshot);
 				
 			}
 		} else {
@@ -1271,8 +1439,8 @@ Ext.regController('SaleOrder', {
 		
 		view.productSearchFilter = undefined;
 		
-		view.productStore.clearFilter(true);
-		view.productStore.filter(view.productStore.filtersSnapshot);
+		view.offerProductStore.clearFilter(true);
+		view.offerProductStore.filter(view.offerProductStore.filtersSnapshot);
 		
 		view.offerCategoryStore.clearFilter();
 		
@@ -1282,11 +1450,11 @@ Ext.regController('SaleOrder', {
 			)
 		;
 		
-		view.productStore.filtersSnapshot = undefined;
+		view.offerProductStore.filtersSnapshot = undefined;
 		view.productCategoryList.selectionSnaphot = undefined;
 		
 		Ext.dispatch(Ext.apply(options, {
-			action: 'afterFilterProductStore',
+			action: 'afterFilterofferProductStore',
 			filterSet: false
 		}));
 		
