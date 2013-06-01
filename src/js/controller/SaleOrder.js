@@ -291,7 +291,7 @@ Ext.regController('SaleOrder', {
 									}
 									
 									sname = sname.replace (
-										/(красн\.|красное)/i,
+										/(красн\.|красное|кр\.)/i,
 										'<span class="taste red">$1</span>'
 									);
 									
@@ -786,121 +786,172 @@ Ext.regController('SaleOrder', {
 	},
 
 	onProductListItemLongTap: function(options) {
-
+		
 		var list = options.list,
 			item = options.item,
 			iel = Ext.get(item),
 			productRec = list.getRecord(item),
 			view = list.up('saleorderview')
 		;
-
-		iel.addCls('editing');
-
-		if(!view.pricePanel) {
-
-			var cfg = {
-				xtype: 'tabpanel',
-				tabBarDock: 'top',
-				tabBar: {ui: 'light', height: 50},
-				floating: true,
-				width: list.getWidth() / 2,
-				items: [
-					{
-						xtype: 'list',
-						title: 'Товар',
-						scroll: false,
-						itemId: 'productList',
-						itemTpl: getItemTplMeta('Product', {useDeps: false, groupField: 'category'}).itemTpl,
-						store: createStore('Product', Ext.apply(getSortersConfig('Product', {})))
-					},
-					{
-						xtype: 'list',
-						title: 'Отгрузки',
-						itemId: 'shipmentList',
-						itemTpl: getItemTpl('ShipmentProduct'),
-						store: createStore('Shipment', Ext.apply(getSortersConfig('Shipment', {})))
-					}
-				],
-				listeners: {
-					hide: function() {
-						this.iel.removeCls('editing');
-					},
-					cardswitch: function(panel, newC, oldC) {
-						localStorage.setItem('productInfoTab', newC.itemId);
-					}
-				}
-			};
+		
+		if (options.event.target.className == 'taste'){
 			
-			if (view.hasPriceTable)
-				cfg.items.push({
-						xtype: 'list',
-						title: 'Цены',
-						itemId: 'priceList',
-						itemTpl: getItemTplMeta('Price', {useDeps: false, groupField: 'category', filterObject: {modelName: 'Product'}}).itemTpl,
-						store: createStore('Price', Ext.apply(getSortersConfig('Price', {})))
-				})
+			if (!view.longTapSearchFilter)
+				view.offerProductStore.filter ( view.longTapSearchFilter = {
+					property: 'name',
+					value: options.event.target.innerText,
+					anyMatch: true,
+					caseSensitive: false
+				});
+			else
+				console.log ('view.longTapSearchFilter')
 			;
 			
-			view.pricePanel = Ext.create(cfg);
+		} else {
 			
-			view.cmpLinkArray.push(view.pricePanel);
+			iel.addCls('editing');
+			
+			view.pricePanel || Ext.dispatch ( Ext.apply ( options, {
+				action: 'setUpDetailPanel'
+			}));
+			
+			view.pricePanel.setHeight(list.getHeight() * 2 / 3);
+			view.pricePanel.iel = iel;
+			view.pricePanel.refreshData(productRec);
 		}
-
-		view.pricePanel.setHeight(list.getHeight() * 2 / 3);
-		view.pricePanel.iel = iel;
-
-		var offerProductStore = view.pricePanel.getComponent('productList').store,
-			priceStore = view.hasPriceTable ? view.pricePanel.getComponent('priceList').store : undefined,
-			shipmentStore = view.pricePanel.getComponent('shipmentList').store
-		;
-
-		shipmentStore.clearFilter(true);
+	},
+	
+	
+	setUpDetailPanel: function (options) {
 		
-		offerProductStore.load({
-			filters: [{property: 'id', value: productRec.get('product')}],
-			scope: view,
-			limit: 0,
-			callback: function() {
-
-				shipmentStore.load({
-					scope: this,
-					limit: 0,
-					filters: [{property: 'customer', value: this.saleOrder.get('customer')}],
-					callback: function() {
-
-						var shipPosStore = this.pricePanel.shipPositionStore = createStore('ShipmentPosition', {});
-						shipPosStore.load({
-							filters: [{property: 'product', value: productRec.get('product')}],
-							scope: this,
-							limit: 0,
-							callback: function() {
-
-								shipmentStore.filterBy(function(item) {
-									return shipPosStore.findExact('shipment', item.get('id')) !== -1;
-								}, this);
-
-								shipmentStore.each(function(rec) {
-
-									var pos = shipPosStore.findRecord('shipment', rec.getId(), undefined, undefined, true , true);
-									Ext.apply(rec.data, {name: offerProductStore.getAt(0).get('name'), price: pos.get('price'), volume: pos.get('vol')});
-								});
-
-								this.pricePanel.showBy(iel, false, false);
-								this.pricePanel.setActiveItem(localStorage.getItem('productInfoTab'));
-
-								this.pricePanel.getComponent('shipmentList').refresh();
-								
-								this.hasPriceTable && priceStore.load({
-									filters: [{property: 'product', value: productRec.get('product')}],
-									scope: this,
-									limit: 0
-								});
-							}
-						});
-					}
-				});
+		var view = options.view,
+			list = options.list,
+			item = options.item
+		;
+		
+		var cfg = {
+			
+			xtype: 'tabpanel',
+			tabBarDock: 'top',
+			tabBar: {ui: 'light', height: 50},
+			floating: true,
+			width: list.getWidth() / 2,
+			
+			items: [
+				{
+					xtype: 'list',
+					title: 'Товар',
+					scroll: false,
+					itemId: 'productList',
+					itemTpl: getItemTplMeta('Product', {useDeps: false, groupField: 'category'}).itemTpl,
+					store: createStore('Product', Ext.apply(getSortersConfig('Product', {})))
+				},
+				{
+					xtype: 'list',
+					title: 'Отгрузки',
+					itemId: 'shipmentList',
+					itemTpl: getItemTpl('ShipmentProduct'),
+					store: createStore('Shipment', Ext.apply(getSortersConfig('Shipment', {})))
+				}
+			],
+			
+			listeners: {
+				hide: function() {
+					this.iel.removeCls('editing');
+				},
+				cardswitch: function(panel, newC, oldC) {
+					localStorage.setItem('productInfoTab', newC.itemId);
+				}
 			}
-		});
+			
+		};
+		
+		if (view.hasPriceTable)
+			cfg.items.push({
+				xtype: 'list',
+				title: 'Цены',
+				itemId: 'priceList',
+				itemTpl: getItemTplMeta('Price', {
+					useDeps: false,
+					groupField: 'category',
+					filterObject: {modelName: 'Product'}
+				}).itemTpl,
+				store: createStore('Price', Ext.apply(getSortersConfig('Price', {})))
+			})
+		;
+		
+		cfg.refreshData = function (productRec) {
+			
+			var productInfoStore = view.pricePanel.getComponent('productList').store,
+				priceStore = view.hasPriceTable ? view.pricePanel.getComponent('priceList').store : undefined,
+				shipmentStore = view.pricePanel.getComponent('shipmentList').store
+			;
+			
+			shipmentStore.clearFilter(true);
+			
+			productInfoStore.load({
+				
+				filters: [{property: 'id', value: productRec.get('product')}],
+				scope: view,
+				limit: 0,
+				
+				callback: function() {
+					
+					shipmentStore.load({
+						scope: this,
+						limit: 0,
+						filters: [{property: 'customer', value: view.saleOrder.get('customer')}],
+						
+						callback: function() {
+							var shipPosStore = this.pricePanel.shipPositionStore
+								= createStore('ShipmentPosition', {})
+							;
+							
+							shipPosStore.load({
+								filters: [{property: 'product', value: productRec.get('product')}],
+								scope: this,
+								limit: 0,
+								callback: function() {
+									
+									shipmentStore.filterBy(function(item) {
+										return shipPosStore.findExact('shipment', item.get('id')) !== -1;
+									}, this);
+									
+									shipmentStore.each(function(rec) {
+										
+										var pos = shipPosStore.findRecord ('shipment'
+											, rec.getId(), undefined, undefined, true , true
+										);
+										
+										Ext.apply(rec.data, {
+											name: productInfoStore.getAt(0).get('name'),
+											price: pos.get('price'), volume: pos.get('vol')
+										});
+									});
+									
+									this.pricePanel.showBy(iel, false, false);
+									this.pricePanel.setActiveItem(localStorage.getItem('productInfoTab'));
+									this.pricePanel.getComponent('shipmentList').refresh();
+									
+									this.hasPriceTable && priceStore.load({
+										filters: [{property: 'product', value: productRec.get('product')}],
+										scope: this,
+										limit: 0
+									});
+									
+								}
+							});
+						}
+					});
+				}
+			});
+		}
+		
+		
+		view.cmpLinkArray.push(
+			view.pricePanel = Ext.create(cfg)
+		);
+		
 	},
 
 	addOfferProductList: function(options) {
@@ -936,15 +987,21 @@ Ext.regController('SaleOrder', {
 	},
 
 	expandFocusedProduct: function(options) {
+		
 		var view = options.view,
 			doms = view.productList.getEl().query('.x-list-item .isNonHidable')
 		;
-
+		
 		Ext.each(doms, function(dom) {
 			var el = Ext.get(dom);
-
 			el.up('.x-list-item').addCls('active').up('.x-list-group-items').addCls('hasActive');
 		});
+		
+		doms = view.productList.getEl().query('.x-list-group');
+		
+		if (doms.length ==1) {
+			Ext.get(doms[0]).down('.x-list-group-items').addCls('expanded');
+		}
 	},
 
 	toggleActiveOn: function( options ) {

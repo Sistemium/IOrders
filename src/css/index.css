@@ -126,6 +126,8 @@
 
 .x-list-item .info .taste {
 	background-color: silver;
+	border-radius: 3px;
+	padding: 2px 4px;
 }
 
 .swipable.discount {
