@@ -332,8 +332,6 @@ var getItemTpl = function (modelName) {
 							  + '<tpl if="rel &gt; 1"><span>Вложение: {rel}</span></tpl>'
 							  + '<tpl if="factor &gt; 1"><span>Кратность: {factor}</span></tpl>'
 							  + '<tpl if="packageRel &gt; 1"><span class="swipable packageRel">В коробе: {packageRel}</span></tpl>'
-							+ '</small>'
-							+ '<small>'
 							  //+ '<tpl if="stockLevel &gt; 2"><span>Остаток: {stockLevel}</span></tpl>'
 							  + '<tpl if="volume"><span class="swipable volume1">Разделить: {volume1} + {volume0}</span></tpl>'
 							  + '<tpl if="cost"><span>Стоимость: <span class="cost">{cost}</span></span></tpl>'

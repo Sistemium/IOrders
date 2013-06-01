@@ -99,6 +99,12 @@
 .x-list-item .swipable {
 	background-color: #EEEEEE;
 }
+
+.x-list-item small {
+	display: block;
+	padding-top: 0.5em;
+}
+
 .x-list-item small .swipable {
 	padding-top: 4px;
 	padding-bottom: 4px;
@@ -410,4 +416,8 @@
 
 .title {
 	color: black;
+}
+
+.vSpacer {
+	padding: 0.5em;
 }

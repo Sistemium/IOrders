@@ -1019,8 +1019,14 @@ Ext.regController('Navigator', {
 				enter: 'right',
 				items: [
 					{ text: 'Закрыть панель настроек', name: 'PrefsClose'},
-					//{ text: 'Запросить данные', name: 'XiDownload'},
+					
+					{ xtype: 'panel', cls: 'vSpacer'},
+					
 					{ text: 'Пересоздать БД', name: 'DbRebuild'},
+					{ text: 'Запросить данные', name: 'XiDownload'},
+					
+					{ xtype: 'panel', cls: 'vSpacer'},
+					
 					{ text: 'Сервер-логин', name: 'XiLogin'},
 					{ text: 'Сервер-логоф', name: 'XiLogoff'},
 					{ xtype: 'segmentedbutton', items: [
@@ -1040,6 +1046,9 @@ Ext.regController('Navigator', {
 					{ text: 'Забыть пароль', name: 'ClearLocalStorage'},
 					//{ text: 'Патч', name: 'ApplyPatch'},
 					//{ text: 'Обновить кэш', name: 'CacheRefresh'},
+					
+					{ xtype: 'panel', cls: 'vSpacer'},
+					
 					{ text: 'Перезапустить', name: 'Reload'}
 				],
 				setDisabled: function(state) {
