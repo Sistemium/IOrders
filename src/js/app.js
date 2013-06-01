@@ -90,7 +90,7 @@ Ext.regApplication({
 						data: 'dbversion:'+db.version
 					});
 					
-					window.onerror = function(msg, url, line) {
+					if (!DEBUG) window.onerror = function(msg, url, line) {
 						
 						console.log ('UnhandledException: ' + msg + ' at line ' + line);
 						
@@ -310,7 +310,7 @@ Ext.regApplication({
 	logEvent: function (eventData){
 		var model = Ext.ModelMgr.getModel('Eventlog');
 		
-		if (model) {
+		if (!DEBUG && model) {
 			Ext.ModelMgr.create( eventData, model ).save();
 		}
 		
