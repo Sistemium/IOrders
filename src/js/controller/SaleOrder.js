@@ -161,7 +161,24 @@ Ext.regController('SaleOrder', {
 			listEl = list.getEl()
 		;
 		
-		if(listEl.hasCls('x-product-category-list')) {
+		if ( /taste|needle/.test(options.event.target.className) ){
+			
+			var 
+				item = options.item,
+				view = (options.view = list.up('saleorderview')),
+				iel = (options.iel = Ext.get(item))
+			;
+			
+			Ext.defer (function() {
+				Ext.dispatch(Ext.apply(options, {
+					action: 'toggleParticleFilter'
+				}));
+			}, 100);
+			
+			return;
+		}
+		
+		if (listEl.hasCls('x-product-category-list')) {
 			
 			Ext.dispatch(Ext.apply(options, {action: 'onProductCategoryListItemTap'}));
 			
@@ -801,60 +818,21 @@ Ext.regController('SaleOrder', {
 		
 		var list = options.list,
 			item = options.item,
-			iel = Ext.get(item),
-			productRec = list.getRecord(item),
-			view = (options.view = list.up('saleorderview'))
+			view = (options.view = list.up('saleorderview')),
+			iel = (options.iel = Ext.get(item))
 		;
 		
-		if ( /taste|needle/.test(options.event.target.className) ){
+		iel.addCls('editing');
+		
+		if ( 0 && /taste|needle/.test(options.event.target.className) ){
 			
-			var value = options.event.target.innerText,
-				store = view.offerProductStore,
-				groupEl = iel.up ('.x-list-group'),
-				groupClass = groupEl && groupEl.dom.className
-			;
-			
-			if (!store.filters.containsKey(value))
-				
-				store.filter ( {
-					id: value,
-					property: 'name',
-					value: '>'+value+'<',
-					anyMatch: true,
-					caseSensitive: false
-				});
-				
-			else{
-				
-				store.filters.removeByKey (value);
-				var f = store.filters.clone();
-				store.clearFilter(true);
-				store.filters = f;
-				store.filter();
-				
-			}
-			
-			if (groupClass) {
-				
-				var groupsToExpand = list.getEl().query('.'+groupClass.replace(/ /,'.'));
-				
-				if (groupsToExpand) {
-					
-					var el = Ext.get(groupsToExpand[0]);
-					
-					el && list.setGroupExpanded(
-						Ext.get(el.down('.x-list-group-items')), true, el
-					);
-					
-				}
+			Ext.defer (function() {
 				Ext.dispatch(Ext.apply(options, {
-					action: 'expandFocusedProduct'
+					action: 'toggleParticleFilter'
 				}));
-			}
+			}, 100);
 			
 		} else {
-			
-			iel.addCls('editing');
 			
 			view.pricePanel || Ext.dispatch ( Ext.apply ( options, {
 				action: 'setUpDetailPanel'
@@ -862,7 +840,70 @@ Ext.regController('SaleOrder', {
 			
 			view.pricePanel.setHeight(list.getHeight() * 2 / 3);
 			view.pricePanel.iel = iel;
-			view.pricePanel.refreshData(productRec);
+			view.pricePanel.refreshData(list.getRecord(item));
+		}
+	},
+	
+	
+	toggleParticleFilter: function (options) {
+		
+		var
+			view = options.view,
+			list = options.list,
+			iel = options.iel
+		;
+		
+		var
+			value = options.event.target.innerText,
+			store = view.offerProductStore,
+			groupEl = iel.up ('.x-list-group'),
+			groupClass = groupEl && groupEl.dom.className
+		;
+		
+		list.suspendEvents (false);
+		
+		if (!store.filters.containsKey(value))
+			
+			store.filter ( {
+				id: value,
+				property: 'name',
+				value: '>'+value+'<',
+				anyMatch: true,
+				caseSensitive: false
+			});
+			
+		else{
+			
+			store.filters.removeByKey (value);
+			var f = store.filters.clone();
+			store.clearFilter(true);
+			store.filters = f;
+			store.filter();
+			
+		}
+		
+		if (groupClass) {
+			
+			var groupsToExpand = list.getEl().query('.'+groupClass.replace(/ +/g,'.'));
+			
+			if (groupsToExpand) {
+				
+				var el = Ext.get(groupsToExpand[0]);
+				
+				el && Ext.defer(function() {
+					
+					list.onListHeaderTap(
+						false, el.down('.x-list-header')
+					);
+					
+					list.resumeEvents();
+					
+				}, 50, list);
+				
+			}
+			//Ext.dispatch(Ext.apply(options, {
+			//	action: 'expandFocusedProduct'
+			//}));
 		}
 	},
 	

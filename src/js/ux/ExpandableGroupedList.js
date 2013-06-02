@@ -35,10 +35,16 @@ var ExpandableGroupedList = Ext.extend(Ext.List, {
 
 	onListHeaderTap: function(e, t) {
 		
+		console.log(t);
+		
 		var tapedHeaderEl = Ext.get(t),
 			tapedGroupEl = this.getGroupEl(tapedHeaderEl),
 			expanded = tapedGroupEl.hasCls('expanded')
 		;
+		
+		console.log(tapedGroupEl);
+		console.log(tapedHeaderEl);
+		console.log('Expanded', expanded);
 		
 		this.setGroupExpanded(tapedGroupEl, !expanded, tapedHeaderEl);
 		
