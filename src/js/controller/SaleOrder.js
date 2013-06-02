@@ -282,7 +282,7 @@ Ext.regController('SaleOrder', {
 						],
 						
 						getGroupString: function(rec) {
-							return rec.get(this.groupField).replace(/ /g, '_');
+							return rec.get(this.groupField).replace(/ +|\./g, '_');
 						},
 						
 						listeners: {
@@ -814,6 +814,7 @@ Ext.regController('SaleOrder', {
 		Ext.defer(Ext.dispatch, 100, this, [options]);
 	},
 
+	
 	onProductListItemLongTap: function(options) {
 		
 		var list = options.list,
@@ -822,17 +823,9 @@ Ext.regController('SaleOrder', {
 			iel = (options.iel = Ext.get(item))
 		;
 		
-		iel.addCls('editing');
-		
-		if ( 0 && /taste|needle/.test(options.event.target.className) ){
+		if (iel) {
 			
-			Ext.defer (function() {
-				Ext.dispatch(Ext.apply(options, {
-					action: 'toggleParticleFilter'
-				}));
-			}, 100);
-			
-		} else {
+			iel.addCls('editing');
 			
 			view.pricePanel || Ext.dispatch ( Ext.apply ( options, {
 				action: 'setUpDetailPanel'
@@ -842,6 +835,7 @@ Ext.regController('SaleOrder', {
 			view.pricePanel.iel = iel;
 			view.pricePanel.refreshData(list.getRecord(item));
 		}
+		
 	},
 	
 	
