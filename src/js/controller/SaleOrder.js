@@ -257,6 +257,12 @@ Ext.regController('SaleOrder', {
 						remoteFilter: true,
 						remoteSort: false,
 						groupField: 'firstName',
+						filters: newCard.startFilters(options.saleOrder),
+						
+						sorters: [
+							{property: 'firstName', direction: 'ASC'},
+							{property: 'name', direction: 'ASC'}
+						],
 						
 						getGroupString: function(rec) {
 							return rec.get(this.groupField).replace(/ /g, '_');
@@ -308,8 +314,6 @@ Ext.regController('SaleOrder', {
 							
 						},
 						
-						sorters: [{property: 'firstName', direction: 'ASC'}, {property: 'name', direction: 'ASC'}],
-						filters: newCard.startFilters(options.saleOrder),
 						filter: function(filters, value) {
 							
 							var bonusofferProductStore = newCard.bonusofferProductStore,
@@ -317,35 +321,43 @@ Ext.regController('SaleOrder', {
 							;
 							
 							if(bonusProgramStore && filters && (
-									filters.contains && filters.contains(this.isFocusedFilter) || filters == this.isFocusedFilter)
+									filters.contains && filters.contains(this.isFocusedFilter)
+									|| filters == this.isFocusedFilter
+								)
 							) {
 								bonusProgramStore.filter({property: 'isFirstScreen', value: true});
 								bonusofferProductStore.filterBy(function(it) {
 									return bonusProgramStore.findExact('id', it.get('bonusProgram')) !== -1 ? true : false;
 								});
 							}
-
+							
 							Ext.data.Store.prototype.filter.apply(this, arguments);
-
+							
 							if(bonusProgramStore && filters && (
-									filters.contains && filters.contains(this.isFocusedFilter) || filters == this.isFocusedFilter
+									filters.contains && filters.contains(this.isFocusedFilter)
+									|| filters == this.isFocusedFilter
 							)) {
 								bonusofferProductStore.clearFilter(true);
 								bonusProgramStore.clearFilter(true);
 							}
 							
 						},
+						
 						volumeFilter: new Ext.util.Filter({
 							filterFn: function(item) {
 								return item.get('volume') > 0;
 							}
 						}),
+						
 						isFocusedFilter: new Ext.util.Filter({
 							filterFn: function(item) {
 								if (!newCard.bonusofferProductStore) return false;
-								return newCard.bonusofferProductStore.findExact('product', item.get('product')) !== -1 ? true : false;
+								return (newCard.bonusofferProductStore.findExact('product'
+									, item.get('product')
+								) !== -1) ? true : false;
 							}
 						})
+						
 					});
 
 					newCard.offerProductStore.on ( 'load'
@@ -372,7 +384,7 @@ Ext.regController('SaleOrder', {
 							list: newCard.productList}
 						)
 					);
-
+					
 					newCard.offerProductStore.load({
 						limit: 0,
 						callback: function(r, o, s) {
@@ -772,16 +784,16 @@ Ext.regController('SaleOrder', {
 	},
 	
 	onProductCategoryListItemTap: function(options) {
-
+		
 		var list = options.list,
 			rec = list.getRecord(options.item),
 			view = list.up('saleorderview')
 		;
-
+		
 		view.setLoading(true);
-
+		
 		Ext.apply(options, {action: 'addOfferProductList', view: view, categoryRec: rec});
-
+		
 		Ext.defer(Ext.dispatch, 100, this, [options]);
 	},
 
@@ -791,21 +803,54 @@ Ext.regController('SaleOrder', {
 			item = options.item,
 			iel = Ext.get(item),
 			productRec = list.getRecord(item),
-			view = list.up('saleorderview')
+			view = (options.view = list.up('saleorderview'))
 		;
 		
-		if (options.event.target.className == 'taste'){
+		if ( /taste|needle/.test(options.event.target.className) ){
 			
-			if (!view.longTapSearchFilter)
-				view.offerProductStore.filter ( view.longTapSearchFilter = {
+			var value = options.event.target.innerText,
+				store = view.offerProductStore,
+				groupEl = iel.up ('.x-list-group'),
+				groupClass = groupEl && groupEl.dom.className
+			;
+			
+			if (!store.filters.containsKey(value))
+				
+				store.filter ( {
+					id: value,
 					property: 'name',
-					value: options.event.target.innerText,
+					value: '>'+value+'<',
 					anyMatch: true,
 					caseSensitive: false
 				});
-			else
-				console.log ('view.longTapSearchFilter')
-			;
+				
+			else{
+				
+				store.filters.removeByKey (value);
+				var f = store.filters.clone();
+				store.clearFilter(true);
+				store.filters = f;
+				store.filter();
+				
+			}
+			
+			if (groupClass) {
+				
+				var groupsToExpand = list.getEl().query('.'+groupClass.replace(/ /,'.'));
+				
+				if (groupsToExpand) {
+					
+					var el = Ext.get(groupsToExpand[0]);
+					
+					el && list.setGroupExpanded(
+						Ext.get(el.down('.x-list-group-items')), true, el
+					);
+					
+				}
+				Ext.dispatch(Ext.apply(options, {
+					action: 'expandFocusedProduct'
+				}));
+			}
 			
 		} else {
 			

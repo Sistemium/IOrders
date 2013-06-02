@@ -117,6 +117,9 @@
 .x-list-item .needle{
 	font-weight: bold;
 	color: blue;
+	background-color: #DDDDDD;
+	border-radius: 3px;
+	padding: 2px 4px;
 }
 
 .x-list-item .info small > span {
