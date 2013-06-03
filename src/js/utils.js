@@ -372,7 +372,8 @@ var getItemTplStatic = function (modelName) {
 		;
 		
 		case 'OfferProduct':
-			return '<div class="hbox volume1 '
+			return '<div class="<tpl if="unfolded">un</tpl>folded">'
+				+'<div class="hbox volume1 '
 				+'<tpl if="lastActive"> active</tpl>'
 				+'<tpl if="isNonHidable"> isNonHidable</tpl>'
 				+'<tpl if="BonusProgram_tag.search(\'Ф\') != -1"> focused</tpl>'
@@ -388,8 +389,12 @@ var getItemTplStatic = function (modelName) {
 					
 				+ '</div>'
 				
-				+ '<div class="rightbox total volume tapdiscloser">'
+				+ '<div class="rightbox total volume folderUnfolder">'
 					+ '<p>{volume}</p>'
+					+ '<p class="untapme"><small>'
+						+ '<tpl if="volume0 &gt; 0">{volume0} + {volume1}</tpl>'
+						+ '<tpl if="volumeBonus &gt; 0"> + {volumeBonus}</tpl>'
+					+ '</small></p>'
 				+ '</div>'
 				
 			+ '</div>'
@@ -429,16 +434,13 @@ var getItemTplStatic = function (modelName) {
 				+ '</div>'
 				
 				+ '<div class="rightbox vbox volumebox">'
-					+ '<p class="untapme">'
-						+ '<tpl if="volume0 &gt; 0">{volume0} + {volume1}</tpl>'
-						+ '<tpl if="volumeBonus &gt; 0"> + {volumeBonus}</tpl>'
-					+ '</p>'
 					+ '<p class="swipable tapme volume1 green">Бух = {volume1}</p>'
 					+ '<p class="swipable tapme volume0 red">Упр = {volume0}</p>'
 					+ '<p class="swipable tapme volumeBonus gray">Бонус = {volumeBonus}</p>'
 				+ '</div>'
 				
 			+ '</small>'
+		+ '</div>'
 		;
 		
 	}

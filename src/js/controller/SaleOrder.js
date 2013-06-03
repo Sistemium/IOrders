@@ -134,17 +134,29 @@ Ext.regController('SaleOrder', {
 		});
 
 		var tc = saleOrderPosStore.sum('cost').toFixed(2)
-			, tsc = saleOrderPosStore.sum('selfCost').toFixed(2);
+			, tsc = saleOrderPosStore.sum('selfCost').toFixed(2)
+			, tc0 = 0
+			, tc1 = 0
+		;
+		
+		saleOrderPosStore.each (function (rec) {
+			tc0 += rec.get('price0') * rec.get('volume0');
+			tc1 += rec.get('price1') * rec.get('volume1');
+		});
 
-		view.saleOrder.set ('totalCost', tc);
-		view.saleOrder.set ('totalSelfCost', tsc);
+		view.saleOrder.set ({
+			totalCost: tc,
+			totalCost1: tc1.toFixed(2),
+			totalCost0: tc0.toFixed(2),
+			totalSelfCost: tsc
+		});
 
 		saleOrderPosStore.sync();
 
 		view.saleOrder.save();
 		view.saleOrder.commit(true);
 
-		if (view.bonusCost != '') {
+		if (view.bonusCost > 0) {
 			view.customerRecord.set (
 				'bonusCost',
 				(view.bonusCost - tc).toFixed(2)
@@ -158,9 +170,15 @@ Ext.regController('SaleOrder', {
 	onListItemTap: function(options) {
 		
 		var list = options.list,
-			listEl = list.getEl()
+			listEl = list.getEl(),
+			rec = list.getRecord(options.item),
+			tapedEl = Ext.get(options.event.target)
 		;
 		
+		if ( rec && tapedEl && tapedEl.is('.folderUnfolder, .folderUnfolder *') ){
+			rec.set('unfolded', rec.get('unfolded') ? false : true);
+		}
+			
 		if ( /taste|needle/.test(options.event.target.className) ){
 			
 			var 
@@ -191,7 +209,7 @@ Ext.regController('SaleOrder', {
 					controller: 'SaleOrder',
 					action: 'toggleBonusOn',
 					view: list.up('saleorderview'),
-					productRec: list.getRecord(options.item)
+					productRec: rec
 				});
 			}
 			
@@ -718,7 +736,9 @@ Ext.regController('SaleOrder', {
 		
 		var data = {
 			volume: options.volume,
-			discount: options.discount
+			discount: options.discount,
+			cost0: 0,
+			cost1: 1
 		}, volume = 0;
 		
 		var setVolumeLogic = function(fname, vMin, vMax) {
@@ -726,6 +746,8 @@ Ext.regController('SaleOrder', {
 			var v = options[fname];
 			
 			v == undefined && (v = parseInt (rec.get(fname) || '0'));
+			
+			v = parseInt(v);
 			
 			v < vMin && (v = vMin);
 			v > vMax && (v = vMax);
@@ -760,12 +782,14 @@ Ext.regController('SaleOrder', {
 				price * (1.0 + setVolumeLogic ('discount1'+fname, dMin, dMax) / 100.0)
 			) . toFixed(2);
 			
-			cost += rel
-				* data ['volume' + fname]
-				* data ['price' + fname]
+			data['cost'+fname] += rel
+				* parseFloat (data ['volume' + fname])
+				* parseFloat (data ['price' + fname])
 			;
 			
 		});
+		
+		cost = data.cost1 + data.cost0;
 		
 		volume > 0 && (
 			price = cost / volume
@@ -798,19 +822,25 @@ Ext.regController('SaleOrder', {
 		
 		var view = options.view,
 			btb = view.getDockedComponent('bottomToolbar'),
-			tc = view.saleOrder.get('totalCost') || 0,
-			tsc = view.saleOrder.get('totalSelfCost') || 0,
-			tg = tc - tsc - view.dohodThreshold - (view.saleOrder.get('deliveryCost') || 0),
-			orderThreshold = view.saleOrder.get('orderThreshold') || 0
+			data = {
+				totalCost: view.saleOrder.get('totalCost') || 0,
+				totalCost0: view.saleOrder.get('totalCost0') || 0,
+				totalCost1: view.saleOrder.get('totalCost1') || 0,
+				totalSelfCost: view.saleOrder.get('totalSelfCost') || 0,
+				orderThreshold: view.saleOrder.get('orderThreshold') || 0,
+				bonusRemains: view.saleOrder.get('isBonus') ? (view.bonusCost - tc) : undefined
+			}
 		;
 		
-		btb.getComponent('ShowCustomer').setText( btb.titleTpl.apply ({
-			totalCost: tc.toFixed(2),
-			bonusRemains: view.saleOrder.get('isBonus') ? (view.bonusCost - tc).toFixed(2): undefined,
-			totalSelfCost: tsc,
-			totalGain: view.saleOrder.get('isBonus') ? undefined : tg.toFixed(2),
-			orderThreshold: orderThreshold
-		}));
+		Ext.iterate(data, function(k,v,o) {
+			
+			if (typeof v == 'number')
+				o[k] = v.toFixed(2);
+			
+		});
+		
+		btb.getComponent('ShowCustomer').setText( btb.titleTpl.apply (data));
+		
 	},
 	
 	onProductCategoryListItemTap: function(options) {

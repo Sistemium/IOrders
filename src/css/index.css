@@ -73,16 +73,18 @@
 	padding: 0.25em 0.4em;
 }
 
-.x-list-item .hbox .rightbox, .x-list-item .hbox .encashSumm {
-	color: green;
-	margin-right: -9px;
+.x-list-item .hbox .rightbox.total, .x-list-item .hbox .encashSumm {
+	color: gray;
+	margin-right: -4px;
 	text-align: center;
 	font-weight: bold;
-	padding-top: 0.5em;
+	padding: 0.5em 18px;
+	background-color: #EEEEEE;
+	-webkit-border-radius: 5px;
 }
 
 .total {
-	width: 4em;
+	width: 5em;
 }
 
 .x-list-item .hbox .leftbox {
@@ -256,18 +258,6 @@
 
 .x-list.x-table-list .x-list-item.x-item-selected small {
 	color: gray;
-}
-
-.x-list-item .tapme {
-	display: none;
-}
-
-.x-list-item.x-product-selected .tapme {
-	display: inherit;
-}
-
-.x-list-item.x-product-selected .untapme {
-	display: none;
 }
 
 .x-list.x-table-list .x-item-selected .x-list-disclosure {
@@ -461,7 +451,7 @@
 	text-align: right;
 }
 
-.hbox p {
+.hbox > * {
 	margin-right: 1em;
 }
 
@@ -470,7 +460,7 @@
 	margin-bottom: 2px;
 }
 
-.x-list-item.x-product-selected .rightbox.volumebox {
+.x-list-item .unfolded .rightbox.volumebox {
 	width:200px;
 	text-align: center;
 }
@@ -482,3 +472,13 @@
 	margin-right: auto;
 	text-align: center;
 }
+
+
+.x-list-item .folded .tapme {
+	display: none;
+}
+
+.x-list-item .unfolded .untapme {
+	display: none;
+}
+
