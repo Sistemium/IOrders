@@ -465,22 +465,25 @@ Ext.regController('SaleOrder', {
 						
 						if (offerRec) {
 							
+							var volumes = ['volume', 'volume1', 'volumeBonus'];
+							var prices = ['price', 'price1', 'price10', 'price11'];
+							var discounts = ['discount0', 'discount1', 'discount10', 'discount11'];
+							
 							offerRec.editing = true;
-							offerRec.set('volume', rec.get('volume'));
+							offerRec.set(rec.data);
 							
-							var c =
-								offerRec.get('rel')
-									* offerRec.get('price')
-									* rec.get('volume')
-							;
+							Ext.each (prices, function(p, i) {
+								var discount = Math.round(
+									(rec.get(p) - rec.get('priceOrigin'))
+										/ rec.get('priceOrigin') * 100.0
+								);
+								offerRec.set (discounts[i], discount);
+							});
 							
-							tc += c;
+							offerRec.set('volume0', rec.get('volume') - rec.get('volume1'));
 							
-							offerRec.set('cost',c.toFixed(2));
 							offerRec.editing = false;
 							offerRec.commit(true);
-							
-							rec.set(offerRec.data);
 							
 						}
 						
@@ -655,129 +658,129 @@ Ext.regController('SaleOrder', {
 
 	onListItemSwipe: function(options) {
 		
-		var rec = options.list.store.getAt(options.idx),
-			volume = parseInt(rec.get('volume') ? rec.get('volume') : '0'),
-			volume1 = parseInt(rec.get('volume1') ? rec.get('volume1') : '0'),
-			factor = parseInt(rec.get('factor')),
-			sign = options.event.direction === 'left' ? -1 : 1
+		var listEl = Ext.get(options.event.target),
+			rec = options.list.store.getAt(options.idx),
+			sign = options.event.direction === 'left' ? -1 : 1,
+			factor = 1
 		;
 		
-		!volume && (volume = 0);
-		!volume1 && (volume1 = 0);
-		
-		if (options.event && options.event.target) {
-			
-			var clss = options.event.target.className;
-			var classes = [];
-			
-			if (clss) {
-				classes = clss.split(' ');
-				classes.length && (clss = classes [classes.length - 1]);
-			}
-			
-			switch (clss) {
-				
-				case 'price':
-					
-					var discount0 = rec.get('discount0'),
-						discount1 = rec.get('discount1'),
-						priceOrigin = rec.get('priceOrigin')
-					;
-					
-					if (priceOrigin) {
-						
-						discount0 = discount0 - sign;
-						priceOrigin *= (1.0 - discount0/100.0);
-						
-						rec.editing=true;
-						rec.set ({
-							price: priceOrigin.toFixed(2),
-							discount0: discount0,
-							discount1: discount1 ? discount1 : 0
-						});
-						rec.editing=false;
-						rec.commit();
-					}
-					
-				break;
-				
-				case 'volume1':
-					volume1 -= sign * factor;
-				break;
-				
-				case 'packageRel':
-					factor=rec.get('packageRel');
-					
-				default:
-					volume += sign * factor;
-				break;
-				
-			}
-			
-			Ext.dispatch (Ext.apply(options, {
+		var data = {
 				action: 'setVolume',
-				volume: volume,
-				volume1: volume1,
 				rec: rec
-			}));
+			},
+			fname,
+			fnames = [
+				'volume1', 'volume0','volumeBonus', 'packageRel',
+				'discount0', 'discount1','discount10','discount11'
+			]
+		;
+		
+		Ext.each (fnames, function (f) {
+			
+			if (listEl.hasCls(f) || listEl.is('.'+f+' *'))
+				fname = f;
+			
+		});
+		
+		if (fname) {
+			
+			if (fname == 'packageRel') {
+				factor = rec.get(fname);
+				fname = 'volume1';
+			}
+			
+			var v = parseInt (rec.get(fname) || '0');
+			
+			data[fname] = v + sign * factor;
+			
+			Ext.dispatch( Ext.apply( options, data ));
+			
 		}
+		
 	},
 	
 	setVolume: function (options) {
 		
 		var rec = options.rec,
-			oldCost = rec.get('cost'),
-		    view = options.list.up('saleorderview')
+		    view = options.view || options.list.up('saleorderview'),
+			rel = parseInt(rec.get('rel')) 
 		;
 		
-		var volume = options.volume, 
-			volume1 = options.volume1
+		var data = {
+			volume: options.volume,
+			discount: options.discount
+		}, volume = 0;
+		
+		var setVolumeLogic = function(fname, vMin, vMax) {
+			
+			var v = options[fname];
+			
+			v == undefined && (v = parseInt (rec.get(fname) || '0'));
+			
+			v < vMin && (v = vMin);
+			v > vMax && (v = vMax);
+			
+			return (data[fname] = v);
+			
+		}
+		
+		Ext.each (['volume0', 'volume1', 'volumeBonus'], function (fname) {
+			volume += setVolumeLogic (fname,0);
+		});
+		
+		if (data.volume == undefined)
+			data.volume = volume
 		;
 		
-		if (volume == undefined)
-			volume = parseInt (rec.get('volume') || '0')
+		volume = data.volume;
+		
+		var cost = 0,
+			price = parseFloat (rec.get('priceOrigin') || '0'),
+			dMin = -10,
+			dMax = 10
 		;
 		
-		if (volume1 == undefined)
-			volume1 = parseInt (rec.get('volume1') || '0')
-		;
+		Ext.each (['0', '1'], function (fname) {
+			
+			data['price'+fname] = (
+				price * (1.0 + setVolumeLogic ('discount'+fname, dMin, dMax) / 100.0)
+			) . toFixed(2);
+			
+			data['price1'+fname] = (
+				price * (1.0 + setVolumeLogic ('discount1'+fname, dMin, dMax) / 100.0)
+			) . toFixed(2);
+			
+			cost += rel
+				* data ['volume' + fname]
+				* data ['price' + fname]
+			;
+			
+		});
 		
-		
-		oldCost > 0 || (oldCost = 0);
-		
-//		options.list.scroller.disable();
-		
-		volume < 0 && (volume = 0);
-		volume1 < 0 && (volume1 = 0);
-		
-		volume1 > volume && (volume1 = volume);
-		
-		var cost = volume * parseInt(rec.get('rel')) * parseFloat(rec.get('price'));
+		volume > 0 && (
+			price = cost / volume
+		);
 		
 		rec.editing=true;
-		rec.set('volume', volume);		
-		rec.set('cost', cost.toFixed(2));
-		rec.set('volume1', volume1);
-		rec.set('volume0', volume - volume1);
-		rec.editing = false;
 		
-		Ext.dispatch(Ext.apply(options, {
-			action: 'saveOffer',
-			view: view
-		}));
-		
-		Ext.dispatch(Ext.apply(options, {
-			action: 'calculateTotalCost'
-		}));
+			rec.set( Ext.apply( data, {
+				price: price.toFixed(2),
+				volume: volume,
+				cost: cost.toFixed(2)
+			}));
+			
+			rec.editing = false;
+			
+			Ext.dispatch(Ext.apply(options, {
+				action: 'saveOffer',
+				view: view
+			}));
+			
+			Ext.dispatch(Ext.apply(options, {
+				action: 'calculateTotalCost'
+			}));
 		
 		rec.commit();
-		
-		var iel = Ext.get(options.item); 
-		//iel.down('.cost').dom.innerHTML = rec.get('cost');
-		//iel.down('.volume').dom.innerHTML = rec.get('volume');
-		//iel.down('.volume1').dom.innerHTML = rec.get('volume1');
-		
-//		options.list.scroller.enable();
 		
 	},
 	
@@ -1009,7 +1012,7 @@ Ext.regController('SaleOrder', {
 										});
 									});
 									
-									this.pricePanel.showBy(iel, false, false);
+									this.pricePanel.showBy(this.pricePanel.iel, false, false);
 									this.pricePanel.setActiveItem(localStorage.getItem('productInfoTab'));
 									this.pricePanel.getComponent('shipmentList').refresh();
 									
