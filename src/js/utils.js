@@ -282,6 +282,28 @@ var getItemTplMeta = function (modelName, config) {
 	
 }
 
+String.prototype.tplIf = function (o) {
+
+	typeof o == 'string' && (
+		o = { elem: o }
+	);
+	
+	var me = this,
+		replacer = function (p) {
+			return o[p.replace('$','')] || me.toString()
+		}
+	;
+	
+	return '<tpl if="$cond"><$elem>{$vname}</$elem></tpl>'.replace(
+		/(\$[a-z]*(?=\>|\<|\"|\}))/g, replacer
+	);
+
+}
+
+String.prototype.tpl01 = function () {
+	return this + this.replace(/0/g,'1');
+}
+
 var getItemTplStatic = function (modelName) {
 
 	switch(modelName) {
@@ -391,53 +413,63 @@ var getItemTplStatic = function (modelName) {
 				
 				+ '<div class="rightbox total volume folderUnfolder">'
 					+ '<p>{volume}</p>'
-					+ '<p class="untapme"><small>'
-						+ '<tpl if="volume0 &gt; 0">{volume0} + {volume1}</tpl>'
-						+ '<tpl if="volumeBonus &gt; 0"> + {volumeBonus}</tpl>'
-					+ '</small></p>'
 				+ '</div>'
 				
 			+ '</div>'
 			
 			+ '<small class="hbox justify">'
 				
-				+ '<div class="vbox">'
-					+ '<p class="price swipable">Цена: {price}'
+				+ '<div class="untapme hbox">'
+				
+					+ '<tpl if="packageRel &gt; 1">'
+						+'<p class="swipable packageRel">В коробе: {packageRel}</p>'
+					+ '</tpl>'
+					+ '<p class="price">Цена: {priceOrigin}'
 						+ '<tpl if="discount0!=0 || discount1!=0 || discount10!=0 || discount11!=0">'
 							+ '<b class="untapme red"> (!%)</b>'
 						+ '</tpl>'
 					+ '</p>'
-					+ '<p class="tapme swipable discount0">Цена Упр: {price0} ({discount0}%)</p>'
-					+ '<p class="tapme swipable discount1">Цена Бух: {price1} ({discount1}%)</p>'
-					+ '<p class="tapme swipable discount10">Б Цена Упр: {price10} ({discount10}%)</p>'
-					+ '<p class="tapme swipable discount11">Б Цена Бух: {price11} ({discount11}%)</p>'
-				+ '</div>'
-				
-				+ '<div class="untapme hbox">'
-					+ '<tpl if="rel &gt; 1"><p>Вложение: {rel}</p></tpl>'
-					+ '<tpl if="factor &gt; 1"><p>Кратность: {factor}</p></tpl>'
-					//+ '<tpl if="stockLevel &gt; 2"><span>Остаток: {stockLevel}</span></tpl>'
-					+ '<tpl if="packageRel &gt; 1">'
-						+'<p class="swipable packageRel">В коробе: {packageRel}</p>'
-					+ '</tpl>'
 					+ '<tpl if="cost"><p>Стоимость: {cost}</p></tpl>'
+					
 				+ '</div>'
 				
 				+ '<div class="tapme vbox">'
-					+ '<tpl if="rel &gt; 1"><p>Вложение: {rel}</p></tpl>'
-					+ '<tpl if="factor &gt; 1"><p>Кратность: {factor}</p></tpl>'
-					//+ '<tpl if="stockLevel &gt; 2"><span>Остаток: {stockLevel}</span></tpl>'
+				
 					+ '<tpl if="packageRel &gt; 1">'
 						+'<p class="swipable packageRel">В коробе: {packageRel}</p>'
 					+ '</tpl>'
+					+ '<tpl if="rel &gt; 1"><p>Вложение: {rel}</p></tpl>'
+					+ '<tpl if="factor &gt; 1"><p>Кратность: {factor}</p></tpl>'
+					+ '<tpl if="stockLevel &gt; 2"><span>Остаток: {stockLevel}</span></tpl>'
 					+ '<tpl if="cost"><p>Стоимость: {cost}</p></tpl>'
+					
 				+ '</div>'
 				
-				+ '<div class="rightbox vbox volumebox">'
-					+ '<p class="swipable tapme volume1 green">Бух = {volume1}</p>'
-					+ '<p class="swipable tapme volume0 red">Упр = {volume0}</p>'
-					+ '<p class="swipable tapme volumeBonus gray">Бонус = {volumeBonus}</p>'
+				+ '<div class="vbox">'
+					
+					+ ('<div class="scheme0 hbox tapme">'
+						+ '<div>'
+							+ '<p class="swipable discount0">Цена У: {price0} ({discount0}%)</p>'
+							+ '<p class="swipable discount10">Цена Б: {price10} ({discount10}%)</p>'
+						+ '</div>'
+					+ '</div>').tpl01()
+					
 				+ '</div>'
+				
+				+ '<div class="vbox justify">'
+					
+					+ ('<div class="scheme0 hbox tapme">'
+						+ '<div>'
+							+ '<p class="swipable volume0">Схема 0: {volume0}</p>'
+						+ '</div>'
+					+ '</div>').tpl01()
+					
+				+ '</div>'
+				
+				+ '<small class="untapme">'
+					+ '<tpl if="volume0 &gt; 0 && volume1 &gt; 1">{volume0} + {volume1}</tpl>'
+					+ '<tpl if="volumeBonus &gt; 0"> + {volumeBonus}</tpl>'
+				+ '</small>'
 				
 			+ '</small>'
 		+ '</div>'
