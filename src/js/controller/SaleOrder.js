@@ -246,142 +246,35 @@ Ext.regController('SaleOrder', {
 			})
 		};
 		
+		newCard.startFilters = function(saleOrder) {
+			
+			var result = [{
+				property: 'customer',
+				value: saleOrder.get('customer')
+			}];
+			
+			if (tableHasColumn ('Offer', 'saleOrder')) {
+				result.push({
+					property: 'saleOrder',
+					value: saleOrder.get('id')
+				})
+			};
+			
+			return result;
+		}
+		
+		newCard.offerProductStore = createStore( 'Offer',
+			this.configOfferStore ( Ext.apply (options, {
+				view: newCard
+			}))
+		);
+
 		newCard.offerCategoryStore.load({
 			limit: 0,
 			callback: function(r, o, s){
 				
 				if (!s) failureCb('категорий'); else {
 					
-					newCard.startFilters = function(saleOrder) {
-						
-						var result = [{
-							property: 'customer',
-							value: saleOrder.get('customer')
-						}];
-						
-						if (tableHasColumn ('Offer', 'saleOrder')) {
-							result.push({
-								property: 'saleOrder',
-								value: saleOrder.get('id')
-							})
-						};
-						
-						return result;
-					}
-					
-					newCard.offerProductStore = createStore('Offer', {
-						
-						remoteFilter: true,
-						remoteSort: false,
-						groupField: 'firstName',
-						filters: newCard.startFilters(options.saleOrder),
-						
-						sorters: [
-							{property: 'firstName', direction: 'ASC'},
-							{property: 'name', direction: 'ASC'}
-						],
-						
-						getGroupString: function(rec) {
-							return rec.get(this.groupField).replace(/ +|\./g, '_');
-						},
-						
-						listeners: {
-							
-							load: function (store, records) {
-								
-								var sname = '',
-									needle
-								;
-								
-								Ext.each (records, function(rec) {
-									
-									sname = rec.data['name'];
-									sname = sname.replace (/(\".*\")/, '<span class="quoted">$1</span>');
-									
-									needle = rec.data['pieceVolume'];
-									
-									if (needle) {
-										
-										needle == Math.round(needle)
-											&& (needle = needle.toFixed(1))
-										;
-										
-										sname = sname.replace (
-											RegExp ('('+needle+'0*)'),
-											'<span class="needle">$1</span>'
-										);
-										
-									}
-									
-									sname = sname.replace (
-										/(красн\.|красное|кр\.)/i,
-										'<span class="taste red">$1</span>'
-									);
-									
-									sname = sname.replace (
-										/(бел\.|белое)/i,
-										'<span class="taste white">$1</span>'
-									);
-									
-									rec.data['name'] = sname;
-									
-								});
-								
-							}
-							
-						},
-						
-						filter: function(filters, value) {
-							
-							var bonusofferProductStore = newCard.bonusofferProductStore,
-								bonusProgramStore = newCard.bonusProgramStore
-							;
-							
-							if(bonusProgramStore && filters && (
-									filters.contains && filters.contains(this.isFocusedFilter)
-									|| filters == this.isFocusedFilter
-								)
-							) {
-								bonusProgramStore.filter({property: 'isFirstScreen', value: true});
-								bonusofferProductStore.filterBy(function(it) {
-									return bonusProgramStore.findExact('id', it.get('bonusProgram')) !== -1 ? true : false;
-								});
-							}
-							
-							Ext.data.Store.prototype.filter.apply(this, arguments);
-							
-							if(bonusProgramStore && filters && (
-									filters.contains && filters.contains(this.isFocusedFilter)
-									|| filters == this.isFocusedFilter
-							)) {
-								bonusofferProductStore.clearFilter(true);
-								bonusProgramStore.clearFilter(true);
-							}
-							
-						},
-						
-						volumeFilter: new Ext.util.Filter({
-							filterFn: function(item) {
-								return item.get('volume') > 0;
-							}
-						}),
-						
-						isFocusedFilter: new Ext.util.Filter({
-							filterFn: function(item) {
-								if (!newCard.bonusofferProductStore) return false;
-								return (newCard.bonusofferProductStore.findExact('product'
-									, item.get('product')
-								) !== -1) ? true : false;
-							}
-						})
-						
-					});
-
-					newCard.offerProductStore.on ( 'load'
-						, newCard.offerCategoryStore.initLastActive
-						, newCard.offerCategoryStore
-					);
-
 					var saleOrderPositionStore = newCard.saleOrderPositionStore
 						= createStore('SaleOrderPosition', {
 							remoteFilter: true,
@@ -441,6 +334,125 @@ Ext.regController('SaleOrder', {
 		
 	},
 	
+	configOfferStore: function (options) {
+		
+		var view = options.view,
+			rec = options.saleOrder
+		;
+		
+		var config = {
+			
+			remoteFilter: true,
+			remoteSort: false,
+			groupField: 'firstName',
+			filters: view.startFilters(rec),
+			
+			sorters: [
+				{property: 'firstName', direction: 'ASC'},
+				{property: 'name', direction: 'ASC'}
+			],
+			
+			getGroupString: function(rec) {
+				return rec.get(this.groupField).replace(/ +|\./g, '_');
+			},
+			
+			listeners: {
+				
+				load: function (store, records) {
+					
+					view.offerCategoryStore.initLastActive.apply(view.offerCategoryStore,arguments);
+					
+					var sname = '',
+						needle
+					;
+					
+					Ext.each (records, function(rec) {
+						
+						sname = rec.data['name'];
+						sname = sname.replace (/(\".*\")/, '<span class="quoted">$1</span>');
+						
+						needle = rec.data['pieceVolume'];
+						
+						if (needle) {
+							
+							needle == Math.round(needle)
+								&& (needle = needle.toFixed(1))
+							;
+							
+							sname = sname.replace (
+								RegExp ('('+needle+'0*)'),
+								'<span class="needle">$1</span>'
+							);
+							
+						}
+						
+						sname = sname.replace (
+							/(красн\.|красное|кр\.)/i,
+							'<span class="taste red">$1</span>'
+						);
+						
+						sname = sname.replace (
+							/(бел\.|белое)/i,
+							'<span class="taste white">$1</span>'
+						);
+						
+						rec.data['name'] = sname;
+						
+					});
+					
+				}
+				
+			},
+			
+			filter: function(filters, value) {
+				
+				var bonusofferProductStore = view.bonusofferProductStore,
+					bonusProgramStore = view.bonusProgramStore
+				;
+				
+				if(bonusProgramStore && filters && (
+						filters.contains && filters.contains(this.isFocusedFilter)
+						|| filters == this.isFocusedFilter
+					)
+				) {
+					bonusProgramStore.filter({property: 'isFirstScreen', value: true});
+					bonusofferProductStore.filterBy(function(it) {
+						return bonusProgramStore.findExact('id', it.get('bonusProgram')) !== -1 ? true : false;
+					});
+				}
+				
+				Ext.data.Store.prototype.filter.apply(this, arguments);
+				
+				if(bonusProgramStore && filters && (
+						filters.contains && filters.contains(this.isFocusedFilter)
+						|| filters == this.isFocusedFilter
+				)) {
+					bonusofferProductStore.clearFilter(true);
+					bonusProgramStore.clearFilter(true);
+				}
+				
+			},
+			
+			volumeFilter: new Ext.util.Filter({
+				filterFn: function(item) {
+					return item.get('volume') > 0;
+				}
+			}),
+			
+			isFocusedFilter: new Ext.util.Filter({
+				filterFn: function(item) {
+					if (!view.bonusofferProductStore) return false;
+					return (view.bonusofferProductStore.findExact('product'
+						, item.get('product')
+					) !== -1) ? true : false;
+				}
+			})
+			
+		}
+		
+		return config;
+	},
+	
 	onOfferLoad: function (options) {
 		
 		var view = options.view
@@ -465,7 +477,7 @@ Ext.regController('SaleOrder', {
 						
 						if (offerRec) {
 							
-							var volumes = ['volume', 'volume1', 'volumeBonus'];
+							//var volumes = ['volume', 'volume1', 'volumeBonus'];
 							var prices = ['price', 'price1', 'price10', 'price11'];
 							var discounts = ['discount0', 'discount1', 'discount10', 'discount11'];
 							
@@ -477,10 +489,8 @@ Ext.regController('SaleOrder', {
 									(rec.get(p) - rec.get('priceOrigin'))
 										/ rec.get('priceOrigin') * 100.0
 								);
-								offerRec.set (discounts[i], discount);
+								offerRec.set (discounts[i], discount || 0);
 							});
-							
-							offerRec.set('volume0', rec.get('volume') - rec.get('volume1'));
 							
 							offerRec.editing = false;
 							offerRec.commit(true);

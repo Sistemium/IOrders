@@ -31,7 +31,8 @@ var getBoolText = function (value) {
 	return value ? 'Да' : 'Нет';
 }
 
-var getItemTplMeta = function(modelName, config) {
+
+var getItemTplCompute = function(modelName, config) {
 
 	var tableStore = Ext.getStore('tables'),
 		tableRecord = tableStore.getById(modelName),
@@ -67,7 +68,7 @@ var getItemTplMeta = function(modelName, config) {
 				+							'<tpl if="!boolType">'
 				+								'<span class="{cls}">\\{{name}\\}</span>'
 				+							'</tpl>'
-				+							'<tpl if="!end"><span> : </span></tpl>'
+				+							'<tpl if="!end"><span>: </span></tpl>'
 				+						'</tpl>'
 				+					'</tpl>'
 				+				'</p>'
@@ -152,7 +153,7 @@ var getItemTplMeta = function(modelName, config) {
 
 				var parentName = col.get('name')[0].toUpperCase() + col.get('name').substring(1),
 					titleCols = undefined,
-					parentInfo = keyColumns.getCount() === 1 && !tableRecord.hasIdColumn()
+					parentInfo = false && keyColumns.getCount() === 1 && !tableRecord.hasIdColumn()
 				;
 
 				if(col.get('parent')) {
@@ -256,6 +257,33 @@ var getItemTplMeta = function(modelName, config) {
 
 var getItemTpl = function (modelName) {
 
+	var res = getItemTplStatic (modelName);
+	
+	!res && (
+		res = getItemTplCompute (modelName, {useDeps:false}).itemTpl
+	);
+	
+	return res;
+	
+};
+
+
+var getItemTplMeta = function (modelName, config) {
+
+	var tpl = getItemTplStatic (modelName);
+	
+	if (tpl) {
+		return Ext.apply ({
+			itemTpl: tpl
+		}, config)
+	}
+	
+	return getItemTplCompute (modelName, config);
+	
+}
+
+var getItemTplStatic = function (modelName) {
+
 	switch(modelName) {
 		case 'BonusProgramByCustomer':
 			return '<div class="hbox"><div class="data">'
@@ -306,6 +334,41 @@ var getItemTpl = function (modelName) {
 				+		'</small>'
 				+	'</div>';
 		;
+		
+		case 'SaleOrderPosition':
+			return '<div class="hbox">'
+				+ '<div class="data">'
+					+ '<p class="key"><span>{Product_name}</span></p>'
+					+ '<div class="other">'
+						+ '<small class="other-fields">'
+							+ '<div class="volume">'
+								+ '<tpl if="volume &gt; 0">Кол-во: {volume} ='
+									+ ' <span class="green">{volume1}</span>'
+									+ ' <span class="red">{volume0}</span>'
+									+ ' <span class="gray">{volumeBonus}</span>'
+								+ '</tpl>'
+							+ '</div>'
+							+ '<div class="price">'
+								+ '<tpl if="price">Цена: '
+									+ '<tpl if="volume1 &gt; 0">'
+										+ '<span class="green">{price1}'
+											+ '<tpl if="price1 != price11"> ({price11})</tpl>'
+										+ '</span>'
+									+ '</tpl>'
+									+ '<tpl if="volume0 &gt; 0">'
+										+ '<span class="red">{price0}'
+											+ '<tpl if="price0 != price10"> ({price10})</tpl>'
+										+ '</span>'
+									+ '</tpl>'
+								+ '</tpl>'
+							+ '</div>'
+							+ '<div class="cost"><tpl if="cost">Стоимость : {cost}</tpl></div>'
+						+ '</small>'
+					+ '</div>'
+				+ '</div>'
+			+ '</div>'
+		;
+		
 		case 'OfferProduct':
 			return '<div class="hbox volume1 '
 				+'<tpl if="lastActive"> active</tpl>'
@@ -323,7 +386,7 @@ var getItemTpl = function (modelName) {
 					
 				+ '</div>'
 				
-				+ '<div class="rightbox total">'
+				+ '<div class="rightbox total volume tapdiscloser">'
 					+ '<p>{volume}</p>'
 				+ '</div>'
 				
@@ -378,7 +441,8 @@ var getItemTpl = function (modelName) {
 		
 	}
 	
-	return getItemTplMeta(modelName, {useDeps:false}).itemTpl;
+	return false;
+	
 };
 
 var createFieldSet = function(columnsStore, modelName, view) {

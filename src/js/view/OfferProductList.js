@@ -30,20 +30,16 @@ var offerProductList = {
 			if (rec) {
 				
 				var valueField,
-					iel = Ext.get(el.target)
+					iel = Ext.get(el.target),
+					volumes = ['volume0', 'volume1', 'volume']
 				;
 				
-				switch (el.target.className) {
+				Ext.each(volumes, function (fname) {
 					
-					case 'swipable rightbox volume':
-						valueField = 'volume'
-					break;
+					if (iel.hasCls(fname))
+						valueField = fname;
 					
-					case 'swipable volume1':
-						valueField = 'volume1'
-					break;
-					
-				}
+				});
 				
 				if (valueField) {
 					
