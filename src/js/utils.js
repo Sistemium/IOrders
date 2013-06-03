@@ -300,8 +300,21 @@ String.prototype.tplIf = function (o) {
 
 }
 
-String.prototype.tpl01 = function () {
-	return this + this.replace(/0/g,'1');
+String.prototype.tpl01 = function (arr, divider) {
+	
+	var res = this,
+		me = this
+	;
+	
+	typeof arr != 'array'
+		&& (arr = [arr || ['1']])
+	;
+	
+	Ext.each (arr, function (a) {
+		res += (divider||'') + me.replace(/0/g,a)
+	});
+	
+	return res;
 }
 
 var getItemTplStatic = function (modelName) {
@@ -433,7 +446,7 @@ var getItemTplStatic = function (modelName) {
 					
 				+ '</div>'
 				
-				+ '<div class="tapme vbox">'
+				+ '<div class="tapme vbox packStart">'
 				
 					+ '<tpl if="packageRel &gt; 1">'
 						+'<p class="swipable packageRel">В коробе: {packageRel}</p>'
@@ -441,34 +454,46 @@ var getItemTplStatic = function (modelName) {
 					+ '<tpl if="rel &gt; 1"><p>Вложение: {rel}</p></tpl>'
 					+ '<tpl if="factor &gt; 1"><p>Кратность: {factor}</p></tpl>'
 					+ '<tpl if="stockLevel &gt; 2"><span>Остаток: {stockLevel}</span></tpl>'
+					+ '<tpl if="cost"><p>Цена ср.: {price}</p></tpl>'
 					+ '<tpl if="cost"><p>Стоимость: {cost}</p></tpl>'
 					
 				+ '</div>'
 				
-				+ '<div class="vbox">'
+				+ '<div class="vbox tapme prices">'
 					
-					+ ('<div class="scheme0 hbox tapme">'
-						+ '<div>'
-							+ '<p class="swipable discount0">Цена У: {price0} ({discount0}%)</p>'
-							+ '<p class="swipable discount10">Цена Б: {price10} ({discount10}%)</p>'
+					+ ('<div class="swipable scheme0">'
+						+ '<div class="swipable discount0">'
+							+ '<p>Цена У: {price0} ({discount0}%)</p>'
+						+ '</div>'
+						+ '<div class="swipable discount10">'
+							+ '<p>Цена Б: {price10} ({discount10}%)</p>'
 						+ '</div>'
 					+ '</div>').tpl01()
 					
 				+ '</div>'
 				
-				+ '<div class="vbox justify">'
+				+ '<div class="vbox tapme justify volumes">'
 					
-					+ ('<div class="scheme0 hbox tapme">'
-						+ '<div>'
-							+ '<p class="swipable volume0">Схема 0: {volume0}</p>'
-						+ '</div>'
+					+ ('<div class="swipable scheme0 volume0">'
+						+ '<p>Схема 0: {volume0}</p>'
 					+ '</div>').tpl01()
+					
+					+'<div class="swipable schemeBonus volumeBonus">'
+						+ '<p>Бонус: {volumeBonus}</p>'
+					+ '</div>'
 					
 				+ '</div>'
 				
 				+ '<small class="untapme">'
-					+ '<tpl if="volume0 &gt; 0 && volume1 &gt; 1">{volume0} + {volume1}</tpl>'
-					+ '<tpl if="volumeBonus &gt; 0"> + {volumeBonus}</tpl>'
+				
+					+ '<tpl if="volume0 &gt; 0 && volume1 &gt; 1">'
+						+ '<span class="scheme0">{volume0}</span>'.tpl01(1,'+')
+					+ '</tpl>'
+					
+					+ '<tpl if="volumeBonus &gt; 0">'
+						+ '<span class="schemeBonus">+{volumeBonus}</span>'
+					+ '</tpl>'
+					
 				+ '</small>'
 				
 			+ '</small>'

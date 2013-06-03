@@ -445,6 +445,7 @@
 
 .justify {
 	-webkit-box-pack: justify;
+	-webkit-box-align: stretch;
 }
 
 .volumebox.rightbox {
@@ -456,8 +457,7 @@
 }
 
 .vbox .swipable {
-	margin-top: 2px;
-	margin-bottom: 2px;
+	margin-top: 2px auto;
 }
 
 .x-list-item .unfolded .rightbox.volumebox {
@@ -488,4 +488,16 @@
 
 .scheme1 {
 	color: green;
+}
+
+.schemeBonus {
+	color: silver;
+}
+
+.vbox.packStart {
+	-webkit-box-pack: start;
+}
+
+.vbox.volumes {
+	width: 120px;
 }
