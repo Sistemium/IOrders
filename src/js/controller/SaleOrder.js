@@ -113,7 +113,7 @@ Ext.regController('SaleOrder', {
 		Ext.each(offerStore.getUpdatedRecords(), function(rec) {
 			var posRec = saleOrderPosStore.findRecord('product', rec.get('product'), undefined, undefined, true, true)
 				, safeSelfCost = rec.get('selfCost')
-				, selfCost = (safeSelfCost ? safeSelfCost : rec.get('price')) * rec.get('volume');
+				, selfCost = (safeSelfCost ? safeSelfCost : rec.get('priceOrigin')) * rec.get('volume');
 			
 			if (!posRec) {
 				saleOrderPosStore.add (posRec = Ext.ModelMgr.create(Ext.apply({
@@ -167,6 +167,33 @@ Ext.regController('SaleOrder', {
 
 	},
 
+	calculateTotalCost: function(options) {
+		
+		var view = options.view,
+			btb = view.getDockedComponent('bottomToolbar'),
+			data = {
+				totalCost: view.saleOrder.get('totalCost') || 0,
+				totalCost0: view.saleOrder.get('totalCost0') || 0,
+				totalCost1: view.saleOrder.get('totalCost1') || 0,
+				totalSelfCost: view.saleOrder.get('totalSelfCost') || 0,
+				orderThreshold: view.saleOrder.get('orderThreshold') || 0,
+				bonusRemains: view.saleOrder.get('isBonus') ? (view.bonusCost - tc) : undefined
+			}
+		;
+		
+		data.marginAgent = ((data.totalCost - data.totalSelfCost) / data.totalSelfCost * 100.0).toFixed(1);
+		
+		Ext.iterate(data, function(k,v,o) {
+			
+			if (typeof v == 'number')
+				o[k] = v.toFixed(2);
+			
+		});
+		
+		btb.getComponent('ShowCustomer').setText( btb.titleTpl.apply (data));
+		
+	},
+	
 	onListItemTap: function(options) {
 		
 		var list = options.list,
@@ -176,9 +203,16 @@ Ext.regController('SaleOrder', {
 		;
 		
 		if ( rec && tapedEl && tapedEl.is('.folderUnfolder, .folderUnfolder *') ){
-			rec.set('unfolded', rec.get('unfolded') ? false : true);
-		}
 			
+			rec.set('unfolded', rec.get('unfolded') ? false : true);
+			res.commit();
+			
+			Ext.defer(function() {
+				this.updateOffsets();
+				this.scroller && this.scroller.updateBoundary();
+			}, 50, list);
+		}
+		
 		if ( /taste|needle/.test(options.event.target.className) ){
 			
 			var 
@@ -227,11 +261,14 @@ Ext.regController('SaleOrder', {
 		var oldCard = IOrders.viewport.getActiveItem();
 		
 		var newCard = Ext.create({
+			
 			xtype: 'saleorderview',
 			saleOrder: options.saleOrder,
 			saleOrderStatus: options.saleOrderStatus,
 			isNew: options.isNew,
+			
 			ownerViewConfig: {
+				
 				xtype: 'navigatorview',
 				layout: IOrders.newDesign ? {type: 'hbox', pack: 'justify', align: 'stretch'} : 'fit',
 				extendable: oldCard.extendable,
@@ -240,7 +277,9 @@ Ext.regController('SaleOrder', {
 				objectRecord: oldCard.objectRecord,
 				tableRecord: oldCard.tableRecord,
 				ownerViewConfig: oldCard.ownerViewConfig
+				
 			}
+			
 		});
 		
 		var failureCb = function (n) {
@@ -286,7 +325,7 @@ Ext.regController('SaleOrder', {
 				view: newCard
 			}))
 		);
-
+		
 		newCard.offerCategoryStore.load({
 			limit: 0,
 			callback: function(r, o, s){
@@ -303,7 +342,8 @@ Ext.regController('SaleOrder', {
 					);
 					
 					newCard.productList = newCard.productPanel.add(Ext.apply(offerProductList, {
-						flex: 3, store: newCard.offerProductStore, pinHeaders: false
+						flex: 3, store: newCard.offerProductStore, pinHeaders: false,
+						defaultVolume: newCard.saleOrder.get('isWhite') ? 'volume1' : 'volume0'
 					}));
 					
 					newCard.productListIndexBar = newCard.productPanel.add(
@@ -689,7 +729,8 @@ Ext.regController('SaleOrder', {
 		var listEl = Ext.get(options.event.target),
 			rec = options.list.store.getAt(options.idx),
 			sign = options.event.direction === 'left' ? -1 : 1,
-			factor = 1
+			factor = 1,
+			defaultVolume = options.list.defaultVolume
 		;
 		
 		var data = {
@@ -698,7 +739,7 @@ Ext.regController('SaleOrder', {
 			},
 			fname,
 			fnames = [
-				'volume1', 'volume0','volumeBonus', 'packageRel',
+				'volume1', 'volume0','volumeBonus', 'packageRel', 'volume',
 				'discount0', 'discount1','discount10','discount11'
 			]
 		;
@@ -710,11 +751,13 @@ Ext.regController('SaleOrder', {
 			
 		});
 		
+		fname == 'volume' && (fname = defaultVolume);
+		
 		if (fname) {
 			
 			if (fname == 'packageRel') {
 				factor = rec.get(fname);
-				fname = 'volume1';
+				fname = defaultVolume;
 			}
 			
 			var v = parseInt (rec.get(fname) || '0');
@@ -731,7 +774,8 @@ Ext.regController('SaleOrder', {
 		
 		var rec = options.rec,
 		    view = options.view || options.list.up('saleorderview'),
-			rel = parseInt(rec.get('rel')) 
+			rel = parseInt(rec.get('rel')),
+			priceAgent = parseFloat(rec.get('priceAgent') || rec.get('priceOrigin'))
 		;
 		
 		var data = {
@@ -800,7 +844,8 @@ Ext.regController('SaleOrder', {
 			rec.set( Ext.apply( data, {
 				price: price.toFixed(2),
 				volume: volume,
-				cost: cost.toFixed(2)
+				cost: cost.toFixed(2),
+				selfCost: volume * priceAgent
 			}));
 			
 			rec.editing = false;
@@ -818,31 +863,7 @@ Ext.regController('SaleOrder', {
 		
 	},
 	
-	calculateTotalCost: function(options) {
-		
-		var view = options.view,
-			btb = view.getDockedComponent('bottomToolbar'),
-			data = {
-				totalCost: view.saleOrder.get('totalCost') || 0,
-				totalCost0: view.saleOrder.get('totalCost0') || 0,
-				totalCost1: view.saleOrder.get('totalCost1') || 0,
-				totalSelfCost: view.saleOrder.get('totalSelfCost') || 0,
-				orderThreshold: view.saleOrder.get('orderThreshold') || 0,
-				bonusRemains: view.saleOrder.get('isBonus') ? (view.bonusCost - tc) : undefined
-			}
-		;
-		
-		Ext.iterate(data, function(k,v,o) {
-			
-			if (typeof v == 'number')
-				o[k] = v.toFixed(2);
-			
-		});
-		
-		btb.getComponent('ShowCustomer').setText( btb.titleTpl.apply (data));
-		
-	},
-	
+
 	onProductCategoryListItemTap: function(options) {
 		
 		var list = options.list,

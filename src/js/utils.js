@@ -408,7 +408,7 @@ var getItemTplStatic = function (modelName) {
 		
 		case 'OfferProduct':
 			return '<div class="<tpl if="unfolded">un</tpl>folded">'
-				+'<div class="hbox volume1 '
+				+'<div class="hbox volume'
 				+'<tpl if="lastActive"> active</tpl>'
 				+'<tpl if="isNonHidable"> isNonHidable</tpl>'
 				+'<tpl if="BonusProgram_tag.search(\'Ф\') != -1"> focused</tpl>'

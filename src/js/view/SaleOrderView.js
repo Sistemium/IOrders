@@ -47,7 +47,11 @@ var SaleOrderView = Ext.extend(AbstractView, {
 		this.productCategoryList.lockScrollOnExpand
 			&& this.productCategoryList.on('render', function() {this.scroller.disable();});
 
-		this.productPanel = Ext.create({xtype: 'panel', layout: {type: 'vbox', pack: 'justify', align: 'stretch'}, flex: 3});
+		this.productPanel = Ext.create({
+			xtype: 'panel',
+			layout: {type: 'vbox', pack: 'justify', align: 'stretch'},
+			flex: 3
+		});
 
 		this.items = [this.productCategoryList, this.productPanel];
 		
@@ -58,9 +62,10 @@ var SaleOrderView = Ext.extend(AbstractView, {
 					+ '<tpl if="totalCost &lt; orderThreshold"> yellow</tpl>'
 				+ '">{totalCost}'
 					+ '<tpl if="totalCost0 &gt; 0 && totalCost1 &gt; 0">'
-						+ ' = <span class="red">{totalCost0}</span>'
-						+ ' + <span class="green">{totalCost1}</span>'
+						+ ' = <span class="scheme0">{totalCost0}</span>'
+						+ ' + <span class="scheme1">{totalCost1}</span>'
 					+ '</tpl>'
+					+ '<tpl if="markupAgent"><span class="markup"> ({markupAgent}%)</span></tpl>'
 				+ '</span>'
 				
 				+ '<tpl if="bonusRemains"> Остаток бонуса: <span <tpl if="bonusRemains &lt; 0">class="negative"</tpl> >{bonusRemains}</span></tpl>'
