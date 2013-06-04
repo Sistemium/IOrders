@@ -180,7 +180,8 @@ Ext.regController('SaleOrder', {
 				totalCost: view.saleOrder.get('totalCost') || 0,
 				totalCost0: view.saleOrder.get('totalCost0') || 0,
 				totalCost1: view.saleOrder.get('totalCost1') || 0,
-				totalSelfCost: view.saleOrder.get('totalSelfCost') || 0,
+				totalSelfCost: view.saleOrder.get('totalSelfCost')
+					|| view.offerProductStore.summ('selfCost') || 0,
 				orderThreshold: view.saleOrder.get('orderThreshold') || 0,
 				bonusRemains: view.saleOrder.get('isBonus') ? (view.bonusCost - tc) : undefined
 			}
