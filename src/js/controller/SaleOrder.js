@@ -111,9 +111,14 @@ Ext.regController('SaleOrder', {
 		//offerStore.clearFilter(true);
 		
 		Ext.each(offerStore.getUpdatedRecords(), function(rec) {
-			var posRec = saleOrderPosStore.findRecord('product', rec.get('product'), undefined, undefined, true, true)
+			
+			var posRec = saleOrderPosStore.findRecord(
+					'product', rec.get('product'), undefined, undefined, true, true
+				)
 				, safeSelfCost = rec.get('selfCost')
-				, selfCost = (safeSelfCost ? safeSelfCost : rec.get('priceOrigin')) * rec.get('volume');
+				, selfCost = (safeSelfCost ? safeSelfCost : rec.get('priceOrigin'))
+					* rec.get('volume')
+			;
 			
 			if (!posRec) {
 				saleOrderPosStore.add (posRec = Ext.ModelMgr.create(Ext.apply({
@@ -133,10 +138,10 @@ Ext.regController('SaleOrder', {
 
 		});
 
-		var tc = saleOrderPosStore.sum('cost').toFixed(2)
-			, tsc = saleOrderPosStore.sum('selfCost').toFixed(2)
-			, tc0 = 0
-			, tc1 = 0
+		var tc = saleOrderPosStore.sum('cost'),
+			tsc = offerStore.sum('selfCost'),
+			tc0 = 0,
+			tc1 = 0
 		;
 		
 		saleOrderPosStore.each (function (rec) {
@@ -145,10 +150,10 @@ Ext.regController('SaleOrder', {
 		});
 
 		view.saleOrder.set ({
-			totalCost: tc,
+			totalCost: tc.toFixed(2),
 			totalCost1: tc1.toFixed(2),
 			totalCost0: tc0.toFixed(2),
-			totalSelfCost: tsc
+			totalSelfCost: tsc.toFixed(2)
 		});
 
 		saleOrderPosStore.sync();
@@ -181,7 +186,10 @@ Ext.regController('SaleOrder', {
 			}
 		;
 		
-		data.marginAgent = ((data.totalCost - data.totalSelfCost) / data.totalSelfCost * 100.0).toFixed(1);
+		data.markupAgent = data.totalSelfCost > 0
+			? ((data.totalCost - data.totalSelfCost) / data.totalSelfCost * 100.0).toFixed(1)
+			: undefined
+		;
 		
 		Ext.iterate(data, function(k,v,o) {
 			
@@ -205,7 +213,7 @@ Ext.regController('SaleOrder', {
 		if ( rec && tapedEl && tapedEl.is('.folderUnfolder, .folderUnfolder *') ){
 			
 			rec.set('unfolded', rec.get('unfolded') ? false : true);
-			res.commit();
+			rec.commit();
 			
 			Ext.defer(function() {
 				this.updateOffsets();
@@ -775,7 +783,7 @@ Ext.regController('SaleOrder', {
 		var rec = options.rec,
 		    view = options.view || options.list.up('saleorderview'),
 			rel = parseInt(rec.get('rel')),
-			priceAgent = parseFloat(rec.get('priceAgent') || rec.get('priceOrigin'))
+			priceAgent = rec.get('priceAgent')
 		;
 		
 		var data = {
@@ -845,7 +853,7 @@ Ext.regController('SaleOrder', {
 				price: price.toFixed(2),
 				volume: volume,
 				cost: cost.toFixed(2),
-				selfCost: volume * priceAgent
+				selfCost: (data.volume1 + data.volume0) * priceAgent
 			}));
 			
 			rec.editing = false;

@@ -36,7 +36,7 @@ var offerProductList = {
 				
 				Ext.each(volumes, function (fname) {
 					
-					if (iel.hasCls(fname))
+					if (iel.is('.'+fname+' *, .'+fname))
 						valueField = fname;
 					
 				});
