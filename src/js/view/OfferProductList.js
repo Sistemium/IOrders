@@ -31,7 +31,10 @@ var offerProductList = {
 				
 				var valueField,
 					iel = Ext.get(el.target),
-					volumes = ['volume0', 'volume1', 'volumeBonus']
+					volumes = [
+						'volume0', 'volume1', 'volumeBonus',
+						'price0', 'price1', 'price10', 'price11'
+					]
 				;
 				
 				Ext.each(volumes, function (fname) {

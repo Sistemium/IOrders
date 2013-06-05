@@ -467,10 +467,10 @@ var getItemTplStatic = function (modelName) {
 				+ '<div class="vbox tapme prices">'
 					
 					+ ('<div class="swipable scheme0">'
-						+ '<div class="swipable discount0">'
-							+ '<p>Цена У: {price0} ({discount0}%)</p>'
+						+ '<div class="swipable discount0 price0">'
+							+ '<p>Цена: {price0} ({discount0}%)</p>'
 						+ '</div>'
-						+ '<div class="swipable discount10">'
+						+ '<div class="swipable discount10 price10">'
 							+ '<p>Цена Б: {price10} ({discount10}%)</p>'
 						+ '</div>'
 					+ '</div>').tpl01()
@@ -480,8 +480,8 @@ var getItemTplStatic = function (modelName) {
 				+ '<div class="vbox tapme justify volumes">'
 					
 					+ ('<div class="swipable scheme0 volume0">'
-						+ '<p>Схема 0: {volume0}</p>'
-					+ '</div>').tpl01()
+						+ '<p>Схема0: {volume0}</p>'
+					+ '</div>').tpl01().replace(/Схема0/,'Схема2')
 					
 					+'<div class="swipable schemeBonus volumeBonus">'
 						+ '<p>Бонус: {volumeBonus}</p>'

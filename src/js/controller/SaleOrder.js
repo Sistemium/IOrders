@@ -139,7 +139,7 @@ Ext.regController('SaleOrder', {
 		});
 
 		var tc = saleOrderPosStore.sum('cost'),
-			tsc = offerStore.sum('selfCost'),
+			tsc = 0,
 			tc0 = 0,
 			tc1 = 0,
 			tcB = 0
@@ -149,6 +149,7 @@ Ext.regController('SaleOrder', {
 			tc0 += rec.get('price0') * rec.get('volume0');
 			tc1 += rec.get('price1') * rec.get('volume1');
 			tcB += rec.get('priceOrigin') * rec.get('volumeBonus');
+			tsc += rec.get('priceAgent') * (rec.get('volume0') + rec.get('volume1'));
 		});
 
 		view.saleOrder.set ({
@@ -806,9 +807,10 @@ Ext.regController('SaleOrder', {
 			
 			var v = options[fname];
 			
-			v == undefined && (v = parseInt (rec.get(fname) || '0'));
+			v == undefined && (v = data[fname]);
+			v == undefined && (v = parseFloat (rec.get(fname) || '0'));
 			
-			v = parseInt(v);
+			v = parseFloat(v);
 			
 			v < vMin && (v = vMin);
 			v > vMax && (v = vMax);
@@ -818,7 +820,7 @@ Ext.regController('SaleOrder', {
 		}
 		
 		Ext.each (['volume0', 'volume1', 'volumeBonus'], function (fname) {
-			volume += setVolumeLogic (fname,0);
+			volume = setVolumeLogic (fname,0);
 		});
 		
 		if (data.volume == undefined)
@@ -829,11 +831,21 @@ Ext.regController('SaleOrder', {
 		
 		var cost = 0,
 			price = parseFloat (rec.get('priceOrigin') || '0'),
-			dMin = -10,
-			dMax = 10
+			dMin = -25,
+			dMax = 25
 		;
 		
+		Ext.each (['price0', 'price1', 'price10', 'price11'], function (fname) {
+			options[fname] && (
+				data[fname.replace(/[a-z]*(.*)/,'discount$1')] = (
+					(options[fname] - price) / price * 100.0
+				).toDecimal(5)
+			)
+		});
+		
 		Ext.each (['0', '1'], function (fname) {
+			
+			data['volume'+fname] = Math.round(data['volume'+fname]);
 			
 			data['price'+fname] = (
 				price * (1.0 + setVolumeLogic ('discount'+fname, dMin, dMax) / 100.0)
@@ -852,7 +864,7 @@ Ext.regController('SaleOrder', {
 		
 		cost = data.cost1 + data.cost0;
 		
-		volume > 0 && (
+		(volume = data.volume1 + data.volume0 + data.volumeBonus) > 0 && (
 			price = cost / volume
 		);
 		

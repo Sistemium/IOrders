@@ -46,7 +46,7 @@ var AbstractView = Ext.extend(Ext.Panel, {
 	afterDestroy: function() {
 
 		Ext.each(this.cmpLinkArray, function(cmpLink) {
-			cmpLink.destroy();
+			cmpLink && cmpLink.destroy();
 		});
 	}
 });
