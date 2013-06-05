@@ -226,7 +226,7 @@ Ext.regController('SaleOrder', {
 			}, 50, list);
 		}
 		
-		if ( /taste|needle/.test(options.event.target.className) ){
+		if ( /taste|needle|quoted/.test(options.event.target.className) ){
 			
 			var 
 				item = options.item,
