@@ -467,6 +467,11 @@ Ext.regController('SaleOrder', {
 							'<span class="taste white">$1</span>'
 						);
 						
+						sname = sname.replace (
+							/(п\/сух\.|п\/сл\.|сух\.|сл\.|брют)/i,
+							'<span class="taste etc">$1</span>'
+						);
+						
 						rec.data['name'] = sname;
 						
 					});
