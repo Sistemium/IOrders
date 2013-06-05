@@ -317,6 +317,10 @@ String.prototype.tpl01 = function (arr, divider) {
 	return res;
 }
 
+Number.prototype.toDecimal = function (d) {
+	return parseFloat(this.toFixed(d))
+}
+
 var getItemTplStatic = function (modelName) {
 
 	switch(modelName) {
@@ -446,14 +450,15 @@ var getItemTplStatic = function (modelName) {
 					
 				+ '</div>'
 				
-				+ '<div class="tapme vbox packStart">'
+				+ '<div class="tapme vbox justify">'
 				
 					+ '<tpl if="packageRel &gt; 1">'
 						+'<p class="swipable packageRel">В коробе: {packageRel}</p>'
 					+ '</tpl>'
 					+ '<tpl if="rel &gt; 1"><p>Вложение: {rel}</p></tpl>'
 					+ '<tpl if="factor &gt; 1"><p>Кратность: {factor}</p></tpl>'
-					+ '<tpl if="stockLevel &gt; 2"><span>Остаток: {stockLevel}</span></tpl>'
+					+ '<tpl if="stockLevel &gt; 0"><p>Остаток: {stockLevel}</p></tpl>'
+					+ '<tpl if="priceAgent"><p>Цена агента: {priceAgent}</p></tpl>'
 					+ '<tpl if="cost"><p>Цена ср.: {price}</p></tpl>'
 					+ '<tpl if="cost"><p>Стоимость: {cost}</p></tpl>'
 					
@@ -486,12 +491,19 @@ var getItemTplStatic = function (modelName) {
 				
 				+ '<small class="untapme">'
 				
-					+ '<tpl if="volume0 &gt; 0 && volume1 &gt; 1">'
-						+ '<span class="scheme0">{volume0}</span>'.tpl01(1,'+')
+					+ '<tpl if="volumeBonus &gt; 0 || volume0 &gt; 0 && volume1 &gt; 1">'
+						+ '<tpl if="volume0 &gt; 0"><span class="scheme0">{volume0}</span></tpl>'
+						+ '<tpl if="volume0 &gt; 0 && volume1 &gt; 0">'
+							+'+'
+						+ '</tpl>'
+						+ '<tpl if="volume1 &gt; 0"><span class="scheme1">{volume1}</span></tpl>'
 					+ '</tpl>'
 					
 					+ '<tpl if="volumeBonus &gt; 0">'
-						+ '<span class="schemeBonus">+{volumeBonus}</span>'
+						+ '<tpl if="volume0 &gt; 0 || volume1 &gt; 0">'
+							+'+'
+						+ '</tpl>'
+						+ '<span class="schemeBonus">{volumeBonus}</span>'
 					+ '</tpl>'
 					
 				+ '</small>'

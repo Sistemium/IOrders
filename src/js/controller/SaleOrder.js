@@ -141,19 +141,22 @@ Ext.regController('SaleOrder', {
 		var tc = saleOrderPosStore.sum('cost'),
 			tsc = offerStore.sum('selfCost'),
 			tc0 = 0,
-			tc1 = 0
+			tc1 = 0,
+			tcB = 0
 		;
 		
 		saleOrderPosStore.each (function (rec) {
 			tc0 += rec.get('price0') * rec.get('volume0');
 			tc1 += rec.get('price1') * rec.get('volume1');
+			tcB += rec.get('priceOrigin') * rec.get('volumeBonus');
 		});
 
 		view.saleOrder.set ({
-			totalCost: tc.toFixed(2),
-			totalCost1: tc1.toFixed(2),
-			totalCost0: tc0.toFixed(2),
-			totalSelfCost: tsc.toFixed(2)
+			totalCost: tc.toDecimal(2),
+			totalCost1: tc1.toDecimal(2),
+			totalCost0: tc0.toDecimal(2),
+			totalCostBonus: tcB.toDecimal(2),
+			totalSelfCost: tsc.toDecimal(2)
 		});
 
 		saleOrderPosStore.sync();
@@ -164,7 +167,7 @@ Ext.regController('SaleOrder', {
 		if (view.bonusCost > 0) {
 			view.customerRecord.set (
 				'bonusCost',
-				(view.bonusCost - tc).toFixed(2)
+				(view.bonusCost - tc).toDecimal(2)
 			);
 			view.customerRecord.save();
 			view.customerRecord.commit();
@@ -180,22 +183,23 @@ Ext.regController('SaleOrder', {
 				totalCost: view.saleOrder.get('totalCost') || 0,
 				totalCost0: view.saleOrder.get('totalCost0') || 0,
 				totalCost1: view.saleOrder.get('totalCost1') || 0,
+				totalCostBonus: view.saleOrder.get('totalCostBonus') || 0,
 				totalSelfCost: view.saleOrder.get('totalSelfCost')
-					|| view.offerProductStore.summ('selfCost') || 0,
+					|| view.offerProductStore.sum('selfCost') || 0,
 				orderThreshold: view.saleOrder.get('orderThreshold') || 0,
 				bonusRemains: view.saleOrder.get('isBonus') ? (view.bonusCost - tc) : undefined
 			}
 		;
 		
 		data.markupAgent = data.totalSelfCost > 0
-			? ((data.totalCost - data.totalSelfCost) / data.totalSelfCost * 100.0).toFixed(1)
+			? ((data.totalCost - data.totalSelfCost) / data.totalSelfCost * 100.0).toDecimal(1)
 			: undefined
 		;
 		
 		Ext.iterate(data, function(k,v,o) {
 			
 			if (typeof v == 'number')
-				o[k] = v.toFixed(2);
+				o[k] = v.toDecimal(2);
 			
 		});
 		
@@ -443,7 +447,7 @@ Ext.regController('SaleOrder', {
 						if (needle) {
 							
 							needle == Math.round(needle)
-								&& (needle = needle.toFixed(1))
+								&& (needle = needle.toDecimal(1))
 							;
 							
 							sname = sname.replace (
@@ -545,7 +549,7 @@ Ext.regController('SaleOrder', {
 						if (offerRec) {
 							
 							//var volumes = ['volume', 'volume1', 'volumeBonus'];
-							var prices = ['price', 'price1', 'price10', 'price11'];
+							var prices = ['price0', 'price1', 'price10', 'price11'];
 							var discounts = ['discount0', 'discount1', 'discount10', 'discount11'];
 							
 							offerRec.editing = true;
@@ -566,7 +570,6 @@ Ext.regController('SaleOrder', {
 						
 					});
 					
-					view.saleOrder.set('totalCost',tc.toFixed(2));
 					view.saleOrder.commit(true);
 					
 					var customer = view.saleOrder.get('customer');
@@ -791,7 +794,7 @@ Ext.regController('SaleOrder', {
 			volume: options.volume,
 			discount: options.discount,
 			cost0: 0,
-			cost1: 1
+			cost1: 0
 		}, volume = 0;
 		
 		var setVolumeLogic = function(fname, vMin, vMax) {
@@ -829,16 +832,16 @@ Ext.regController('SaleOrder', {
 			
 			data['price'+fname] = (
 				price * (1.0 + setVolumeLogic ('discount'+fname, dMin, dMax) / 100.0)
-			) . toFixed(2);
+			) .toDecimal(2);
 			
 			data['price1'+fname] = (
 				price * (1.0 + setVolumeLogic ('discount1'+fname, dMin, dMax) / 100.0)
-			) . toFixed(2);
+			) .toDecimal(2);
 			
-			data['cost'+fname] += rel
+			data['cost'+fname] += (rel
 				* parseFloat (data ['volume' + fname])
 				* parseFloat (data ['price' + fname])
-			;
+			);
 			
 		});
 		
@@ -851,10 +854,10 @@ Ext.regController('SaleOrder', {
 		rec.editing=true;
 		
 			rec.set( Ext.apply( data, {
-				price: price.toFixed(2),
+				price: price.toDecimal(2),
 				volume: volume,
-				cost: cost.toFixed(2),
-				selfCost: (data.volume1 + data.volume0) * priceAgent
+				cost: cost.toDecimal(2),
+				selfCost: parseFloat(data.volume1 + data.volume0) * priceAgent
 			}));
 			
 			rec.editing = false;

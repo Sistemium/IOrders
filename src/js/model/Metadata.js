@@ -107,7 +107,7 @@ var addMainMenu = function(store, tables) {
 
 	var mainMenu = Ext.ModelMgr.create({
 		id: 'MainMenu',
-		name: 'Главное меню'
+		name: 'Основные понятия'
 	}, 'Table');
 
 	mainMenu.columns().add (
