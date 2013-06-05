@@ -108,8 +108,8 @@ var SaleOrderView = Ext.extend(AbstractView, {
 							name: 'GroupFirstname', itemId: 'GroupFirstname', text: 'По наименованию', scope: this, pressed: true
 					}]
 				}, {
-					text: this.indexBarMode ? 'Скрыть индекс-бар' : 'Показать индекс-бар',
-					altText: !this.indexBarMode ? 'Скрыть индекс-бар' : 'Показать индекс-бар',
+					text: this.indexBarMode ? 'Скрыть индекс' : 'Показать индекс',
+					altText: !this.indexBarMode ? 'Скрыть индекс' : 'Показать индекс',
 					itemId: 'ShowIndexBar',
 					name: 'ShowIndexBar',
 					scope: this
