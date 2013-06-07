@@ -157,7 +157,7 @@ var createStore = function(name, config) {
 			remoteFilter: true,
 			remoteSort: true,
 			clearOnPageLoad: false,
-			pageSize: 20,
+			pageSize: 70,
 			model: name,
 			proxy: {
 				type: 'sql',
