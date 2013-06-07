@@ -491,7 +491,7 @@ var getItemTplStatic = function (modelName) {
 				
 				+ '<small class="untapme">'
 				
-					+ '<tpl if="volumeBonus &gt; 0 || volume0 &gt; 0 && volume1 &gt; 1">'
+					+ '<tpl if="volumeBonus &gt; 0 || volume0 &gt; 0 && volume1 &gt; 0">'
 						+ '<tpl if="volume0 &gt; 0"><span class="scheme0">{volume0}</span></tpl>'
 						+ '<tpl if="volume0 &gt; 0 && volume1 &gt; 0">'
 							+'+'

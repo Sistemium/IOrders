@@ -21,7 +21,7 @@ var createModels = function(tablesStore) {
 					name: cName,
 					type: column.get('type'),
 					useNull: true,
-					defaultValue: null
+					defaultValue: column.get('init')
 				}
 			;
 			

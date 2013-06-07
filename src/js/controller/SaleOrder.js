@@ -355,9 +355,24 @@ Ext.regController('SaleOrder', {
 						}]}
 					);
 					
+					var defaultSchema = '0';
+					
+					if (tableHasColumn('SaleOrder','salesSchema')) {
+						
+						defaultSchema = 2 - newCard.saleOrder.get('salesSchema');
+						defaultSchema == -1 && (defaultSchema = 'Bonus');
+						
+					} else if (tableHasColumn('SaleOrder','isWhite')) {
+						
+						newCard.saleOrder.get('isWhite') == 1 && (
+							defaultSchema = '1'
+						)
+						
+					}
+					
 					newCard.productList = newCard.productPanel.add(Ext.apply(offerProductList, {
 						flex: 3, store: newCard.offerProductStore, pinHeaders: false,
-						defaultVolume: newCard.saleOrder.get('isWhite') ? 'volume1' : 'volume0'
+						defaultVolume: 'volume' + defaultSchema
 					}));
 					
 					newCard.productListIndexBar = newCard.productPanel.add(
