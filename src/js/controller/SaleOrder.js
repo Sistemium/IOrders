@@ -284,7 +284,9 @@ Ext.regController('SaleOrder', {
 			ownerViewConfig: {
 				
 				xtype: 'navigatorview',
-				layout: IOrders.newDesign ? {type: 'hbox', pack: 'justify', align: 'stretch'} : 'fit',
+				layout: IOrders.newDesign
+					? {type: 'hbox', pack: 'justify', align: 'stretch'}
+					: 'fit',
 				extendable: oldCard.extendable,
 				isObjectView: oldCard.isObjectView,
 				isSetView: oldCard.isSetView,
@@ -342,80 +344,95 @@ Ext.regController('SaleOrder', {
 		
 		newCard.offerCategoryStore.load({
 			limit: 0,
-			callback: function(r, o, s){
+			callback: function(r, o, s) {
 				
-				if (!s) failureCb('категорий'); else {
+				if (!s) {
+					failureCb('категорий')
+				} else {
+					Ext.dispatch ( Ext.apply ( options, {
+						action: 'onOfferCategoryStoreLoad',
+						view: newCard
+					}))
+				}
+			}
+		});
+		
+	},
+	
+	onOfferCategoryStoreLoad: function(options){
+		
+		var view = options.view
+		;
+		
+		view.saleOrderPositionStore = createStore(
+			'SaleOrderPosition', {
+				remoteFilter: true,
+				filters: [{
+					property: 'saleOrder',
+					value: view.saleOrder.getId()
+			}]}
+		);
+		
+		var defaultSchema = '0';
+		
+		if (tableHasColumn('SaleOrder','salesSchema')) {
+			
+			defaultSchema = 2 - view.saleOrder.get('salesSchema');
+			defaultSchema == -1 && (defaultSchema = 'Bonus');
+			
+		} else if (tableHasColumn('SaleOrder','isWhite')) {
+			
+			view.saleOrder.get('isWhite') == 1 && (
+				defaultSchema = '1'
+			)
+			
+		}
+		
+		view.productList = view.productPanel.add( offerProductListConfig ({
+			flex: 3,
+			store: view.offerProductStore,
+			pinHeaders: false,
+			defaultVolume: 'volume' + defaultSchema
+		}));
+		
+		view.productListIndexBar = view.productPanel.add(
+			new HorizontalIndexBar({
+				hidden: !view.indexBarMode,
+				list: view.productList}
+			)
+		);
+		
+		view.offerProductStore.load({
+			limit: 0,
+			callback: function(r, o, s) {
+				
+				if (s) {
 					
-					var saleOrderPositionStore = newCard.saleOrderPositionStore
-						= createStore('SaleOrderPosition', {
-							remoteFilter: true,
-							filters: [{
-								property: 'saleOrder',
-								value: options.saleOrder.getId()
-						}]}
-					);
+					view.productPanel.doLayout(); 	
+					view.offerProductStore.remoteFilter = false;
 					
-					var defaultSchema = '0';
-					
-					if (tableHasColumn('SaleOrder','salesSchema')) {
-						
-						defaultSchema = 2 - newCard.saleOrder.get('salesSchema');
-						defaultSchema == -1 && (defaultSchema = 'Bonus');
-						
-					} else if (tableHasColumn('SaleOrder','isWhite')) {
-						
-						newCard.saleOrder.get('isWhite') == 1 && (
-							defaultSchema = '1'
-						)
-						
-					}
-					
-					newCard.productList = newCard.productPanel.add(Ext.apply(offerProductList, {
-						flex: 3, store: newCard.offerProductStore, pinHeaders: false,
-						defaultVolume: 'volume' + defaultSchema
-					}));
-					
-					newCard.productListIndexBar = newCard.productPanel.add(
-						new HorizontalIndexBar({
-							hidden: !newCard.indexBarMode,
-							list: newCard.productList}
-						)
-					);
-					
-					newCard.offerProductStore.load({
-						limit: 0,
-						callback: function(r, o, s) {
+					Ext.dispatch ( Ext.apply ( options, {
+						action: 'onOfferLoad'
+						, view: view
+						, callback: function () {
 							
-							if (s) {
-								
-								newCard.productPanel.doLayout(); 	
-								newCard.offerProductStore.remoteFilter = false;
-								
-								Ext.dispatch ( Ext.apply ( options, {
-									action: 'onOfferLoad'
-									, view: newCard
-									, callback: function () {
-										
-										newCard.offerProductStore.filter (
-											newCard.offerProductStore.isFocusedFilter
-										);
-										
-										newCard.productListIndexBar.loadIndex();
-										
-										IOrders.viewport.setActiveItem (newCard);
-										
-										oldCard.setLoading(false);
-										
-									}
-								}));
-								
-							} else {
-								failureCb('остатков')
-							}
+							view.offerProductStore.filter (
+								view.offerProductStore.isFocusedFilter
+							);
+							
+							view.productListIndexBar.loadIndex();
+							
+							IOrders.viewport.getActiveItem().setLoading(false);
+							
+							IOrders.viewport.setActiveItem (view);
 							
 						}
-					});
+					}));
+					
+				} else {
+					failureCb('остатков')
 				}
+				
 			}
 		});
 		
@@ -456,7 +473,7 @@ Ext.regController('SaleOrder', {
 					Ext.each (records, function(rec) {
 						
 						sname = rec.data['name'];
-						sname = sname.replace (/(\".*\")/, '<span class="quoted">$1</span>');
+						sname = sname.replace (/("[^"]*")/g, '<span class="quoted">$1</span>');
 						
 						needle = rec.data['pieceVolume'];
 						
@@ -502,15 +519,22 @@ Ext.regController('SaleOrder', {
 					bonusProgramStore = view.bonusProgramStore
 				;
 				
-				if(bonusProgramStore && filters && (
+				if (bonusProgramStore && filters && (
 						filters.contains && filters.contains(this.isFocusedFilter)
 						|| filters == this.isFocusedFilter
 					)
 				) {
+					
 					bonusProgramStore.filter({property: 'isFirstScreen', value: true});
+					
 					bonusofferProductStore.filterBy(function(it) {
-						return bonusProgramStore.findExact('id', it.get('bonusProgram')) !== -1 ? true : false;
+						return bonusProgramStore.findExact(
+							'id',
+							it.get('bonusProgram')) !== -1
+								? true : false
+						;
 					});
+					
 				}
 				
 				Ext.data.Store.prototype.filter.apply(this, arguments);
@@ -558,72 +582,88 @@ Ext.regController('SaleOrder', {
 			callback: function(records, operation, s) {
 				if(s) {
 					
-					var tc = 0;
-					
-					// Sync with offer
-					Ext.each(records, function(rec, idx, all) {
-						
-						var offerRec = view.offerProductStore.findRecord ( 'product'
-							, rec.get('product'), undefined, undefined, true, true
-						);
-						
-						if (offerRec) {
-							
-							//var volumes = ['volume', 'volume1', 'volumeBonus'];
-							var prices = ['price0', 'price1', 'price10', 'price11'];
-							var discounts = ['discount0', 'discount1', 'discount10', 'discount11'];
-							
-							offerRec.editing = true;
-							offerRec.set(rec.data);
-							
-							Ext.each (prices, function(p, i) {
-								var discount = Math.round(
-									(rec.get(p) - rec.get('priceOrigin'))
-										/ rec.get('priceOrigin') * 100.0
-								);
-								offerRec.set (discounts[i], discount || 0);
-							});
-							
-							offerRec.editing = false;
-							offerRec.commit(true);
-							
-						}
-						
-					});
-					
-					view.saleOrder.commit(true);
-					
-					var customer = view.saleOrder.get('customer');
-					
-					if (customer) {
-						Ext.ModelMgr.getModel('Customer').load(customer, {
-							success: function(rec) {
-								view.customerRecord = rec;
-								if (view.saleOrder.get('isBonus')){
-									view.bonusCost = rec.get('bonusCost') + view.saleOrder.get('totalCost');
-								};
-								Ext.dispatch({
-									controller: 'SaleOrder',
-									action: 'calculateTotalCost',
-									view: view
-								});
-							}
-						});
-					} else {
-						console.log ('SaleOrder: empty customer');
-					}
-					
-					Ext.dispatch ( Ext.apply ( options , {
-						action: 'setUpBonusProgramming',
+					Ext.dispatch ( Ext.apply ( options, {
+						action: 'onSaleOrderPositionLoad',
+						records: records,
 						callback: callback
-					}));
+					}))
 					
-				} else failureCb('товаров');
+				} else {
+					failureCb('товаров')
+				}
 			}
 		});
 		
 	},
 	
+	
+	onSaleOrderPositionLoad: function (options) {
+		
+		var view = options.view,
+			records = options.records,
+			callback = options.callback
+			tc = 0
+		;
+		
+		// Sync with offer
+		Ext.each(records, function(rec, idx, all) {
+			
+			var offerRec = view.offerProductStore.findRecord ( 'product'
+				, rec.get('product'), undefined, undefined, true, true
+			);
+			
+			if (offerRec) {
+				
+				//var volumes = ['volume', 'volume1', 'volumeBonus'];
+				var prices = ['price0', 'price1', 'price10', 'price11'];
+				var discounts = ['discount0', 'discount1', 'discount10', 'discount11'];
+				
+				offerRec.editing = true;
+				offerRec.set(rec.data);
+				
+				Ext.each (prices, function(p, i) {
+					var discount = Math.round(
+						(rec.get(p) - rec.get('priceOrigin'))
+							/ rec.get('priceOrigin') * 100.0
+					);
+					offerRec.set (discounts[i], discount || 0);
+				});
+				
+				offerRec.editing = false;
+				offerRec.commit(true);
+				
+			}
+			
+		});
+		
+		view.saleOrder.commit(true);
+		
+		var customer = view.saleOrder.get('customer');
+		
+		if (customer) {
+			Ext.ModelMgr.getModel('Customer').load(customer, {
+				success: function(rec) {
+					view.customerRecord = rec;
+					if (view.saleOrder.get('isBonus')){
+						view.bonusCost = rec.get('bonusCost') + view.saleOrder.get('totalCost');
+					};
+					Ext.dispatch({
+						controller: 'SaleOrder',
+						action: 'calculateTotalCost',
+						view: view
+					});
+				}
+			});
+		} else {
+			console.log ('SaleOrder: empty customer');
+		}
+		
+		Ext.dispatch ( Ext.apply ( options , {
+			action: 'setUpBonusProgramming',
+			callback: callback
+		}));
+		
+	},
 	
 	setUpBonusProgramming: function (options) {
 		
