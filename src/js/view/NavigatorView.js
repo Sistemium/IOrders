@@ -9,7 +9,7 @@ var NavigatorView = Ext.extend(AbstractView, {
 	
 	createItems: function() {
 		
-		var tablesStore = Ext.getStore('tables')
+		var tablesStore = Ext.getStore('tables'),
 			modelName = this.objectRecord.modelName,
 		    table = tablesStore.getById(modelName),
 		    formItems = [],
@@ -172,7 +172,8 @@ var NavigatorView = Ext.extend(AbstractView, {
 				
 				var column = columnStore.getById(table.getId() + fieldName);
 				
-				field.setDisabled(!column.get('editable') || disable);
+				if (!(column.get('template') || column.get('compute')))
+					field.setDisabled(!column.get('editable') || disable);
 			});
 			
 		}
@@ -183,7 +184,8 @@ var NavigatorView = Ext.extend(AbstractView, {
 		
 		var tablesStore = Ext.getStore('tables'),
 			listGroupedConfig = getGroupConfig(this.tableRecord),
-			sortersConfig = getSortersConfig(this.tableRecord, listGroupedConfig)
+			sortersConfig = getSortersConfig(this.tableRecord, listGroupedConfig),
+			me=this
 		;
 		
 		this.setViewStore = createStore(this.tableRecord, Ext.apply(listGroupedConfig, sortersConfig));

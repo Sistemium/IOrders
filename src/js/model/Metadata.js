@@ -35,9 +35,11 @@ Ext.regModel('Table', {
 	hasIdColumn: function() {
 		return this.columns().findExact('name', 'id') !== -1 ? true : false;
 	},
+	
 	hasNameColumn: function() {
 		return this.columns().findExact('name', 'name') !== -1 ? true : false;
 	},
+	
 	hasAggregates: function() {
 		return this.getAggregates().getCount() > 0 ? true : false;
 	},
@@ -66,6 +68,7 @@ Ext.regModel('Table', {
 	}
 });
 
+
 Ext.regModel('Column', {
 	fields: [
 			{name: 'id', type: 'string'},
@@ -80,6 +83,8 @@ Ext.regModel('Column', {
 			{name: 'editable', type: 'boolean'},
 			{name: 'title', type: 'boolean'},
 			{name: 'init', type: 'string'},
+			{name: 'compute', type: 'string'},
+			{name: 'template', type: 'string'},
 			{name: 'serverPhantom', type: 'boolean'},
 			{name: 'importFields', type: 'string'}
 	],

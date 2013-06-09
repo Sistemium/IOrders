@@ -88,10 +88,13 @@ var getItemTplCompute = function(modelName, config) {
 				+									'</div>'
 				+								'</tpl>'
 				+							'</tpl>'
-				+							'<tpl if="!parent">'
+				+							'<tpl if="!(parent||template)">'
 				+								'<tpl if="label || name">'
 				+									'<div class="{cls}"><tpl if="name">{name}</tpl></div>'
 				+								'</tpl>'
+				+							'</tpl>'
+				+							'<tpl if="template">'
+				+								'<div class="{cls}">{label} : {template}</div>'
 				+							'</tpl>'
 				+						'</tpl>'
 				+					'</small>'
@@ -238,7 +241,8 @@ var getItemTplCompute = function(modelName, config) {
 					label: label,
 					cls: colName === 'processing' ? colName + ' is-{' + colName + '}' : colName + (isTitle ? ' title' : ''),
 					name: name,
-					name_br: colName[0].toUpperCase() + colName.substring(1) + '_name'
+					name_br: colName[0].toUpperCase() + colName.substring(1) + '_name',
+					template: col.get('template')
 				});
 
 				templateData.cls += (colName === 'processing' ? ' is-{' + colName + '}' : '');
@@ -319,6 +323,10 @@ String.prototype.tpl01 = function (arr, divider) {
 
 Number.prototype.toDecimal = function (d) {
 	return parseFloat(this.toFixed(d))
+}
+
+String.prototype.toSpan = function (cls) {
+	return '<span class="'+cls+'">'+this+'</span>'
 }
 
 var getItemTplStatic = function (modelName) {
@@ -580,6 +588,13 @@ var createFieldSet = function(columnsStore, modelName, view) {
 						fieldConfig = {xtype: 'textfield'};
 					}
 				break;
+			}
+			
+			var tpl = column.get('template');
+			
+			if (tpl) {
+				field.template = new Ext.XTemplate(tpl);
+				fieldConfig = {xtype: 'templatefield'};
 			}
 			
 			var parentName = column.get('parent'),

@@ -1,5 +1,20 @@
 Ext.override(Ext.form.FormPanel, {
 	
+    loadRecord: function(instance) {
+        if (instance && instance.data) {
+            this.setValues(instance.data);
+            
+            this.record = instance;
+			
+			Ext.each(this.fields.items, function(f) {
+				if (f.xtype=='templatefield')
+					f.setData (instance.data)
+			});
+        }
+        
+        return this;
+    },
+
     getValues: function(enabled) {
         var fields = this.getFields(),
             field,

@@ -11,7 +11,8 @@ var createModels = function(tablesStore) {
 					engine: IOrders.dbeng
 				},
 				validations: validations
-			}
+			},
+			inits = []
 		;
 		
 		table.columns().each(function(column) {
@@ -21,7 +22,9 @@ var createModels = function(tablesStore) {
 					name: cName,
 					type: column.get('type'),
 					useNull: true,
-					defaultValue: column.get('init')
+					defaultValue: column.get('init'),
+					template: column.get('template'),
+					compute: column.get('compute'),
 				}
 			;
 			
@@ -36,15 +39,37 @@ var createModels = function(tablesStore) {
 			;
 			
 			cName == 'deviceCts'
-				config.init = function () {
-					if (!this.data['deviceCts'])
-						this.data['deviceCts'] = new Date().format('Y-m-d H:i:s');
-				}
+				&& inits.push({
+					name: cName,
+					fn: function () {
+						return this.data[cName] || new Date().format('Y-m-d H:i:s')
+					}
+				})
 			;
+			
+			var compute = column.get('compute');
+			
+			if (compute) {
+				config[cName] = function () {
+					return eval(compute);
+				};
+				inits.push({
+					fn: config[cName],
+					name: cName
+				});
+			}
 			
 			fields.push(fieldConfig);
 			
 		});
+		
+		inits.length && (
+			config.init = function () {
+				Ext.each(inits, function (i) {
+					this.data[i.name] = i.fn.call (this);
+				}, this)
+			}
+		);
 		
 		Ext.regModel(tableName, config);
 		
