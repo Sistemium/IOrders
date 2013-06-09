@@ -505,3 +505,7 @@
 .x-input-template {
 	padding: 10px 7px;
 }
+
+.minLastActive, .lastActive {
+	color: silver;
+}

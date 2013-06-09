@@ -364,11 +364,11 @@ var getItemTplStatic = function (modelName) {
 		;
 		
 		case 'OfferCategory': {
-			return '<div class="hbox">'
-				 + '<div class="data <tpl if="lastActive || minLastActive">active</tpl>">{name}</div>'
-				   + '<tpl if="minLastActive"><div class="green">({maxLastActive})</div></tpl>'
-//				   + '<tpl if="maxLastActive && maxLastActive != minLastActive"><small class="green">[{maxLastActive}]</small></tpl>'
-				 + '</div>'
+			return '<div>'
+					+ '<span class="data <tpl if="lastActive || minLastActive">active</tpl>">{name}</span>'
+				    + '<tpl if="minLastActive"><span class="minLastActive"> ({maxLastActive})</span></tpl>'
+//				    + '<tpl if="maxLastActive && maxLastActive != minLastActive"><small class="green">[{maxLastActive}]</small></tpl>'
+				+ '</div>'
 			;
 		}
 		case 'ShipmentProduct':
@@ -419,9 +419,10 @@ var getItemTplStatic = function (modelName) {
 		;
 		
 		case 'OfferProduct':
-			return '<div class="<tpl if="unfolded">un</tpl>folded">'
-				+'<div class="hbox volume'
+			return '<div class="<tpl if="unfolded">un</tpl>folded'
 				+'<tpl if="lastActive"> active</tpl>'
+				+'">'
+				+'<div class="hbox volume'
 				+'<tpl if="isNonHidable"> isNonHidable</tpl>'
 				+'<tpl if="BonusProgram_tag.search(\'Ф\') != -1"> focused</tpl>'
 			+ '">'
@@ -430,7 +431,6 @@ var getItemTplStatic = function (modelName) {
 					
 					+ '<div class="name">{name}'
 					   +'<tpl if="extraLabel"><span class="blue"> [{extraLabel}]</span></tpl>'
-					   +'<tpl if="lastActive"><span class="green"> ({lastActive})</span></tpl>'
 					   +'<tpl if="BonusProgram_tag"><span class="crec {BonusProgram_tagColor}">{BonusProgram_tag}</span></tpl>'
 					+'</div>'
 					
@@ -513,6 +513,8 @@ var getItemTplStatic = function (modelName) {
 						+ '</tpl>'
 						+ '<span class="schemeBonus">{volumeBonus}</span>'
 					+ '</tpl>'
+					
+					+'<tpl if="lastActive && !volume"><span class="lastActive"> ( {lastActive}д )</span></tpl>'
 					
 				+ '</small>'
 				
