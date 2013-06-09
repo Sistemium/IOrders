@@ -102,8 +102,16 @@ function afterCreateModels() {
 				callback: function() {
 					callback && callback.call(this, store);
 				},
-				scope: this
+				scope: this 
 			});
+		}
+	});
+	
+	overrideModelIfExists( 'Shipment', {
+		name: function() {
+			return this.get('Customer_name')
+				+ ' от ' + this.get('date').dateFormat('d/m/Y')
+				+ ' на ' + this.get('totalCost') + ' руб.'
 		}
 	});
 	

@@ -826,6 +826,7 @@ Ext.regController('SaleOrder', {
 		
 		fname == 'volume' && (fname = defaultVolume);
 		
+		//Ext.each(fname)
 		if (fname) {
 			
 			if (fname == 'packageRel') {

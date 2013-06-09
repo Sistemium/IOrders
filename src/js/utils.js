@@ -953,7 +953,8 @@ var getSortersConfig = function(model, storeConfig) {
 
 	var table = Ext.getStore('tables').getById(model),
 		sortConfig = {sorters: storeConfig.sorters ? storeConfig.sorters : []},
-		columns = table.columns()
+		columns = table.columns(),
+		column
 	;
 	
 	var parentSort = true;
@@ -968,7 +969,9 @@ var getSortersConfig = function(model, storeConfig) {
 		parentSort = false;
 	}
 	
-	if (columns.getById(table.getId() + 'name')) {
+	column = columns.getById(table.getId() + 'name');
+	
+	if (column && !(column.compute || column.template)) {
 		sortConfig.sorters.push ({ property: 'name' });
 		parentSort = false;
 	}
