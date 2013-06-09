@@ -182,8 +182,7 @@ Ext.regApplication({
 							},
 					    	{
 								xtype: 'passwordfield',
-								id: 'password', name: 'password', label: 'Пароль',
-								value: 'demo'
+								id: 'password', name: 'password', label: 'Пароль'
 							}
 						]
 					},
