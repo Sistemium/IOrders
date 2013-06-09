@@ -1130,6 +1130,7 @@ Ext.regController('SaleOrder', {
 						scope: this,
 						limit: 0,
 						filters: [{property: 'customer', value: view.saleOrder.get('customer')}],
+						sorters: [{ property: 'date', direction: 'DESC' }],
 						
 						callback: function() {
 							var shipPosStore = this.pricePanel.shipPositionStore
@@ -1153,8 +1154,8 @@ Ext.regController('SaleOrder', {
 										);
 										
 										Ext.apply(rec.data, {
-											name: productInfoStore.getAt(0).get('name'),
-											price: pos.get('price'), volume: pos.get('vol')
+											//name: productInfoStore.getAt(0).get('name'),
+											price: pos.get('price0'), volume: pos.get('volume')
 										});
 									});
 									

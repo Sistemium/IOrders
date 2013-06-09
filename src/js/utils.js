@@ -375,7 +375,7 @@ var getItemTplStatic = function (modelName) {
 			return '<div class="data">'
 				+		'<div class="date">Дата: {[Ext.util.Format.date(values.date)]}</div>'
 				+		'<small>'
-				+			'<div class="name">Товар: {name}</div>'
+				//+			'<div class="name">Товар: {name}</div>'
 				+			'<div class="price">Цена: {price}</div>'
 				+			'<div class="volume">Количество: {volume}</div>'
 				+		'</small>'
