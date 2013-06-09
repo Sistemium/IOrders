@@ -11,10 +11,12 @@ var offerProductListConfig = function (options) {
 			
 			itemswipe: function(list, idx, item, event) {
 				if (!list.disableSwipe) {
-					Ext.dispatch({
-						controller: 'Main', action: 'onListItemSwipe',
-						list: list, idx: idx, item: item, event: event
-					});
+					Ext.defer(function() {
+						Ext.dispatch({
+							controller: 'Main', action: 'onListItemSwipe',
+							list: list, idx: idx, item: item, event: event
+						});
+					},100);
 				}
 			},
 			
