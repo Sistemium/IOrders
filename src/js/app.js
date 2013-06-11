@@ -90,7 +90,7 @@ Ext.regApplication({
 						data: 'dbversion:'+db.version
 					});
 					
-					if (!DEBUG) window.onerror = function(msg, url, line) {
+					if (DEBUG == 'eventlog') window.onerror = function(msg, url, line) {
 						
 						console.log ('UnhandledException: ' + msg + ' at line ' + line);
 						
@@ -100,7 +100,7 @@ Ext.regApplication({
 							viewTitle
 						;
 						
-						if (IOrders.viewport1) {
+						if (IOrders.viewport) {
 							var ai = IOrders.viewport.getActiveItem();
 							
 							if (ai && ai.dockedItems) {
