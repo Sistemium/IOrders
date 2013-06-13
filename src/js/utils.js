@@ -451,7 +451,18 @@ var getItemTplStatic = function (modelName) {
 					+ '</tpl>'
 					+ '<p class="price">Цена: {priceOrigin}'
 						+ '<tpl if="discount0!=0 || discount1!=0 || discount10!=0 || discount11!=0">'
-							+ '<b class="untapme red"> (!%)</b>'
+							+ '<span class="untapme discounts">&nbsp;'
+								+ '<tpl if="discount0==discount1 && discount10==discount11 && discount1==discount10">'
+									+ '({discount0}%)'.toSpan('green')
+								+ '</tpl>'
+								+ '<tpl if="discount0==discount10 && discount1==discount11 && discount1!=discount0">'
+									+ '({discount0}%)'.toSpan('red')
+									+ '({discount1}%)'.toSpan('green')
+								+ '</tpl>'
+								+ '<tpl if="discount0!=discount10 || discount1!=discount11">'
+									+ '(Нестандартная скидка!)'.toSpan('attention')
+								+ '</tpl>'
+							+ '</span>'
 						+ '</tpl>'
 					+ '</p>'
 					+ '<tpl if="cost"><p>Стоимость: {cost}</p></tpl>'
@@ -476,10 +487,10 @@ var getItemTplStatic = function (modelName) {
 					
 					+ ('<div class="swipable scheme0">'
 						+ '<div class="swipable discount0 price0">'
-							+ '<p>Цена: {price0} ({discount0}%)</p>'
+							+ '<p>Код: {price0} ({discount0}%)</p>'
 						+ '</div>'
 						+ '<div class="swipable discount10 price10">'
-							+ '<p>Цена Б: {price10} ({discount10}%)</p>'
+							+ '<p>Цена: {price10} ({discount10}%)</p>'
 						+ '</div>'
 					+ '</div>').tpl01()
 					

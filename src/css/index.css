@@ -509,3 +509,12 @@
 .minLastActive, .lastActive {
 	color: silver;
 }
+
+.untapme.discounts {
+	font-weight: bold;
+}
+
+.attention {
+	background-color: red;
+	color: white;
+}

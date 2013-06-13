@@ -484,7 +484,7 @@ Ext.regController('SaleOrder', {
 							;
 							
 							sname = sname.replace (
-								RegExp ('('+needle+'0*)'),
+								RegExp ('('+needle+'([.]0+|0*))$'),
 								'<span class="needle">$1</span>'
 							);
 							
