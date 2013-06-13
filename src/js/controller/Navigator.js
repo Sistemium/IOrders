@@ -415,7 +415,7 @@ Ext.regController('Navigator', {
 			(rec.modelName === 'SaleOrder' && !tableHasColumn (rec.modelName, 'customerDeliveryOption'))
 			|| rec.modelName === 'EncashmentRequest'
 		)
-			rec.set('date', getNextWorkDay())
+			rec.set('date', rec.getDateDefault())
 		;
 		
 		var oldCard = IOrders.viewport.getActiveItem(),
@@ -492,7 +492,7 @@ Ext.regController('Navigator', {
 						(rec.modelName === 'SaleOrder' && !tableHasColumn (rec.modelName, 'customerDeliveryOption'))
 						|| rec.modelName === 'EncashmentRequest'
 					)
-						rec.set('date', getNextWorkDay())
+						rec.set('date', rec.getDateDefault())
 					;
 					
 					var restrictMsg, viewOpen = function() {

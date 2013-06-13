@@ -116,13 +116,25 @@ function afterCreateModels() {
 	});
 	
 	overrideModelIfExists('SaleOrder', {
+		
 		name: function() {
 			var dt = this.get('date');
 			return this.get('Customer_name')
 				+ (dt ? (' от ' + dt.dateFormat('d/m/Y')) : '')
 				+ ' на ' + this.get('totalCost') + ' руб.'
 			;
+		},
+		
+		getDateDefault: function(today) {
+			
+			!today && (today = new Date());
+			
+			var todayWeekDay = today.getDay(),
+				addDays = todayWeekDay >= 6 && todayWeekDay <= 6 ? 7 + 1 - todayWeekDay : 1
+			;
+			return today.add(Date.DAY, addDays);
 		}
+		
 	});
 	
 	overrideModelIfExists('Uncashment', {
@@ -130,6 +142,7 @@ function afterCreateModels() {
 			return this.get('totalSumm') + ' руб. ' + this.get('datetime');
 		}
 	});
+	
 	
 };
 
