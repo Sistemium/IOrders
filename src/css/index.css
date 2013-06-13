@@ -183,6 +183,7 @@
 
 .x-list-item-body > .dep > .x-button.extend {
 	margin: -10px -10px -10px;
+	padding: 0px 22px;
 }
 .x-product-category-list {
 	border-right: 2px black groove;
