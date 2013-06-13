@@ -86,7 +86,7 @@ var offerProductListConfig = function (options) {
 							
 							this.up('saleorderview').cmpLinkArray.push(this.keyboard);
 						}
-						
+						this[keyboard].justOpen = true;
 						this[keyboard].showBy(iel, false, false);
 						this[keyboard].iel = iel;
 						this[keyboard].setValue(value);

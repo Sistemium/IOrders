@@ -33,7 +33,7 @@ var NumericKeyboard = Ext.extend(Ext.Panel, {
 			'<div class="keyboard-button-line">',
 				'<div class="x-button">0</div>',
 				'<div class="x-button">.</div>',
-				'<div class="x-button">C</div>',
+				'<div class="x-button">⬅</div>',
 			'</div>',
 			'<div class="keyboard-button-line">',
 				'<div class="x-button">OK</div>',
@@ -78,7 +78,7 @@ var NumericKeyboard = Ext.extend(Ext.Panel, {
 		;
 
 		switch(oper) {
-			case 'C' : {
+			case '⬅' : {
 				this.setValue(value.substring(0, value.length - 1));
 				break;
 			}
@@ -96,8 +96,9 @@ var NumericKeyboard = Ext.extend(Ext.Panel, {
 				break;
 			}
 			default: {
-				this.setValue(value + oper);
-				this.value = value + oper;
+				this.value = (this.justOpen ? '' : value) + oper ;
+				this.justOpen = false;
+				this.setValue(this.value);
 			}
 		}
 	},
