@@ -221,6 +221,10 @@ Ext.regController('SaleOrder', {
 			rec.set('unfolded', rec.get('unfolded') ? false : true);
 			rec.commit();
 			
+			options.list && rec.get('lastActive') && (function (el) {
+				el.addCls('active');
+			}) (Ext.get(options.list.getNode(rec)));
+			
 			Ext.defer(function() {
 				this.updateOffsets();
 				this.scroller && this.scroller.updateBoundary();
