@@ -946,6 +946,10 @@ Ext.regController('SaleOrder', {
 		
 		rec.commit();
 		
+		options.list && rec.get('lastActive') && (function (el) {
+			el.addCls('active');
+		}) (Ext.get(options.list.getNode(rec)));
+		
 	},
 	
 
