@@ -162,6 +162,11 @@ Ext.regApplication({
 						
 					}
 				});
+			},
+			failure: function(o) {
+				if (o && o.exception)
+					Ext.Msg.alert('Ошибка',o.exception)
+				;
 			}
 		};
 		
@@ -177,8 +182,7 @@ Ext.regApplication({
 					    	{
 								xtype: 'textfield',
 								id: 'login', name: 'login', label: 'Логин',
-								autoCorrect: false, autoCapitalize: false,
-								value: 'demo'
+								autoCorrect: false, autoCapitalize: false
 							},
 					    	{
 								xtype: 'passwordfield',
@@ -217,6 +221,11 @@ Ext.regApplication({
 								}
 							);
 						}
+					},
+					failure: function(o) {
+						if (o && o.exception)
+							Ext.Msg.alert('Ошибка',o.exception)
+						;
 					}
 				});
 			}, f = function() {

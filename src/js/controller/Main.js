@@ -266,7 +266,10 @@ Ext.regController('Main', {
 			Ext.Msg.alert(o.command, 'Получилось');
 		},
 		failure: function(r,o) {
-			Ext.Msg.alert(o.command, 'Не получилось: ' + r.responseText);
+			var msg = 'Не получилось: ';
+			r.responseText && (msg += r.responseText);
+			r.exception && (msg += r.exception);
+			Ext.Msg.alert(o.command, msg);
 		}
 	},
 	
