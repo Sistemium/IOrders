@@ -133,6 +133,22 @@ function afterCreateModels() {
 				addDays = todayWeekDay >= 6 && todayWeekDay <= 6 ? 7 + 1 - todayWeekDay : 1
 			;
 			return today.add(Date.DAY, addDays);
+		},
+		
+		getProcessingName: function() {
+			
+			switch (this.get('processing')) {
+				case 'draft':
+					return 'Черновик';
+				case 'upload':
+					return 'В работу';
+				case 'processing':
+					return 'Проверка';
+				case 'done':
+					return 'На складе';
+			}
+			
+			return null;
 		}
 		
 	});
