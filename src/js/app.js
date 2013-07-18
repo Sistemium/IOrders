@@ -164,9 +164,10 @@ Ext.regApplication({
 				});
 			},
 			failure: function(o) {
-				if (o && o.exception)
-					Ext.Msg.alert('Ошибка',o.exception)
-				;
+				if (o && o.exception) {
+					IOrders.viewport.setLoading(false);
+					Ext.Msg.alert('Ошибка',o.exception);
+				}
 			}
 		};
 		
