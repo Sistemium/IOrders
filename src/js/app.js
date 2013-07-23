@@ -158,6 +158,14 @@ Ext.regApplication({
 						
 						localStorage.setItem('metadata', Ext.encode(metadata));
 						
+						var actk = accessTokenFromLocation();
+						
+						if (actk) {
+							localStorage.setItem('accessToken', actk);
+							localStorage.setItem('login', IOrders.xi.username);
+							location.replace(location.origin + location.pathname);
+						}
+						
 						IOrders.dbeng.startDatabase(metadata);
 						
 					}
@@ -173,27 +181,43 @@ Ext.regApplication({
 		
 		if(!metadata) {
 			
-			this.viewport.setActiveItem(Ext.create({
-				xtype: 'form',
-				name: 'Login',
-				ownSubmit: true,
-				items: [
-					{xtype: 'fieldset', 
-						items: [
-					    	{
-								xtype: 'textfield',
-								id: 'login', name: 'login', label: 'Логин',
-								autoCorrect: false, autoCapitalize: false
-							},
-					    	{
-								xtype: 'passwordfield',
-								id: 'password', name: 'password', label: 'Пароль'
-							}
-						]
-					},
-					{xtype: 'button', text: 'Логин', name: 'Login'}
-				]
-			}));
+			var actk = accessTokenFromLocation();
+			
+			if (actk) {
+				
+				IOrders.xi.accessToken = actk;
+				
+				IOrders.xi.password = undefined;
+				IOrders.xi.username = undefined;
+				
+				IOrders.viewport.setLoading('Проверяю авторизацию');
+				
+				IOrders.xi.reconnect(IOrders.getMetadata);
+				
+			} else {
+				
+				this.viewport.setActiveItem(Ext.create({
+					xtype: 'form',
+					name: 'Login',
+					ownSubmit: true,
+					items: [
+						{xtype: 'fieldset', 
+							items: [
+								{
+									xtype: 'textfield',
+									id: 'login', name: 'login', label: 'Логин',
+									autoCorrect: false, autoCapitalize: false
+								},
+								{
+									xtype: 'passwordfield',
+									id: 'password', name: 'password', label: 'Пароль'
+								}
+							]
+						},
+						{xtype: 'button', text: 'Логин', name: 'Login'}
+					]
+				}));
+			}
 			
 		} else {
 			

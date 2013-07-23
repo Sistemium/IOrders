@@ -1,6 +1,17 @@
 Ext.util.Format.defaultDateFormat = 'd/m/Y';
 Date.monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
 
+var accessTokenFromLocation = function () {
+	var test = location.search.match(/access-token=(.*[^&])/);
+	
+	if (test && test.length == 2)
+		return test[1];
+	
+	return false;
+	
+}
+
+
 var tableHasColumn = function (tbl, column) {
 	var table = Ext.getStore('tables').getById(tbl),
 		columns = table && table.columns()
