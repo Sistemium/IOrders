@@ -45,7 +45,7 @@ Ext.regApplication({
 		createModels(store);
 		createStores(store, { pageSize: 400 });
 		
-		IOrders.mainMenuRecord = Ext.ModelMgr.create({id: localStorage.getItem('login')}, 'MainMenu');
+		IOrders.mainMenuRecord = Ext.ModelMgr.create({id: localStorage.getItem('username')}, 'MainMenu');
 		
 		this.viewport.setActiveItem(Ext.create({
 			xtype: 'navigatorview',
@@ -163,6 +163,7 @@ Ext.regApplication({
 						if (actk) {
 							localStorage.setItem('accessToken', actk);
 							localStorage.setItem('login', IOrders.xi.username);
+							localStorage.setItem('username', IOrders.xi.userLabel || IOrders.xi.username);
 							location.replace(location.origin + location.pathname);
 						}
 						
@@ -179,22 +180,22 @@ Ext.regApplication({
 			}
 		};
 		
-		if(!metadata) {
+		var actk = accessTokenFromLocation();
+		
+		if (actk) {
 			
-			var actk = accessTokenFromLocation();
+			IOrders.xi.accessToken = actk;
 			
-			if (actk) {
-				
-				IOrders.xi.accessToken = actk;
-				
-				IOrders.xi.password = undefined;
-				IOrders.xi.username = undefined;
-				
-				IOrders.viewport.setLoading('Проверяю авторизацию');
-				
-				IOrders.xi.reconnect(IOrders.getMetadata);
-				
-			} else {
+			IOrders.xi.password = undefined;
+			IOrders.xi.username = undefined;
+			
+			IOrders.viewport.setLoading('Проверяю авторизацию');
+			
+			IOrders.xi.reconnect(IOrders.getMetadata);
+			
+		} else {
+		
+			if(!metadata) {
 				
 				this.viewport.setActiveItem(Ext.create({
 					xtype: 'form',
@@ -217,69 +218,75 @@ Ext.regApplication({
 						{xtype: 'button', text: 'Логин', name: 'Login'}
 					]
 				}));
-			}
-			
-		} else {
-			
-			Ext.dispatch({controller: 'Navigator', action: 'afterAppLaunch'});
-			
-			Ext.apply (this.xi, {
-				username: localStorage.getItem('login'),
-				password: localStorage.getItem('password')
-			});
-			
-			var r = function(db) {
-				IOrders.xi.login ({
-					success: function() {
-						if (db.clean || localStorage.getItem('needSync') == 'true'){
-							localStorage.removeItem('needSync');
-							IOrders.xi.download(IOrders.dbeng);
-						} else {
+				
+			} else {
+				
+				Ext.dispatch({controller: 'Navigator', action: 'afterAppLaunch'});
+				
+				Ext.apply (this.xi, {
+					username: localStorage.getItem('login'),
+				});
+				
+				var password = localStorage.getItem('password');
+				var actk = localStorage.getItem('accessToken');
+				
+				if (password) this.xi.password = password;
+				if (actk) this.xi.accessToken = actk;
+				
+				var r = function(db) {
+					IOrders.xi.login ({
+						success: function() {
+							if (db.clean || localStorage.getItem('needSync') == 'true'){
+								localStorage.removeItem('needSync');
+								IOrders.xi.download(IOrders.dbeng);
+							} else {
+								p = new Ext.data.SQLiteProxy({engine: IOrders.dbeng, model: 'ToUpload'});
+								
+								p.count(new Ext.data.Operation(),
+									function(o) {
+										if (o.result == 0)
+											Ext.dispatch ({controller: 'Main', action: 'onXiMetaButtonTap', silent: true});
+										else
+											console.log ('There are unuploaded data');
+									}
+								);
+							}
+						},
+						failure: function(o) {
+							if (o && o.exception)
+								Ext.Msg.alert('Ошибка',o.exception)
+							;
+						}
+					});
+				}, f = function() {
+					IOrders.xi.reconnect({
+						success: function() {
 							p = new Ext.data.SQLiteProxy({engine: IOrders.dbeng, model: 'ToUpload'});
 							
-							p.count(new Ext.data.Operation(),
-								function(o) {
-									if (o.result == 0)
-										Ext.dispatch ({controller: 'Main', action: 'onXiMetaButtonTap', silent: true});
-									else
-										console.log ('There are unuploaded data');
-								}
-							);
+							Ext.Msg.confirm ('Не удалось обновить БД', 'Проверим метаданные?', function (b) {
+								if (b == 'yes')
+									IOrders.xi.request( {
+										command: 'logoff',
+										success: function() {
+											this.sessionData.id = false;
+											this.login({
+												success: function() {
+													Ext.dispatch ({controller: 'Main', action: 'onXiMetaButtonTap'});
+												}
+											});
+										}
+									})
+							});
 						}
-					},
-					failure: function(o) {
-						if (o && o.exception)
-							Ext.Msg.alert('Ошибка',o.exception)
-						;
-					}
-				});
-			}, f = function() {
-				IOrders.xi.reconnect({
-					success: function() {
-						p = new Ext.data.SQLiteProxy({engine: IOrders.dbeng, model: 'ToUpload'});
-						
-						Ext.Msg.confirm ('Не удалось обновить БД', 'Проверим метаданные?', function (b) {
-							if (b == 'yes')
-								IOrders.xi.request( {
-									command: 'logoff',
-									success: function() {
-										this.sessionData.id = false;
-										this.login({
-											success: function() {
-												Ext.dispatch ({controller: 'Main', action: 'onXiMetaButtonTap'});
-											}
-										});
-									}
-								})
-						});
-					}
-			});};
+				});};
+				
+				
+				this.dbeng.on ('dbstart', r);
+				this.dbeng.on ('upgradefail', f);
+				
+				this.dbeng.startDatabase(metadata);
+			}
 			
-			
-			this.dbeng.on ('dbstart', r);
-			this.dbeng.on ('upgradefail', f);
-			
-			this.dbeng.startDatabase(metadata);
 		};
 		
 	},
