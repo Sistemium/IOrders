@@ -142,12 +142,16 @@ Ext.regController('SaleOrder', {
 			tsc = 0,
 			tc0 = 0,
 			tc1 = 0,
+			tc10 = 0,
+			tc11 = 0,
 			tcB = 0
 		;
 		
 		saleOrderPosStore.each (function (rec) {
 			tc0 += rec.get('price0') * rec.get('volume0');
 			tc1 += rec.get('price1') * rec.get('volume1');
+			tc10 += rec.get('price10') * rec.get('volume0');
+			tc11 += rec.get('price11') * rec.get('volume1');
 			tcB += rec.get('priceOrigin') * rec.get('volumeBonus');
 			tsc += rec.get('priceAgent') * (rec.get('volume0') + rec.get('volume1'));
 		});
@@ -156,6 +160,8 @@ Ext.regController('SaleOrder', {
 			totalCost: tc.toDecimal(2),
 			totalCost1: tc1.toDecimal(2),
 			totalCost0: tc0.toDecimal(2),
+			totalCost11: tc11.toDecimal(2),
+			totalCost10: tc10.toDecimal(2),
 			totalCostBonus: tcB.toDecimal(2),
 			totalSelfCost: tsc.toDecimal(2)
 		});
@@ -184,6 +190,8 @@ Ext.regController('SaleOrder', {
 				totalCost: view.saleOrder.get('totalCost') || 0,
 				totalCost0: view.saleOrder.get('totalCost0') || 0,
 				totalCost1: view.saleOrder.get('totalCost1') || 0,
+				totalCost10: view.saleOrder.get('totalCost10') || 0,
+				totalCost11: view.saleOrder.get('totalCost11') || 0,
 				totalCostBonus: view.saleOrder.get('totalCostBonus') || 0,
 				totalSelfCost: view.saleOrder.get('totalSelfCost')
 					|| view.offerProductStore.sum('selfCost') || 0,
