@@ -116,7 +116,7 @@ var addMainMenu = function(store, tables) {
 	}, 'Table');
 
 	mainMenu.columns().add (
-		{id: 'MainMenuid', type: 'string', name: 'id', label: 'Логин', table_id: 'MainMenu'}
+		{id: 'MainMenuid', type: 'string', name: 'id', label: 'Пользователь', table_id: 'MainMenu'}
 	)
 
 	var mmDeps = mainMenu.deps();
