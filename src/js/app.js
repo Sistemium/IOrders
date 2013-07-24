@@ -161,13 +161,21 @@ Ext.regApplication({
 						var actk = accessTokenFromLocation();
 						
 						if (actk) {
+							
 							localStorage.setItem('accessToken', actk);
 							localStorage.setItem('login', IOrders.xi.username);
 							localStorage.setItem('username', IOrders.xi.userLabel || IOrders.xi.username);
-							location.replace(location.origin + location.pathname);
+							localStorage.setItem('needLoad', true);
+							
+							Ext.dispatch ({
+								controller: 'Main',
+								action: 'dbRebuild'
+							})
+							
+						} else {
+							
+							IOrders.dbeng.startDatabase(metadata);
 						}
-						
-						IOrders.dbeng.startDatabase(metadata);
 						
 					}
 				});

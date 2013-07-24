@@ -343,36 +343,44 @@ Ext.regController('Main', {
 		
 		Ext.Msg.confirm('Внимание', 'Действительно нужно безвозвратно стереть данные из всех таблиц ?', function(yn){
 			if (yn == 'yes'){
-				IOrders.dbeng.clearListeners();
-				
-				IOrders.viewport.setLoading({msg: 'Все стираю ...'});
-				IOrders.dbeng.on ('dbstart', function() {
-					localStorage.setItem ('needSync', true);
-					location.reload();
-				});
-				
-				IOrders.xi.request( Ext.applyIf ({
-					command: 'metadata',
-					success: function(response) {
-						var m = response.responseXML;
-						
-						console.log(m);
-						
-						var metadata = this.xml2obj(m).metadata;
-						
-						if ( metadata.version > IOrders.dbeng.db.version ) {
-							localStorage.setItem('metadata', Ext.encode(metadata));
-						}
-						
-						IOrders.dbeng.startDatabase (
-							Ext.decode(localStorage.getItem('metadata')),
-							true
-						);
-					}},
-					this.prefsCb
-				));
+				Ext.dispatch (Ext.apply(options, {
+					action: 'dbRebuild'
+				}));
 			}
 		}, this);
+	},
+	
+	dbRebuild: function () {
+		
+		IOrders.dbeng.clearListeners();
+		
+		IOrders.viewport.setLoading({msg: 'Обновляю базу данных ...'});
+		IOrders.dbeng.on ('dbstart', function() {
+			localStorage.setItem ('needSync', true);
+			location.replace(location.origin + location.pathname);
+		});
+		
+		IOrders.xi.request( Ext.applyIf ({
+			command: 'metadata',
+			success: function(response) {
+				var m = response.responseXML;
+				
+				console.log(m);
+				
+				var metadata = this.xml2obj(m).metadata;
+				
+				if ( metadata.version > IOrders.dbeng.db.version ) {
+					localStorage.setItem('metadata', Ext.encode(metadata));
+				}
+				
+				IOrders.dbeng.startDatabase (
+					Ext.decode(localStorage.getItem('metadata')),
+					true
+				);
+			}},
+			this.prefsCb
+		));
+		
 	},
 
 	onReloadButtonTap: function(options) {
