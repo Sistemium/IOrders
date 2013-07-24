@@ -354,7 +354,7 @@ Ext.regController('Main', {
 		
 		IOrders.dbeng.clearListeners();
 		
-		IOrders.viewport.setLoading({msg: 'Обновляю базу данных ...'});
+		IOrders.viewport.setLoading('Обновляю базу данных ...');
 		IOrders.dbeng.on ('dbstart', function() {
 			localStorage.setItem ('needSync', true);
 			location.replace(location.origin + location.pathname);

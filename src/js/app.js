@@ -249,6 +249,7 @@ Ext.regApplication({
 						success: function() {
 							
 							localStorage.setItem('login', IOrders.xi.username);
+							localStorage.setItem('username', IOrders.xi.userLabel);
 							
 							if (db.clean || localStorage.getItem('needSync') == 'true'){
 								localStorage.removeItem('needSync');
