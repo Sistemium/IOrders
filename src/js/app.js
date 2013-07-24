@@ -45,7 +45,9 @@ Ext.regApplication({
 		createModels(store);
 		createStores(store, { pageSize: 400 });
 		
-		IOrders.mainMenuRecord = Ext.ModelMgr.create({id: localStorage.getItem('username')}, 'MainMenu');
+		IOrders.mainMenuRecord = Ext.ModelMgr.create({
+			id: localStorage.getItem('username') || localStorage.getItem('login')
+		}, 'MainMenu');
 		
 		this.viewport.setActiveItem(Ext.create({
 			xtype: 'navigatorview',
@@ -245,6 +247,10 @@ Ext.regApplication({
 				var r = function(db) {
 					IOrders.xi.login ({
 						success: function() {
+							
+							localStorage.setItem('login', IOrders.xi.username);
+							localStorage.setItem('username', IOrders.xi.userLabel || IOrders.xi.username);
+							
 							if (db.clean || localStorage.getItem('needSync') == 'true'){
 								localStorage.removeItem('needSync');
 								IOrders.xi.download(IOrders.dbeng);
