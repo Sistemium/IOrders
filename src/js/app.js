@@ -160,11 +160,12 @@ Ext.regApplication({
 						
 						var actk = accessTokenFromLocation();
 						
+						localStorage.setItem('login', IOrders.xi.username);
+						localStorage.setItem('username', IOrders.xi.userLabel || IOrders.xi.username);
+						
 						if (actk) {
 							
 							localStorage.setItem('accessToken', actk);
-							localStorage.setItem('login', IOrders.xi.username);
-							localStorage.setItem('username', IOrders.xi.userLabel || IOrders.xi.username);
 							localStorage.setItem('needLoad', true);
 							
 							Ext.dispatch ({
