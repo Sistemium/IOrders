@@ -495,15 +495,23 @@ var getItemTplStatic = function (modelName) {
 				+ '</div>'
 				
 				+ '<div class="vbox tapme prices">'
-					
-					+ ('<div class="swipable scheme0">'
-						+ '<div class="swipable discount0 price0">'
-							+ '<p>Код: {price0} ({discount0}%)</p>'
+					+ '<tpl if="discount0==discount1 && discount10==discount11 && discount1==discount10">'
+						+ '<div class="swipable flex pricesCombo">'
+							+ '<div class="swipable discount0 discount1 discount10 discount11">'
+								+ '<p>Цена: {price0} ({discount0}%)</p>'
+							+ '</div>'
 						+ '</div>'
-						+ '<div class="swipable discount10 price10">'
-							+ '<p>Цена: {price10} ({discount10}%)</p>'
-						+ '</div>'
-					+ '</div>').tpl01()
+					+ '</tpl>'
+					+ '<tpl if="pricesUncombo || discount0!=discount1 || discount10!=discount11 || discount1!=discount10">'
+						+ ('<div class="swipable scheme0">'
+							+ '<div class="swipable discount0 price0">'
+								+ '<p>Код: {price0} ({discount0}%)</p>'
+							+ '</div>'
+							+ '<div class="swipable discount10 price10">'
+								+ '<p>Цена: {price10} ({discount10}%)</p>'
+							+ '</div>'
+						+ '</div>').tpl01()
+					+ '</tpl>'
 					
 				+ '</div>'
 				

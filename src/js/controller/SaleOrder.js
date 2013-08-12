@@ -820,9 +820,10 @@ Ext.regController('SaleOrder', {
 		
 		var data = {
 				action: 'setVolume',
+				sign: sign,
 				rec: rec
 			},
-			fname,
+			fnamesTo = [],
 			fnames = [
 				'volume1', 'volume0','volumeBonus', 'packageRel', 'volume',
 				'discount0', 'discount1','discount10','discount11'
@@ -832,14 +833,13 @@ Ext.regController('SaleOrder', {
 		Ext.each (fnames, function (f) {
 			
 			if (listEl.hasCls(f) || listEl.is('.'+f+' *'))
-				fname = f;
+				fnamesTo.push (f);
 			
 		});
 		
-		fname == 'volume' && (fname = defaultVolume);
-		
-		//Ext.each(fname)
-		if (fname) {
+		Ext.each(fnamesTo, function(fname) {
+			
+			fname == 'volume' && (fname = defaultVolume);
 			
 			if (fname == 'packageRel') {
 				factor = rec.get(fname);
@@ -850,10 +850,13 @@ Ext.regController('SaleOrder', {
 			
 			data[fname] = v + sign * factor;
 			
+		});
+		
+		if (fnamesTo.length) {
+			
 			Ext.dispatch( Ext.apply( options, data ));
 			
 		}
-		
 	},
 	
 	setVolume: function (options) {
@@ -985,10 +988,17 @@ Ext.regController('SaleOrder', {
 		var list = options.list,
 			item = options.item,
 			view = (options.view = list.up('saleorderview')),
-			iel = (options.iel = Ext.get(item))
+			iel = (options.iel = Ext.get(item)),
+			rec = list.getRecord(options.item),
+			tapedEl = Ext.get(options.event.target)
 		;
 		
-		if (iel) {
+		if ( rec && tapedEl && tapedEl.is('.pricesCombo, .pricesCombo *') ){
+			
+			rec.set('pricesUncombo', rec.get('pricesUncombo') ? false : true);
+			rec.commit();
+			
+		} else if (iel) {
 			
 			iel.addCls('editing');
 			
