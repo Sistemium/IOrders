@@ -438,7 +438,7 @@ var getItemTplStatic = function (modelName) {
 				+'<tpl if="BonusProgram_tag.search(\'Ф\') != -1"> focused</tpl>'
 			+ '">'
 				
-				+'<div class="info {cls} data flex ' + '<tpl if="stockLevel==1">caution</tpl>' + '">'
+				+'<div class="info {cls} data flex ' + '<tpl if="stockLevel &lt; packageRel*2">caution</tpl>' + '">'
 					
 					+ '<div class="name">{name}'
 					   +'<tpl if="extraLabel"><span class="blue"> [{extraLabel}]</span></tpl>'
@@ -495,7 +495,11 @@ var getItemTplStatic = function (modelName) {
 					
 				+ '</div>'
 				
-				+ '<div class="vbox tapme prices">'
+				+ '<div class="vbox tapme prices'
+					+ '<tpl if="!values.pricesUncombo && price0==price1 && price10==price11 && price1==price10">'
+						+ ' packCenter'
+					+ '</tpl>'
+					+ '">'
 					+ '<tpl if="price0==price1 && price10==price11 && price1==price10">'
 						+ '<div class="pricesComboWrap">'
 							+ '<span class="pricesCombo ctrl">'
@@ -505,7 +509,7 @@ var getItemTplStatic = function (modelName) {
 						+ '</div>'
 					+ '</tpl>'
 					+ '<tpl if="!values.pricesUncombo && price0==price1 && price10==price11 && price1==price10">'
-						+ '<div class="swipable flex discount0 discount1 discount10 discount11">'
+						+ '<div class="swipable discount0 discount1 discount10 discount11 price0 price1 price10 price11">'
 							+ '<p>Цена: {price0} ({discount0}%)</p>'
 						+ '</div>'
 					+ '</tpl>'

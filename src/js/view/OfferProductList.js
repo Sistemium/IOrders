@@ -34,63 +34,101 @@ var offerProductListConfig = function (options) {
 				
 				if (rec) {
 					
-					var valueField,
+					var valueFields = {},
+						targetGroups =[],
 						iel = Ext.get(el.target),
-						volumes = [
-							'volume0', 'volume1', 'volumeBonus',
-							'price0', 'price1', 'price10', 'price11'
+						fieldGroups = [
+							{
+								title: 'Количество',
+								fields: ['volume0', 'volume1', 'volumeBonus']
+							},
+							{
+								title: 'Цена',
+								fields: ['price0', 'price1', 'price10', 'price11']
+							},
+							{
+								title: 'Скидка',
+								fields: ['discount0', 'discount1', 'discount10', 'discount11']
+							},
 						]
 					;
 					
-					Ext.each(volumes, function (fname) {
-						
-						if (iel.is('.'+fname+' *, .'+fname))
-							valueField = fname;
-						
+					var foundSomething;
+					
+					Ext.each(fieldGroups, function (fieldGroup) {
+						Ext.each(fieldGroup.fields, function (fname) {
+							
+							if (iel.is('.'+fname+' *, .'+fname)) {
+								
+								foundSomething = valueFields[fieldGroup.title];
+								
+								if (!foundSomething) {
+									foundSomething = valueFields[fieldGroup.title] = {
+										fields: [],
+										title: fieldGroup.title
+									};
+								}
+								
+								foundSomething.fields.push (fname);
+								
+							}
+							
+						});
 					});
 					
-					if (valueField) {
+					Ext.iterate (valueFields, function(n,vf){
+						targetGroups.push(vf);
+					});
+					
+					if (targetGroups.length) {
 						
-						var value = rec.get(valueField),
-							keyboard = valueField + 'Kbd'
-						;
+						var value = rec.get(foundSomething.fields[0]);
+						
+						foundSomething.isActive = true;
 						
 						iel.addCls('editing');
 						
-						if(!this[keyboard]) {
+						var keyboard = Ext.create({
 							
-							this[keyboard] = Ext.create({
+							xtype: 'numkeyboard',
+							value: value,
+							
+							onConfirmButtonTap: function(button, value) {
 								
-								xtype: 'numkeyboard',
-								value: value,
-								
-								onConfirmButtonTap: function(button, value) {
-									
-									if (this.iel) {
-										this.iel.removeCls('editing');
-										this.iel = false;
-									}
-									
-									if (button == 'ok') {
-										
-										this.options [valueField] = value || 0;
-										
-										Ext.dispatch (Ext.apply({
-											controller: 'SaleOrder',
-											action: 'setVolume'
-										}, this.options));
-									};
-									
+								if (this.iel) {
+									this.iel.removeCls('editing');
+									this.iel = false;
 								}
-							});
-							
-							this.up('saleorderview').cmpLinkArray.push(this.keyboard);
-						}
-						this[keyboard].justOpen = true;
-						this[keyboard].showBy(iel, false, false);
-						this[keyboard].iel = iel;
-						this[keyboard].setValue(value);
-						this[keyboard].options = {item: item, list: list, rec: rec};
+								
+								if (button == 'ok') {
+									
+									Ext.each (this.valueFields, function(valueField) {
+										this.options [valueField] = value || 0
+									}, this);
+									
+									Ext.dispatch (Ext.apply({
+										controller: 'SaleOrder',
+										action: 'setVolume'
+									}, this.options));
+								};
+								
+							}
+						});
+						
+						//this.up('saleorderview').cmpLinkArray.push(this.keyboard);
+						
+						Ext.apply(keyboard, {
+							record: rec,
+							valueFields: foundSomething.fields,
+							groupsObject: valueFields,
+							fieldGroups: targetGroups,
+							justOpen: true,
+							iel: iel,
+							options: {item: item, list: list, rec: rec}
+						});
+						
+						keyboard.showBy(iel, false, false);
+						keyboard.setValue(value);
 					}
 					
 				}

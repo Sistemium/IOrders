@@ -21,6 +21,10 @@
 	-webkit-box-shadow: none;
 }
 
+.keyboard-button-line.title {
+	background-color: rgb(113, 145, 185); 
+}
+
 .keyboard-button-line {
 	display: -webkit-box;
 	-webkit-box-orient: horizontal;
@@ -97,6 +101,8 @@
 
 .x-list-item .swipable {
 	background-color: #EEEEEE;
+	padding-top: 2px;
+	padding-bottom: 2px;
 }
 
 .x-list-item small {
@@ -431,6 +437,7 @@
 	-webkit-box-flex: 1;
 }
 
+
 .x-list-item .hbox {
 	display: -webkit-box;
 	-webkit-box-orient: horizontal;
@@ -449,6 +456,14 @@
 	-webkit-box-align: stretch;
 }
 
+.packStart {
+	-webkit-box-pack: start;
+}
+
+.packCenter {
+	-webkit-box-pack: center;
+}
+
 .volumebox.rightbox {
 	text-align: right;
 }
@@ -458,7 +473,7 @@
 }
 
 .vbox .swipable, .vbox .scheme0, .vbox .scheme1 {
-	margin-top: 3px;
+	margin-top: 4px;
 }
 
 .x-list-item .unfolded .rightbox.volumebox {
@@ -523,7 +538,7 @@
 .ctrl {
 	position: relative;
 	left: -1.25em;
-	top: 0.25em;
+	top: 0.2em;
 	font-weight: 400;
 	font-size: x-large !important;
 	display: inline-block;
