@@ -130,7 +130,7 @@ var offerProductListConfig = function (options) {
 				;
 				
 				Ext.dispatch({
-					controller: 'SaleOrder', action: 'onProductListItemLongTap',
+					controller: 'SaleOrder', action: 'onListItemLongTap',
 					list: list, idx: idx, item: item, event: event
 				});
 			}, this, {delegate: '.x-list-item'});

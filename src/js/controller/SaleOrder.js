@@ -224,9 +224,26 @@ Ext.regController('SaleOrder', {
 			tapedEl = Ext.get(options.event.target)
 		;
 		
-		if ( rec && tapedEl && tapedEl.is('.folderUnfolder, .folderUnfolder *') ){
+		if ( rec && tapedEl && tapedEl.is('.pricesCombo, .pricesCombo *') ){
 			
+			rec.editing = true;
+			rec.set('pricesUncombo', rec.get('pricesUncombo') ? false : true);
+			rec.editing = false;
+			rec.commit();
+			
+			Ext.defer(function() {
+				list.updateOffsets();
+				list.scroller && list.scroller.updateBoundary();
+			}, 500, list);
+			
+		} else if ( rec && tapedEl && tapedEl.is('.folderUnfolder, .folderUnfolder *') ){
+			
+			rec.editing = true;
+			rec.get('unfolded') && rec.get('pricesUncombo')
+				&& rec.set('pricesUncombo', false)
+			;
 			rec.set('unfolded', rec.get('unfolded') ? false : true);
+			rec.editing = false;
 			rec.commit();
 			
 			options.list && rec.get('lastActive') && (function (el) {
@@ -983,7 +1000,7 @@ Ext.regController('SaleOrder', {
 	},
 
 	
-	onProductListItemLongTap: function(options) {
+	onListItemLongTap: function(options) {
 		
 		var list = options.list,
 			item = options.item,
@@ -993,12 +1010,7 @@ Ext.regController('SaleOrder', {
 			tapedEl = Ext.get(options.event.target)
 		;
 		
-		if ( rec && tapedEl && tapedEl.is('.pricesCombo, .pricesCombo *') ){
-			
-			rec.set('pricesUncombo', rec.get('pricesUncombo') ? false : true);
-			rec.commit();
-			
-		} else if (iel) {
+		if (iel) {
 			
 			iel.addCls('editing');
 			

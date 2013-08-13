@@ -457,8 +457,8 @@
 	margin-right: 1em;
 }
 
-.vbox .swipable {
-	margin-top: 2px auto;
+.vbox .swipable, .vbox .scheme0, .vbox .scheme1 {
+	margin-top: 3px;
 }
 
 .x-list-item .unfolded .rightbox.volumebox {
@@ -519,3 +519,20 @@
 	background-color: red;
 	color: white;
 }
+
+.ctrl {
+	position: relative;
+	left: -1.25em;
+	top: 0.25em;
+	font-weight: 400;
+	font-size: x-large !important;
+	display: inline-block;
+	border: solid 1px gray;
+	width: 1em;
+	text-align: center;
+	-webkit-border-radius: 6px;
+}
+
+.pricesComboWrap {
+	height:0
+} 
