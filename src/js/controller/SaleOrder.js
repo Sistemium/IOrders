@@ -895,6 +895,25 @@ Ext.regController('SaleOrder', {
 			
 			var v = options[fname];
 			
+			if (!v) {
+				fname == 'discount0' && rec.get(fname) > options['discount10']
+					&& options['discount10'] < rec.get('discount10')
+					&& (v=options['discount10'])
+				;
+				fname == 'discount1' && rec.get(fname) > options['discount11']
+					&& options['discount11'] < rec.get('discount11')
+					&& (v=options['discount11'])
+				;
+				fname == 'discount10' && rec.get(fname) < options['discount0']
+					&& options['discount0'] > rec.get('discount0')
+					&& (v=options['discount0'])
+				;
+				fname == 'discount11' && rec.get(fname) < options['discount1']
+					&& options['discount1'] > rec.get('discount1')
+					&& (v=options['discount1'])
+				;
+			}
+			
 			v == undefined && (v = data[fname]);
 			v == undefined && (v = parseFloat (rec.get(fname) || '0'));
 			
@@ -934,6 +953,10 @@ Ext.regController('SaleOrder', {
 		Ext.each (['0', '1'], function (fname) {
 			
 			data['volume'+fname] = Math.round(data['volume'+fname]);
+			
+			var discountMin = dMin,
+				discountMax = dMax
+			;
 			
 			data['price'+fname] = (
 				price * (1.0 + setVolumeLogic ('discount'+fname, dMin, dMax) / 100.0)
