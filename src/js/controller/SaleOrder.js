@@ -51,6 +51,11 @@ Ext.regController('SaleOrder', {
 			
 			view.saleOrder = rec;
 			
+			Ext.dispatch(Ext.apply(options, {
+				action: 'onClearFilterButtonTap',
+				btn: undefined
+			}));
+			
 			view.saleOrderPositionStore.load({
 				limit: 0,
 				remoteFilter: true,
@@ -1787,8 +1792,10 @@ Ext.regController('SaleOrder', {
 		
 		view.productSearchFilter = undefined;
 		
-		view.offerProductStore.clearFilter(true);
-		view.offerProductStore.filter(view.offerProductStore.filtersSnapshot);
+		if (view.offerProductStore.filtersSnapshot) {
+			view.offerProductStore.clearFilter(true);
+			view.offerProductStore.filter(view.offerProductStore.filtersSnapshot);
+		}
 		
 		view.offerCategoryStore.clearFilter();
 		
