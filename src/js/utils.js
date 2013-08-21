@@ -146,37 +146,37 @@ var getItemTplCompute = function(modelName, config) {
 	var queryValue = idColExist ? 'parent' : 'key';
 	
 	if(columnStore.findExact('name', 'name') != -1) {
-
+		
 		templateData.hasName = true;
 		queryValue = 'key';
+		
 	} else {
-
+		
 		var keyColumns = columnStore.queryBy(function(rec) {
 			return rec.get(queryValue)
 				&& ( !filterObject || lowercaseFirstLetter(filterObject.modelName) != lowercaseFirstLetter(rec.get('name')))
-				&& groupField !== rec.get('name') ? true : false;
+				&& (groupField !== rec.get('name') ? true : false)
+				&& !rec.get('optional');
 		});
-
+		
 		templateData.keyColumnsLength = keyColumns.getCount(); 
-
+		
 		if(keyColumns.getCount() > 0) {
-
-			var length = keyColumns.getCount(); 
-
+			
+			var length = keyColumns.getCount();
+			
 			keyColumns.each(function(col) {
-
+				
 				var parentName = col.get('name')[0].toUpperCase() + col.get('name').substring(1),
 					titleCols = undefined,
 					parentInfo = false && keyColumns.getCount() === 1 && !tableRecord.hasIdColumn()
 				;
-
-				if(col.get('parent')) {
-
+				
+				if(col.get('parent')) {	
 					titleCols = tableStore.getById(parentName).getTitleColumns();
-
 					length += titleCols.getCount();
 				}
-
+				
 				templateData.keyColumns.push({
 					parent: col.get('parent') ? true: false,
 					name: col.get('name'),
@@ -210,7 +210,7 @@ var getItemTplCompute = function(modelName, config) {
 
 		var otherColumns = columnStore.queryBy(function(rec) {
 			var colName = rec.get('name');
-			return !rec.get(queryValue)
+			return (!rec.get(queryValue) || rec.get('optional'))
 				&& ( !groupField || (groupField !== colName
 						&& groupField[0].toLowerCase() + groupField.replace('_name', '').substring(1) !== colName)
 				)
@@ -489,7 +489,7 @@ var getItemTplStatic = function (modelName) {
 					+ '<tpl if="rel &gt; 1"><p>Вложение: {rel}</p></tpl>'
 					+ '<tpl if="factor &gt; 1"><p>Кратность: {factor}</p></tpl>'
 					+ '<tpl if="stockLevel &gt; 0"><p>Остаток: {stockLevel}</p></tpl>'
-					+ '<tpl if="priceAgent"><p>Цена агента: {priceAgent}</p></tpl>'
+					+ '<tpl if="priceAgent"><p>Цена агента: {priceAgent} ({[(100.0 - values.priceAgent / values.priceOrigin * 100.0).toDecimal(0)]}%)</p></tpl>'
 					+ '<tpl if="cost"><p>Цена ср.: {price}</p></tpl>'
 					+ '<tpl if="cost"><p>Стоимость: {cost}</p></tpl>'
 					

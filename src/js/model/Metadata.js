@@ -71,22 +71,23 @@ Ext.regModel('Table', {
 
 Ext.regModel('Column', {
 	fields: [
-			{name: 'id', type: 'string'},
-			{name: 'name', type: 'string'},
-			{name: 'label', type: 'string'},
-			{name: 'type', type: 'string'},
-			{name: 'table_id', type: 'string'},
-			{name: 'key', type: 'boolean'},
-			{name: 'aggregable', type: 'string'},
-			{name: 'parent', type: 'string'},
-			{name: 'contains', type: 'boolean'},
-			{name: 'editable', type: 'boolean'},
-			{name: 'title', type: 'boolean'},
-			{name: 'init', type: 'string'},
-			{name: 'compute', type: 'string'},
-			{name: 'template', type: 'string'},
-			{name: 'serverPhantom', type: 'boolean'},
-			{name: 'importFields', type: 'string'}
+		{name: 'id', type: 'string'},
+		{name: 'name', type: 'string'},
+		{name: 'label', type: 'string'},
+		{name: 'type', type: 'string'},
+		{name: 'table_id', type: 'string'},
+		{name: 'key', type: 'boolean'},
+		{name: 'aggregable', type: 'string'},
+		{name: 'parent', type: 'string'},
+		{name: 'contains', type: 'boolean'},
+		{name: 'editable', type: 'boolean'},
+		{name: 'title', type: 'boolean'},
+		{name: 'init', type: 'string'},
+		{name: 'compute', type: 'string'},
+		{name: 'template', type: 'string'},
+		{name: 'serverPhantom', type: 'boolean'},
+		{name: 'importFields', type: 'string'},
+		{name: 'optional', type: 'boolean'}
 	],
 	associations: [
 		{type: 'belongsTo', model: 'Table'}
