@@ -944,7 +944,7 @@ Ext.regController('SaleOrder', {
 		var cost = 0,
 			price = parseFloat (rec.get('priceOrigin') || '0'),
 			dMin = -25,
-			dMax = 25
+			dMax = 35
 		;
 		
 		Ext.each (['price0', 'price1', 'price10', 'price11'], function (fname) {
