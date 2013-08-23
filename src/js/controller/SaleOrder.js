@@ -407,12 +407,39 @@ Ext.regController('SaleOrder', {
 			}]}
 		);
 		
-		var defaultSchema = '0';
+		var defaultSchema = '0',
+			schemaStore = Ext.getStore('SalesSchema'),
+			volumeFn
+		;
 		
 		if (tableHasColumn('SaleOrder','salesSchema')) {
 			
-			defaultSchema = 2 - view.saleOrder.get('salesSchema');
-			defaultSchema == -1 && (defaultSchema = 'Bonus');
+			var schemaId = view.saleOrder.get('salesSchema');
+			
+			defaultSchema = (function(id) {
+				switch (id) {
+					case 3: return 'Bonus';
+					case 2: return '0';
+				}
+				return '1';
+			}) (schemaId);
+			
+			if (schemaStore) {
+				
+				var schemaRecord = schemaStore.getById(schemaId),
+					volumeFnName = schemaRecord.get('volumeFn');
+				
+				if (volumeFnName) {
+					
+					volumeFn = function (data) {
+						return schemaRecord[volumeFnName+'Volumes']
+							(data, schemaRecord.get('ratio1'), schemaRecord.get('ratio0'));
+					}
+					
+					defaultSchema = undefined;
+				};
+				
+			}
 			
 		} else if (tableHasColumn('SaleOrder','isWhite')) {
 			
@@ -426,7 +453,8 @@ Ext.regController('SaleOrder', {
 			flex: 3,
 			store: view.offerProductStore,
 			pinHeaders: false,
-			defaultVolume: 'volume' + defaultSchema
+			defaultVolume: defaultSchema ? 'volume' + defaultSchema : undefined,
+			volumeFn: volumeFn
 		}));
 		
 		view.productListIndexBar = view.productPanel.add(
@@ -837,7 +865,8 @@ Ext.regController('SaleOrder', {
 			rec = options.list.store.getAt(options.idx),
 			sign = options.event.direction === 'left' ? -1 : 1,
 			factor = 1,
-			defaultVolume = options.list.defaultVolume
+			defaultVolume = options.list.defaultVolume,
+			volumeFn = options.list.volumeFn
 		;
 		
 		var data = {
@@ -847,7 +876,7 @@ Ext.regController('SaleOrder', {
 			},
 			fnamesTo = [],
 			fnames = [
-				'volume1', 'volume0','volumeBonus', 'packageRel', 'volume',
+				'volume1', 'volume0','volumeBonus', 'packageRel', 'volumeCombo',
 				'discount0', 'discount1','discount10','discount11'
 			]
 		;
@@ -861,14 +890,20 @@ Ext.regController('SaleOrder', {
 		
 		Ext.each(fnamesTo, function(fname) {
 			
-			fname == 'volume' && (fname = defaultVolume);
-			
 			if (fname == 'packageRel') {
 				factor = rec.get(fname);
-				fname = defaultVolume;
 			}
 			
+			((fname == 'volumeCombo' || fname == 'packageRel') && defaultVolume) && (
+				fname = defaultVolume
+			);
+			
 			var v = parseInt (rec.get(fname) || '0');
+			
+			if (fname == 'volumeCombo' || fname == 'packageRel') {
+				fname = 'volumeCombo';
+				v = rec.get('volume1') + rec.get('volume0');
+			}
 			
 			data[fname] = v + sign * factor;
 			
@@ -876,6 +911,7 @@ Ext.regController('SaleOrder', {
 		
 		if (fnamesTo.length) {
 			
+			volumeFn && Ext.apply(data, volumeFn (data));
 			Ext.dispatch( Ext.apply( options, data ));
 			
 		}

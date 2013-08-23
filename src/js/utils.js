@@ -433,7 +433,7 @@ var getItemTplStatic = function (modelName) {
 			return '<div class="<tpl if="unfolded">un</tpl>folded'
 				+'<tpl if="lastActive"> active</tpl>'
 				+'">'
-				+'<div class="hbox volume'
+				+'<div class="hbox volumeCombo'
 				+'<tpl if="isNonHidable"> isNonHidable</tpl>'
 				+'<tpl if="BonusProgram_tag.search(\'Ф\') != -1"> focused</tpl>'
 			+ '">'
