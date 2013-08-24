@@ -139,6 +139,11 @@ var SaleOrderView = Ext.extend(AbstractView, {
 					change: applySearch,
 					action: function(f,e) {
 						console.log ('SaleOrderSearch action');
+					},
+					focus: function (f,e) {
+						setTimeout (function() {
+							e.target.setSelectionRange (0, 9999);
+						}, 1);
 					}
 				}
 			},
