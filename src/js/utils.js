@@ -489,7 +489,7 @@ var getItemTplStatic = function (modelName) {
 					+ '<tpl if="rel &gt; 1"><p>Вложение: {rel}</p></tpl>'
 					+ '<tpl if="factor &gt; 1"><p>Кратность: {factor}</p></tpl>'
 					+ '<tpl if="stockLevel &gt; 0"><p>Остаток: {stockLevel}</p></tpl>'
-					+ '<tpl if="priceAgent"><p>Цена агента: {priceAgent} ({[(100.0 - values.priceAgent / values.priceOrigin * 100.0).toDecimal(0)]}%)</p></tpl>'
+					+ '<tpl if="priceAgent"><p>Цена агента: {priceAgent} ({[(values.priceOrigin / values.priceAgent * 100.0 - 100.0).toDecimal(0)]}%)</p></tpl>'
 					+ '<tpl if="cost"><p>Цена ср.: {price}</p></tpl>'
 					+ '<tpl if="cost"><p>Стоимость: {cost}</p></tpl>'
 					
