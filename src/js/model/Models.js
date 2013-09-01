@@ -165,7 +165,7 @@ function afterCreateModels() {
 			var result=Ext.apply({},data);
 			
 			if (result.volumeCombo>=0) {
-				result.volume1 = Math.round (result.volumeCombo * ratio1 / (ratio1+ratio0));
+				result.volume1 = Math.ceil (result.volumeCombo * ratio1 / (ratio1+ratio0));
 				result.volume0 = result.volumeCombo - result.volume1;
 			}
 			
