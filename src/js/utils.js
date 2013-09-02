@@ -462,17 +462,25 @@ var getItemTplStatic = function (modelName) {
 					+ '</tpl>'
 					
 					+ '<p class="price">Цена: {priceOrigin}'
-						+ '<tpl if="discount0!=0 || discount1!=0 || discount10!=0 || discount11!=0">'
-							+ '<span class="untapme discounts">&nbsp;'
-								+ '<tpl if="discount0==discount1 && discount10==discount11 && discount1==discount10">'
-									+ '({discount0}%)'.toSpan('green')
+						+ '<tpl if="discount0 || discount10">'
+							+ '<span class="untapme discounts '+
+									'<tpl if="discount1!=discount0 || discount11!=discount10">scheme0</tpl>'
+									+'">&nbsp;'
+								+ '<tpl if="discount0==discount10">'
+									+ '({discount0}%)'.toSpan()
 								+ '</tpl>'
-								+ '<tpl if="discount0==discount10 && discount1==discount11 && discount1!=discount0">'
-									+ '({discount0}%)'.toSpan('red')
-									+ '({discount1}%)'.toSpan('green')
+								+ '<tpl if="discount0!=discount10">'
+									+ '({discount0}%К {discount10}%Ц)'.toSpan()
 								+ '</tpl>'
-								+ '<tpl if="discount0!=discount10 || discount1!=discount11">'
-									+ '(Нестандартная скидка!)'.toSpan('attention')
+							+ '</span>'
+						+ '</tpl>'
+						+ '<tpl if="(discount1 || discount11) && (discount1!=discount0 || discount11!=discount10)">'
+							+ '<span class="untapme discounts scheme1">&nbsp;'
+								+ '<tpl if="discount1==discount11">'
+									+ '({discount1}%)'.toSpan()
+								+ '</tpl>'
+								+ '<tpl if="discount1!=discount11">'
+									+ '({discount1}%К {discount11}%Ц)'.toSpan()
 								+ '</tpl>'
 							+ '</span>'
 						+ '</tpl>'
