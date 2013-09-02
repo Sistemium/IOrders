@@ -1023,7 +1023,7 @@ Ext.regController('Navigator', {
 					{ xtype: 'panel', cls: 'vSpacer'},
 					
 					{ text: 'Пересоздать БД', name: 'DbRebuild'},
-					{ text: 'Запросить данные', name: 'XiDownload'},
+					//{ text: 'Запросить данные', name: 'XiDownload'},
 					
 					{ xtype: 'panel', cls: 'vSpacer'},
 					
