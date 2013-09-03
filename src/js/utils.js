@@ -443,7 +443,7 @@ var getItemTplStatic = function (modelName) {
 												+ '<tpl if="price11 != priceOrigin">'
 													+ '({[((values.price11/values.priceOrigin - 1) * 100.0).toDecimal(2)]}%)'
 												+ ']</tpl>'
-											+ '</tpl>'
+											+ ']</tpl>'
 											+ ' * {volume1}'
 										+ '</span>'
 									+ '</tpl>'
