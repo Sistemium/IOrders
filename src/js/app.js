@@ -92,7 +92,7 @@ Ext.regApplication({
 						data: 'dbversion:'+db.version
 					});
 					
-					if (DEBUG == 'eventlog') window.onerror = function(msg, url, line) {
+					if (DEBUG) window.onerror = function(msg, url, line) {
 						
 						console.log ('UnhandledException: ' + msg + ' at line ' + line);
 						
@@ -365,7 +365,12 @@ Ext.regApplication({
 	logEvent: function (eventData){
 		var model = Ext.ModelMgr.getModel('Eventlog');
 		
-		if (!DEBUG && model) {
+		if (model && eventData) {
+			
+			if (eventData.action == 'ProductNameFilter') return;
+			
+			if (!DEBUG && eventData.action != 'dbstart') return;
+			
 			Ext.ModelMgr.create( eventData, model ).save();
 		}
 		
