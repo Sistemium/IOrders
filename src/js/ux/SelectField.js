@@ -28,16 +28,27 @@ Ext.override(Ext.form.Select, {
     },
 	
 	onListSelect: function(selModel, selected) {
-        if (selected) {
-            this.setValue(selected.get(this.valueField));
-            this.fireEvent('change', this, this.getValue());
-        }
-        
+		
+		if (this.listPanel.hidden) {
+			IOrders.logEvent({
+				module:'SelectField.js',
+				action: 'onListSelect' ,
+				data: 'this.listPanel.hidden',
+				force: true
+			});
+			return;
+		}
+		
         this.listPanel.hide({
             type: 'fade',
             out: true,
             scope: this
         });
+        
+        if (selected) {
+            this.setValue(selected.get(this.valueField));
+            this.fireEvent('change', this, this.getValue());
+        }
         
         Ext.dispatch({
         	action: 'onSelectFieldValueChange',

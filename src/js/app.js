@@ -367,9 +367,11 @@ Ext.regApplication({
 		
 		if (model && eventData) {
 			
-			if (eventData.action == 'ProductNameFilter') return;
-			
-			if (!DEBUG && eventData.action != 'dbstart') return;
+			if (!eventData.force) {
+				if (eventData.action == 'ProductNameFilter') return;
+				
+				if (!DEBUG && eventData.action != 'dbstart') return;
+			}
 			
 			Ext.ModelMgr.create( eventData, model ).save();
 		}
