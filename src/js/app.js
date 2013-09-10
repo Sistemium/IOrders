@@ -92,43 +92,7 @@ Ext.regApplication({
 						data: 'dbversion:'+db.version
 					});
 					
-					if (DEBUG) window.onerror = function(msg, url, line) {
-						
-						console.log ('UnhandledException: ' + msg + ' at line ' + line);
-						
-						var part = '/js/',
-							modulePos = url.lastIndexOf(part),
-							module = url,
-							viewTitle
-						;
-						
-						if (IOrders.viewport) {
-							var ai = IOrders.viewport.getActiveItem();
-							
-							if (ai && ai.dockedItems) {
-								var tb = ai.dockedItems.getAt(0);
-								viewTitle = tb.title;
-							}
-						}
-						
-						if (modulePos < 0)
-							modulePos = url.lastIndexOf(part = '/')
-						;
-						
-						if (modulePos > 0)
-							module = url.slice(modulePos + part.length)
-						;
-						
-						IOrders.logEvent({
-							module: module,
-							action: 'UnhandledException' ,
-							data: 'title: ' + viewTitle + ' '
-								+ msg + ' at line ' + line
-						});
-						
-						return false;
-						
-					}
+					if (DEBUG) window.onerror = IOrders.onError;
 					
 				},
 				fail: function() {
@@ -375,6 +339,44 @@ Ext.regApplication({
 			
 			Ext.ModelMgr.create( eventData, model ).save();
 		}
+		
+	},
+	
+	onError: function(msg, url, line) {
+		
+		console.log ('UnhandledException: ' + msg + ' at line ' + line);
+		
+		var part = '/js/',
+			modulePos = url.lastIndexOf(part),
+			module = url,
+			viewTitle
+		;
+		
+		if (IOrders.viewport) {
+			var ai = IOrders.viewport.getActiveItem();
+			
+			if (ai && ai.dockedItems) {
+				var tb = ai.dockedItems.getAt(0);
+				viewTitle = tb.title;
+			}
+		}
+		
+		if (modulePos < 0)
+			modulePos = url.lastIndexOf(part = '/')
+		;
+		
+		if (modulePos > 0)
+			module = url.slice(modulePos + part.length)
+		;
+		
+		IOrders.logEvent({
+			module: module,
+			action: 'UnhandledException' ,
+			data: 'title: ' + viewTitle + ' '
+				+ msg + ' at line ' + line
+		});
+		
+		return false;
 		
 	}
 	
