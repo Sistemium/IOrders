@@ -90,13 +90,7 @@ var getItemTplCompute = function(modelName, config) {
 				+						'<tpl for="otherColumns">'
 				+							'<tpl if="parent">'
 				+								'<tpl if="label || name">'
-				+									'<div>'
-				+										'<span class="label-parent x-button">'
-				+											'<input type="hidden" property="{name}" value="\\{{name}\\}" />'
-				+											'{label}'
-				+										'</span>'
-				+										'<tpl if="name_br">: \\{{name_br}\\}</tpl>'
-				+									'</div>'
+				+									'{renderTpl}'
 				+								'</tpl>'
 				+							'</tpl>'
 				+							'<tpl if="!(parent||template)">'
@@ -113,7 +107,18 @@ var getItemTplCompute = function(modelName, config) {
 				+			'</div>'
 				+		'</div>'
 				+		'{buttons}'
-				+	'</div>';
+				+	'</div>'
+	;
+	
+	var renderTpl = function(name_br,name,label) {
+		return '<tpl if="'+name+'"><div>'
+			+ '<span class="label-parent x-button">'
+			+	'<input type="hidden" property="'+name+'" value="{'+name+'}" />'
+			+	label
+			+ '</span>'
+			+ ': {'+name_br+'}'
+		+ '</div></tpl>'
+	}
 	
 	var buttons = 
 		'<div class="buttons">' 
@@ -252,8 +257,8 @@ var getItemTplCompute = function(modelName, config) {
 					label: label,
 					cls: colName === 'processing' ? colName + ' is-{' + colName + '}' : colName + (isTitle ? ' title' : ''),
 					name: name,
-					name_br: colName[0].toUpperCase() + colName.substring(1) + '_name',
-					template: col.get('template')
+					template: col.get('template'),
+					renderTpl: renderTpl(colName[0].toUpperCase() + colName.substring(1) + '_name', name, label)
 				});
 
 				templateData.cls += (colName === 'processing' ? ' is-{' + colName + '}' : '');
