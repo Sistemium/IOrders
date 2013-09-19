@@ -950,7 +950,10 @@ Ext.regController('Navigator', {
 		store.currentPage = 1;
 		
 		var filters = [];
-		options.filter && filters.push({property: lowercaseFirstLetter(filterRecord.modelName), value: field.getValue()});
+		options.filter && filters.push({
+			property: lowercaseFirstLetter(filterRecord.modelName),
+			value: field.getValue()
+		});
 		
 		options.removeFilter && view.form.remove(0);
 		store.filter(filters);
