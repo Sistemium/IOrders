@@ -1028,7 +1028,29 @@ var getGroupConfig = function(model) {
 			return result;
 		}
 		default : {
-			return {};
+			
+			var grouperFunction, sorterProperty, direction, result = {};
+			
+			if (tableHasColumn (model, 'date')) {
+				sorterProperty = 'date';
+				direction = 'DESC';
+				grouperFunction = function(rec) {
+					return Ext.util.Format.date(rec.get(sorterProperty));
+				};
+			}
+			
+			if (sorterProperty && grouperFunction) {
+				result = {
+					sorters: [{
+						property: sorterProperty,
+						direction: direction
+					}],
+					field: sorterProperty,
+					getGroupString: grouperFunction
+				}
+			}
+			
+			return result;
 		}
 	}
 };
