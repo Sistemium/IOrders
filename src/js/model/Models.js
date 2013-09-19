@@ -109,7 +109,8 @@ function afterCreateModels() {
 	
 	overrideModelIfExists( 'Shipment', {
 		name: function() {
-			return this.get('Customer_name')
+			return this.get('ndoc')
+				+ ' для ' + this.get('Customer_name')
 				+ ' от ' + this.get('date').dateFormat('d/m/Y')
 				+ ' на ' + this.get('totalCost') + ' руб.'
 		}
