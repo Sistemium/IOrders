@@ -857,7 +857,7 @@ var loadDepData = function(depRec, depTable, view, config, force) {
 			
 			if (aggCols) {
 				var aggDepResult = '';
-				var aggDepTpl = new Ext.XTemplate('<tpl if="value &gt; 0"><tpl if="name">{name} : </tpl>{[values.value.toFixed(2)]} </tpl>');
+				var aggDepTpl = new Ext.XTemplate('<tpl if="value"><tpl if="name">{name} : </tpl>{[values.value.toFixed(2)]} </tpl>');
 				var aggResults = operation.resultSet.records[0].data;
 				
 				aggCols.each(function(aggCol) {
