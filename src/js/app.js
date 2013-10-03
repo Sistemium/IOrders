@@ -62,7 +62,7 @@ Ext.regApplication({
 			) || false
 		;
 		
-		if (iOS == 7) IOrders.viewport.on('orientationchange', function(e) {
+		if (iOS >= 7) IOrders.viewport.on('orientationchange', function(e) {
 			var fixY = 0;
 			if (e.orientation == 'landscape') fixY = 20;
 			this.setPosition({y:fixY});
