@@ -303,6 +303,8 @@ Ext.regController('Main', {
 				
 				var metadata = this.xml2obj(m).metadata;
 				
+				metadata.name = IOrders.prefix + metadata.name;
+				
 				if ( metadata.version > IOrders.dbeng.db.version )
 					Ext.Msg.confirm(
 						'Требуется пересоздать БД',
@@ -369,14 +371,11 @@ Ext.regController('Main', {
 				
 				var metadata = this.xml2obj(m).metadata;
 				
-				if ( metadata.version > IOrders.dbeng.db.version ) {
-					localStorage.setItem('metadata', Ext.encode(metadata));
-				}
+				metadata.name = IOrders.prefix + metadata.name;
 				
-				IOrders.dbeng.startDatabase (
-					Ext.decode(localStorage.getItem('metadata')),
-					true
-				);
+				localStorage.setItem('metadata', Ext.encode(metadata));
+				
+				IOrders.dbeng.startDatabase (metadata, true);
 			}},
 			this.prefsCb
 		));

@@ -78,6 +78,8 @@ Ext.regApplication({
 			vp = this.viewport = Ext.create({xtype: 'viewport'});
 		;
 		
+		this.prefix = location.pathname.match(/\/[^\~].*/)[0].split('/')[1] + '.';
+		
 		this.dbeng = new Ext.data.Engine({
 			listeners: {
 				dbstart: function(db) {
@@ -133,6 +135,8 @@ Ext.regApplication({
 						console.log(m);
 						
 						var metadata = me.xml2obj(m).metadata;
+						
+						metadata.name = IOrders.prefix + metadata.name;
 						
 						localStorage.setItem('metadata', Ext.encode(metadata));
 						
