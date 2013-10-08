@@ -75,7 +75,7 @@ Ext.regApplication({
 		
 		var tStore = Ext.getStore('tables'),
 			metadata = Ext.decode(IOrders.getItemPersistant('metadata')),
-			vp = this.viewport = Ext.create({xtype: 'viewport'});
+			vp = (this.viewport = Ext.create({xtype: 'viewport'}))
 		;
 		
 		this.prefix = location.pathname.match(/\/[^\~].*/)[0].split('/')[1] + '.';
@@ -402,7 +402,7 @@ Ext.regApplication({
 
 	getItemPersistant: function (key) {
 		var prefixedValue = localStorage.getItem ( IOrders.prefix + key );
-		return  prefixedValue ? prefixedValue : localStorage.getItem ( key )
+		return  (prefixedValue == undefined) ? localStorage.getItem ( key ) : prefixedValue
 	},
 	
 	removeItemPersistant: function(key) {
