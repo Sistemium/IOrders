@@ -38,7 +38,7 @@ Ext.regApplication({
 	
 	init: function() {
 		
-		IOrders.newDesign = localStorage.getItem('newDesign') == 'true' ? true : false;
+		IOrders.newDesign = IOrders.getItemPersistant('newDesign') == 'true' ? true : false;
 		
 		var store = Ext.getStore('tables');
 		
@@ -46,7 +46,7 @@ Ext.regApplication({
 		createStores(store, { pageSize: 400 });
 		
 		IOrders.mainMenuRecord = Ext.ModelMgr.create({
-			id: localStorage.getItem('username') || localStorage.getItem('login')
+			id: IOrders.getItemPersistant('username') || IOrders.getItemPersistant('login')
 		}, 'MainMenu');
 		
 		this.viewport.setActiveItem(Ext.create({
@@ -74,7 +74,7 @@ Ext.regApplication({
 	launch: function() {
 		
 		var tStore = Ext.getStore('tables'),
-			metadata = Ext.decode(localStorage.getItem('metadata')),
+			metadata = Ext.decode(IOrders.getItemPersistant('metadata')),
 			vp = this.viewport = Ext.create({xtype: 'viewport'});
 		;
 		
@@ -118,7 +118,7 @@ Ext.regApplication({
 		
 		IOrders.xi = new Ext.data.XmlInterface({
 			view: 'iorders',
-			noServer: !location.protocol == 'https:' || localStorage.getItem('realServer') == 'false'
+			noServer: !location.protocol == 'https:' || IOrders.getItemPersistant('realServer') == 'false'
 		});
 		
 		IOrders.getMetadata = {
@@ -138,17 +138,17 @@ Ext.regApplication({
 						
 						metadata.name = IOrders.prefix + metadata.name;
 						
-						localStorage.setItem('metadata', Ext.encode(metadata));
+						IOrders.setItemPersistant('metadata', Ext.encode(metadata));
 						
 						var actk = accessTokenFromLocation();
 						
-						localStorage.setItem('login', IOrders.xi.username);
-						localStorage.setItem('username', IOrders.xi.userLabel || IOrders.xi.username);
+						IOrders.setItemPersistant('login', IOrders.xi.username);
+						IOrders.setItemPersistant('username', IOrders.xi.userLabel || IOrders.xi.username);
 						
 						if (actk) {
 							
-							localStorage.setItem('accessToken', actk);
-							localStorage.setItem('needLoad', true);
+							IOrders.setItemPersistant('accessToken', actk);
+							IOrders.setItemPersistant('needLoad', true);
 							
 							Ext.dispatch ({
 								controller: 'Main',
@@ -215,11 +215,11 @@ Ext.regApplication({
 				Ext.dispatch({controller: 'Navigator', action: 'afterAppLaunch'});
 				
 				Ext.apply (this.xi, {
-					username: localStorage.getItem('login'),
+					username: IOrders.getItemPersistant('login'),
 				});
 				
-				var password = localStorage.getItem('password');
-				var actk = localStorage.getItem('accessToken');
+				var password = IOrders.getItemPersistant('password');
+				var actk = IOrders.getItemPersistant('accessToken');
 				
 				if (password) this.xi.password = password;
 				if (actk) this.xi.accessToken = actk;
@@ -228,10 +228,10 @@ Ext.regApplication({
 					IOrders.xi.login ({
 						success: function() {
 							
-							localStorage.setItem('login', IOrders.xi.username);
-							localStorage.setItem('username', IOrders.xi.userLabel);
+							IOrders.setItemPersistant('login', IOrders.xi.username);
+							IOrders.setItemPersistant('username', IOrders.xi.userLabel);
 							
-							if (db.clean || localStorage.getItem('needSync') == 'true'){
+							if (db.clean || IOrders.getItemPersistant('needSync') == 'true'){
 								localStorage.removeItem('needSync');
 								IOrders.xi.download(IOrders.dbeng);
 							} else {
@@ -394,6 +394,15 @@ Ext.regApplication({
 		
 		return false;
 		
+	},
+	
+	setItemPersistant: function (key, value) {
+		localStorage.setItem ( IOrders.prefix + key, value )
+	},
+
+	getItemPersistant: function (key) {
+		return localStorage.getItem ( IOrders.prefix + key ) || localStorage.getItem ( key )
 	}
+
 	
 });

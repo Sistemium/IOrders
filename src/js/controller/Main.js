@@ -247,8 +247,8 @@ Ext.regController('Main', {
 		
 		if(login && password) {
 			
-			localStorage.setItem('login', login);
-			localStorage.setItem('password', password);
+			IOrders.setItemPersistant('login', login);
+			IOrders.setItemPersistant('password', password);
 			
 			IOrders.xi.username = login;
 			IOrders.xi.password = password;
@@ -313,13 +313,13 @@ Ext.regController('Main', {
 						'Стереть все данные и загрузить то, что лежит на сервере?',
 						function (yn) {
 							if (yn == 'yes'){
-								localStorage.setItem('metadata', Ext.encode(metadata));				
+								IOrders.setItemPersistant('metadata', Ext.encode(metadata));				
 								location.reload();
 							}
 						}
 					);
 				else if (!options.silent) {
-					localStorage.setItem('metadata', Ext.encode(metadata));
+					IOrders.setItemPersistant('metadata', Ext.encode(metadata));
 					Ext.Msg.alert('Метаданные в норме', 'Версия: ' + metadata.version);
 				}
 				
@@ -358,7 +358,7 @@ Ext.regController('Main', {
 		
 		IOrders.viewport.setLoading('Обновляю базу данных ...');
 		IOrders.dbeng.on ('dbstart', function() {
-			localStorage.setItem ('needSync', true);
+			IOrders.setItemPersistant ('needSync', true);
 			location.replace(location.origin + location.pathname);
 		});
 		
@@ -373,7 +373,7 @@ Ext.regController('Main', {
 				
 				metadata.name = IOrders.prefix + metadata.name;
 				
-				localStorage.setItem('metadata', Ext.encode(metadata));
+				IOrders.setItemPersistant('metadata', Ext.encode(metadata));
 				
 				IOrders.dbeng.startDatabase (metadata, true);
 			}},
@@ -406,12 +406,12 @@ Ext.regController('Main', {
 	
 	onXiNoServerButtonTap: function(options) {
 		IOrders.xi.noServer = true;
-		localStorage.setItem('realServer', false);
+		IOrders.setItemPersistant('realServer', false);
 	},
 
 	onXiYesServerButtonTap: function(options) {
 		IOrders.xi.noServer = false;
-		localStorage.setItem('realServer', true);
+		IOrders.setItemPersistant('realServer', true);
 	},
 
 	onEnableLogButtonTap: function(options) {
@@ -426,12 +426,12 @@ Ext.regController('Main', {
 
 	onNewDesignButtonTap: function(options) {
 		IOrders.newDesign = true;
-		localStorage.setItem('newDesign', true);
+		IOrders.setItemPersistant('newDesign', true);
 	},
 
 	onOldDesignButtonTap: function(options) {
 		IOrders.newDesign = false;
-		localStorage.setItem('newDesign', false);
+		IOrders.setItemPersistant('newDesign', false);
 	},
 
 	onApplyPatchButtonTap: function(options) {

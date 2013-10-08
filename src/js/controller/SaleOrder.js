@@ -1191,7 +1191,7 @@ Ext.regController('SaleOrder', {
 					this.iel.removeCls('editing');
 				},
 				cardswitch: function(panel, newC, oldC) {
-					localStorage.setItem('productInfoTab', newC.itemId);
+					IOrders.setItemPersistant('productInfoTab', newC.itemId);
 				}
 			}
 			
@@ -1262,7 +1262,7 @@ Ext.regController('SaleOrder', {
 									});
 									
 									this.pricePanel.showBy(this.pricePanel.iel, false, false);
-									this.pricePanel.setActiveItem(localStorage.getItem('productInfoTab'));
+									this.pricePanel.setActiveItem(IOrders.getItemPersistant('productInfoTab'));
 									this.pricePanel.getComponent('shipmentList').refresh();
 									
 									this.hasPriceTable && priceStore.load({
@@ -1876,6 +1876,6 @@ Ext.regController('SaleOrder', {
 		view.productListIndexBar[view.indexBarMode ? 'show' : 'hide']();
 		view.productPanel.doLayout();
 		
-		localStorage.setItem('indexBarMode', view.indexBarMode);
+		IOrders.setItemPersistant('indexBarMode', view.indexBarMode);
 	}
 });

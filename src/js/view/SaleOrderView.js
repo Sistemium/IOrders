@@ -190,7 +190,7 @@ var SaleOrderView = Ext.extend(AbstractView, {
 	
 	initComponent: function() {
 
-		this.indexBarMode = localStorage.getItem('indexBarMode') == 'true';
+		this.indexBarMode = IOrders.getItemPersistant('indexBarMode') == 'true';
 
 		SaleOrderView.superclass.initComponent.apply(this, arguments);
 	}
