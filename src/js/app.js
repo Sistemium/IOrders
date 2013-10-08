@@ -73,12 +73,12 @@ Ext.regApplication({
 	
 	launch: function() {
 		
+		this.prefix = location.pathname.match(/\/[^\~].*/)[0].split('/')[1] + '.';
+		
 		var tStore = Ext.getStore('tables'),
 			metadata = Ext.decode(IOrders.getItemPersistant('metadata')),
 			vp = (this.viewport = Ext.create({xtype: 'viewport'}))
 		;
-		
-		this.prefix = location.pathname.match(/\/[^\~].*/)[0].split('/')[1] + '.';
 		
 		this.dbeng = new Ext.data.Engine({
 			listeners: {
