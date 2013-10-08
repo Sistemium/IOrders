@@ -401,11 +401,12 @@ Ext.regApplication({
 	},
 
 	getItemPersistant: function (key) {
-		return localStorage.getItem ( IOrders.prefix + key ) || localStorage.getItem ( key )
+		var prefixedValue = localStorage.getItem ( IOrders.prefix + key );
+		return  prefixedValue ? prefixedValue : localStorage.getItem ( key )
 	},
 	
 	removeItemPersistant: function(key) {
-		localStorage.removeItem (key)
+		localStorage.removeItem ( IOrders.prefix + key )
 	}
 
 	
