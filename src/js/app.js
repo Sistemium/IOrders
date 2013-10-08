@@ -232,7 +232,7 @@ Ext.regApplication({
 							IOrders.setItemPersistant('username', IOrders.xi.userLabel);
 							
 							if (db.clean || IOrders.getItemPersistant('needSync') == 'true'){
-								localStorage.removeItem('needSync');
+								IOrders.removeItemPersistant('needSync');
 								IOrders.xi.download(IOrders.dbeng);
 							} else {
 								p = new Ext.data.SQLiteProxy({engine: IOrders.dbeng, model: 'ToUpload'});
@@ -402,6 +402,10 @@ Ext.regApplication({
 
 	getItemPersistant: function (key) {
 		return localStorage.getItem ( IOrders.prefix + key ) || localStorage.getItem ( key )
+	},
+	
+	removeItemPersistant: function(key) {
+		localStorage.removeItem (key)
 	}
 
 	
