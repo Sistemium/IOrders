@@ -1298,7 +1298,8 @@ Ext.regController('SaleOrder', {
 		
 		rec && filters.push({
 			property: 'category',
-			value: rec.get('category')
+			value: rec.get('category'),
+			exactMatch: true
 		});
 		
 		view.isShowSaleOrder && filters.push(offerProductStore.volumeFilter);
