@@ -136,7 +136,7 @@ Ext.regApplication({
 						
 						var metadata = me.xml2obj(m).metadata;
 						
-						metadata.name = IOrders.prefix + metadata.name;
+						//metadata.name = IOrders.prefix + metadata.name;
 						
 						IOrders.setItemPersistant('metadata', Ext.encode(metadata));
 						
