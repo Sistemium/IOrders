@@ -110,7 +110,7 @@ Ext.regApplication({
 					
 				},
 				fail: function() {
-					localStorage.clear();
+					//localStorage.clear();
 					location.reload();
 				}
 			}
@@ -188,27 +188,7 @@ Ext.regApplication({
 		
 			if(!metadata) {
 				
-				this.viewport.setActiveItem(Ext.create({
-					xtype: 'form',
-					name: 'Login',
-					ownSubmit: true,
-					items: [
-						{xtype: 'fieldset', 
-							items: [
-								{
-									xtype: 'textfield',
-									id: 'login', name: 'login', label: 'Логин',
-									autoCorrect: false, autoCapitalize: false
-								},
-								{
-									xtype: 'passwordfield',
-									id: 'password', name: 'password', label: 'Пароль'
-								}
-							]
-						},
-						{xtype: 'button', text: 'Логин', name: 'Login'}
-					]
-				}));
+				Ext.dispatch(Ext.apply({controller: 'Navigator', action: 'createLoginPage'}, this.config));
 				
 			} else {
 				
@@ -407,6 +387,21 @@ Ext.regApplication({
 	
 	removeItemPersistant: function(key) {
 		localStorage.removeItem ( IOrders.prefix + key )
+	},
+	
+	clearLocalStorage: function() {
+		
+		var keysToRemove = [];
+		
+		for (var i = 0; i < localStorage.length; i++){
+			var key = localStorage.key(i);
+			if (key.match(IOrders.prefix.replace(/[\.]/g,'\\.'))) 
+				keysToRemove.push(key)
+		}
+		
+		Ext.each(keysToRemove, function(key) {
+			localStorage.removeItem (key)
+		});
 	}
 
 	

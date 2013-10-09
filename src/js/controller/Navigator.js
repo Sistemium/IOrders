@@ -1203,5 +1203,36 @@ Ext.regController('Navigator', {
             xfbml      : true,
             oauth      : true
         });
+	},
+	
+	createLoginPage: function (options) {
+		
+		if (options.loginPage)
+			location.replace(options.loginPage);
+		
+		
+		IOrders.viewport.setActiveItem(Ext.create({
+			xtype: 'form',
+			name: 'Login',
+			ownSubmit: true,
+			items: [
+				{xtype: 'fieldset', 
+					items: [
+						{
+							xtype: 'textfield',
+							id: 'login', name: 'login', label: 'Логин',
+							autoCorrect: false, autoCapitalize: false
+						},
+						{
+							xtype: 'passwordfield',
+							id: 'password', name: 'password', label: 'Пароль'
+						}
+					]
+				},
+				{xtype: 'button', text: 'Логин', name: 'Login'}
+			]
+		}));
+		
 	}
+
 });

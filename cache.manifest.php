@@ -19,8 +19,12 @@
             if (file_exists($filename)) {
                 $ftime=filemtime($filename);
                 if ($ftime>$lastModified) $lastModified=$ftime;
-                $result .= "\n# ".date ("M d Y H:i:s", $ftime)."\n".str_replace(' ', '%20', $filename);
+                $result .= "\n# ".date ("M d Y H:i:s", $ftime);
+            } else {
+                $result .= "\n# not found file:";
             }
+            
+            $result .= "\n" . str_replace(' ', '%20', $filename);
         }
     }
     
