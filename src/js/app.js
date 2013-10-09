@@ -377,7 +377,8 @@ Ext.regApplication({
 	},
 	
 	setItemPersistant: function (key, value) {
-		localStorage.setItem ( IOrders.prefix + key, value )
+		localStorage.setItem ( IOrders.prefix + key, value );
+		localStorage.removeItem ( key );
 	},
 
 	getItemPersistant: function (key) {
