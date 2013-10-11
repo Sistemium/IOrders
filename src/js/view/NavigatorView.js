@@ -21,7 +21,9 @@ var NavigatorView = Ext.extend(AbstractView, {
 		this.items = [];
 		
 		this.dockedItems[0].title = table.get('name');
-		this.dockedItems[0].items.push (this.syncButton = this.createSyncButton());
+		this.dockedItems[0].items.push (
+			this.syncButton = this.createSyncButton()
+		);
 		
 		//this.fbBtn = Ext.create({xtype: 'button', name: 'FacebookFeed', text: 'Новости', scope: this});
 		//this.dockedItems[0].items.push(this.fbBtn);
@@ -411,7 +413,7 @@ var NavigatorView = Ext.extend(AbstractView, {
 			scope: this,
 			
 			checkDisabled: function(){
-				this.setDisabled(IOrders.xi.isBusy())
+				this.setDisabled(IOrders.xi.isBusy() || me.editing)
 			},
 			
 			rebadge: function(){
@@ -464,6 +466,11 @@ var NavigatorView = Ext.extend(AbstractView, {
 			},
 			sb, {delay: 1000}
 		);
+		
+		sb.mon( this, 'saved', function (o) {
+			sb.checkDisabled();
+			sb.rebadge();
+		}, sb);
 		
 		return sb;
 	},

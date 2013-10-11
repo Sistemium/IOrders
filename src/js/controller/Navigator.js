@@ -71,6 +71,32 @@ Ext.regController('Navigator', {
         IOrders.xi.on('beforeupload', this.onBeforeUpload, this);
 	},
 
+	onStatusButtonTap: function (options) {
+		
+		var btn = options.btn,
+			bar = btn.up('segmentedbutton'),
+			view = bar.up('navigatorview'),
+			rec = view.form.getRecord(),
+			field = view.form.getFields(bar.name)
+		;
+
+		rec.set(bar.name, btn.name);
+		
+		if(!view.isNew) {
+			rec.save({callback: function() {
+                var tableRec = Ext.getStore('tables').getById(rec.modelName);
+                loadDepData(tableRec, tableRec, undefined, undefined, true);
+				view.fireEvent ('saved', rec);
+            }});
+		}
+
+		rec.fields.getByKey('processing') &&
+			this.controlButtonsVisibilities(
+				view,
+				!view.editing && rec.get('processing') != 'draft' && !rec.get('serverPhantom')
+			);
+	},
+
     onBeforeUpload: function(store) {
         
         var view = IOrders.viewport.getActiveItem();
@@ -255,57 +281,7 @@ Ext.regController('Navigator', {
 		
 		var errors = rec.validate();
 		
-		if(errors.isValid()) {
-			
-			var btn = options.btn;
-			
-			if (btn) {
-				btn.setText('Редактировать');
-				
-				Ext.apply(btn, {name: 'Edit'});
-				
-				options.view.depStore.each(function(rec) {
-					rec.set('editing', false);
-				});
-                
-                if(options.view.isNew) {
-                    var statusBar = form.getComponent('statusToolbar'),
-                        state = undefined
-                    ;
-                        
-                    if(statusBar) {
-                        
-                        var segBtn = statusBar.getComponent('processing');
-                        
-                        segBtn.items.each(function(b) {
-                            if(b.pressed) {
-                                state = b.name;
-                                return false;
-                            }
-                            return true;
-                        });
-                        
-                    }
-                    
-                    rec.set('processing', state);
-                }
-				
-				var toolbar = btn.up('toolbar');
-                
-				Ext.dispatch(Ext.apply(options, {action: 'setEditing', editing: false}));
-
-				rec.fields.getByKey('processing') && this.controlButtonsVisibilities(view, rec.get('processing') != 'draft' && !rec.get('serverPhantom'));
-			}
-			
-            view.isNew = false;
-            
-			rec.save({callback: function() {
-                var tableRec = Ext.getStore('tables').getById(rec.modelName);
-                loadDepData(tableRec, tableRec, undefined, undefined, true);
-            }});
-			view.fireEvent ('saved', rec);
-			
-		} else {
+		if(!errors.isValid()) {
 			
 			var msg = '';
 			
@@ -315,8 +291,63 @@ Ext.regController('Navigator', {
 			
 			Ext.Msg.alert('Ошибка валидации', msg, Ext.emptyFn);
 			
+			return;
+			
 		}
+		
+		var btn = options.btn;
+		
+		if (btn) {
+			btn.setText('Редактировать');
+			
+			Ext.apply(btn, {name: 'Edit'});
+			
+			options.view.depStore.each(function(rec) {
+				rec.set('editing', false);
+			});
+			
+			if(options.view.isNew) {
+				var statusBar = form.getComponent('statusToolbar'),
+					state = undefined
+				;
+					
+				if(statusBar) {
+					
+					var segBtn = statusBar.getComponent('processing');
+					
+					segBtn.items.each(function(b) {
+						if(b.pressed) {
+							state = b.name;
+							return false;
+						}
+						return true;
+					});
+					
+				}
+				
+				rec.set('processing', state);
+			}
+			
+			var toolbar = btn.up('toolbar');
+			
+			Ext.dispatch(Ext.apply(options, {action: 'setEditing', editing: false}));
+			rec.fields.getByKey('processing') && this.controlButtonsVisibilities(view, rec.get('processing') != 'draft' && !rec.get('serverPhantom'));
+		}
+		
+		view.isNew = false;
+		
+		rec.save({callback: function() {
+			
+			var tableRec = Ext.getStore('tables').getById(rec.modelName);
+			
+			loadDepData(tableRec, tableRec, undefined, undefined, true);
+			
+			view.fireEvent ('saved', rec);
+			
+		}});
+		
 	},
+
 	
 	onEditButtonTap: function(options) {
 		
@@ -365,23 +396,30 @@ Ext.regController('Navigator', {
 	},
 
 	controlButtonsVisibilities: function(view, hide) {
-
+		
 		var topBar = view.getDockedComponent('top'),
 			delBtn = topBar.getComponent('Delete'),
 			editBtn = topBar.getComponent('SaveEdit')
 		;
-	
+		
 		delBtn && delBtn[hide ? 'addCls' : 'removeCls']('disable');
-	
+		
 		editBtn && editBtn[hide ? 'addCls' : 'removeCls']('disable');
 	},
 
 	setEditing: function(options) {
-		options.view.setFieldsDisabled(!options.editing);
-		options.view.editing = options.editing;
-
+		
+		var view = options.view;
+		
+		view.setFieldsDisabled(!options.editing);
+		view.editing = options.editing;
+		
 		var toolbar = options.btn.up('toolbar');
-		toolbar.getComponent('Add')[options.editing ? 'disable' : 'enable']();
+		
+		toolbar && toolbar.getComponent('Add')[options.editing ? 'disable' : 'enable']();
+		
+		view.syncButton && view.syncButton.setDisabled(options.editing);
+		
 	},
 	
 	onAddButtonTap: function(options) {

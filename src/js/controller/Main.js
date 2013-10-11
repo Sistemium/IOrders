@@ -16,7 +16,8 @@ Ext.regController('Main', {
 		} else {
 			var sb = view.up('segmentedbutton');
 			if (sb && sb.name) {
-				action = 'statusChange';
+				redirectTo = 'Navigator'
+				action = 'onStatusButtonTap';
 				if (options.btn.wasPressed) action = false;
 			}
 		}
@@ -466,42 +467,6 @@ Ext.regController('Main', {
 			Ext.dispatch(Ext.apply(options, {controller: 'Navigator', view: navView}));
 		}
 		
-	},
-
-	statusChange: function (options) {
-		
-		var btn = options.btn,
-			bar = btn.up('segmentedbutton'),
-			view = bar.up('navigatorview'),
-			rec = view.form.getRecord(),
-			field = view.form.getFields(bar.name)
-		;
-
-		rec.set(bar.name, btn.name);
-		
-		if(!view.isNew) {
-			rec.save({callback: function() {
-                var tableRec = Ext.getStore('tables').getById(rec.modelName);
-                loadDepData(tableRec, tableRec, undefined, undefined, true);
-            }});
-		}
-
-		rec.fields.getByKey('processing') &&
-			this.controlButtonsVisibilities(
-				view,
-				!view.editing && rec.get('processing') != 'draft' && !rec.get('serverPhantom')
-			);
-	},
-
-	controlButtonsVisibilities: function(view, hide) {
-
-		var topBar = view.getDockedComponent('top'),
-			delBtn = topBar.getComponent('Delete'),
-			editBtn = topBar.getComponent('SaveEdit')
-		;
-	
-		delBtn && delBtn[hide ? 'addCls' : 'removeCls']('disable');
-		
-		editBtn && editBtn[hide ? 'addCls' : 'removeCls']('disable');
 	}
+	
 });
