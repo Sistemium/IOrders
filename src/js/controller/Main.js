@@ -304,7 +304,7 @@ Ext.regController('Main', {
 				
 				var metadata = this.xml2obj(m).metadata;
 				
-				//metadata.name = IOrders.prefix + metadata.name;
+				metadata.name = IOrders.dbName(metadata);
 				
 				if ( metadata.version > IOrders.dbeng.db.version )
 					Ext.Msg.confirm(
@@ -372,7 +372,7 @@ Ext.regController('Main', {
 				
 				var metadata = this.xml2obj(m).metadata;
 				
-				//metadata.name = IOrders.prefix + metadata.name;
+				metadata.name = IOrders.dbName(metadata);
 				
 				IOrders.setItemPersistant('metadata', Ext.encode(metadata));
 				

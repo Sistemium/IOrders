@@ -121,56 +121,6 @@ Ext.regApplication({
 			noServer: !location.protocol == 'https:' || IOrders.getItemPersistant('realServer') == 'false'
 		});
 		
-		IOrders.getMetadata = {
-			success: function() {
-				var me=this;
-				
-				me.request({
-					command: 'metadata',
-					success: function(response) {
-						var m = response.responseXML;
-						
-						IOrders.viewport.setLoading(false);
-						
-						console.log(m);
-						
-						var metadata = me.xml2obj(m).metadata;
-						
-						//metadata.name = IOrders.prefix + metadata.name;
-						
-						IOrders.setItemPersistant('metadata', Ext.encode(metadata));
-						
-						var actk = accessTokenFromLocation();
-						
-						IOrders.setItemPersistant('login', IOrders.xi.username);
-						IOrders.setItemPersistant('username', IOrders.xi.userLabel || IOrders.xi.username);
-						
-						if (actk) {
-							
-							IOrders.setItemPersistant('accessToken', actk);
-							IOrders.setItemPersistant('needLoad', true);
-							
-							Ext.dispatch ({
-								controller: 'Main',
-								action: 'dbRebuild'
-							})
-							
-						} else {
-							
-							IOrders.dbeng.startDatabase(metadata);
-						}
-						
-					}
-				});
-			},
-			failure: function(o) {
-				if (o && o.exception) {
-					IOrders.viewport.setLoading(false);
-					Ext.Msg.alert('Ошибка',o.exception);
-				}
-			}
-		};
-		
 		var actk = accessTokenFromLocation();
 		
 		if (actk) {
@@ -185,7 +135,7 @@ Ext.regApplication({
 			IOrders.xi.reconnect(IOrders.getMetadata);
 			
 		} else {
-		
+			
 			if(!metadata) {
 				
 				Ext.dispatch(Ext.apply({controller: 'Navigator', action: 'createLoginPage'}, this.config));
@@ -210,6 +160,12 @@ Ext.regApplication({
 							
 							IOrders.setItemPersistant('login', IOrders.xi.username);
 							IOrders.setItemPersistant('username', IOrders.xi.userLabel);
+							
+							var dbKey = IOrders.xi.username + '.db';
+							
+							if (!IOrders.getItemPersistant(dbKey)) {
+								IOrders.setItemPersistant (dbKey, IOrders.dbeng.metadata.name)
+							}
 							
 							if (db.clean || IOrders.getItemPersistant('needSync') == 'true'){
 								IOrders.removeItemPersistant('needSync');
@@ -266,6 +222,71 @@ Ext.regApplication({
 		
 	},
 	
+	dbName: function(config) {
+		
+		var dbKey = IOrders.xi.username + '.db',
+			dbName = IOrders.getItemPersistant(dbKey)
+		;
+		
+		if (!dbName) {
+			dbName = IOrders.prefix + IOrders.xi.username + '.' + config.name
+		}
+		
+		return dbName;
+	},
+	
+	getMetadata: {
+		
+		success: function() {
+			var me=this;
+			
+			me.request({
+				command: 'metadata',
+				success: function(response) {
+					var m = response.responseXML;
+					
+					IOrders.viewport.setLoading(false);
+					
+					console.log(m);
+					
+					var metadata = me.xml2obj(m).metadata;
+					
+					metadata.name = IOrders.dbName (metadata);
+					
+					IOrders.setItemPersistant('metadata', Ext.encode(metadata));
+					
+					var actk = accessTokenFromLocation();
+					
+					IOrders.setItemPersistant('login', IOrders.xi.username);
+					IOrders.setItemPersistant('username', IOrders.xi.userLabel || IOrders.xi.username);
+					
+					if (actk) {
+						
+						IOrders.setItemPersistant('accessToken', actk);
+						IOrders.setItemPersistant('needLoad', true);
+						
+						Ext.dispatch ({
+							controller: 'Main',
+							action: 'dbRebuild'
+						})
+						
+					} else {
+						
+						IOrders.dbeng.startDatabase(metadata);
+					}
+					
+				}
+			});
+		},
+		
+		failure: function(o) {
+			if (o && o.exception) {
+				IOrders.viewport.setLoading(false);
+				Ext.Msg.alert('Ошибка',o.exception);
+			}
+		}
+		
+	},
 	
 	geoTrack: function() {
 		if (Ext.ModelMgr.getModel('Geolocation')) {
@@ -378,7 +399,6 @@ Ext.regApplication({
 	
 	setItemPersistant: function (key, value) {
 		localStorage.setItem ( IOrders.prefix + key, value );
-		localStorage.removeItem ( key );
 	},
 
 	getItemPersistant: function (key) {
