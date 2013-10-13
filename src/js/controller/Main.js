@@ -16,7 +16,7 @@ Ext.regController('Main', {
 		} else {
 			var sb = view.up('segmentedbutton');
 			if (sb && sb.name) {
-				redirectTo = 'Navigator'
+				redirectTo = 'Navigator';
 				action = 'onStatusButtonTap';
 				if (options.btn.wasPressed) action = false;
 			}
