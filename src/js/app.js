@@ -136,7 +136,7 @@ Ext.regApplication({
 			
 		} else {
 			
-			if(!metadata) {
+			if(!(metadata && metadata.tables)) {
 				
 				Ext.dispatch(Ext.apply({controller: 'Navigator', action: 'createLoginPage'}, this.config));
 				
