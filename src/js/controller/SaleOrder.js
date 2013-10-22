@@ -864,7 +864,7 @@ Ext.regController('SaleOrder', {
 		var listEl = Ext.get(options.event.target),
 			rec = options.list.store.getAt(options.idx),
 			sign = options.event.direction === 'left' ? -1 : 1,
-			factor = 1,
+			factor = rec.get('factor'),
 			defaultVolume = options.list.defaultVolume,
 			volumeFn = options.list.volumeFn
 		;

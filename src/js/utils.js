@@ -517,6 +517,9 @@ var getItemTplStatic = function (modelName) {
 							+ '</span>'
 						+ '</tpl>'
 					+ '</p>'
+					
+					+ '<tpl if="factor &gt; 1"><p>Кратность: {factor}</p></tpl>'
+					
 					+ '<tpl if="cost"><p>Стоимость: {cost}</p></tpl>'
 					
 				+ '</div>'
@@ -571,7 +574,7 @@ var getItemTplStatic = function (modelName) {
 					
 					+ ('<div class="swipable scheme0 volume0">'
 						+ '<p>Схема0: {volume0}</p>'
-					+ '</div>').tpl01().replace(/Схема0/,'Схема2')
+					+ '</div>').tpl01().replace(/Схема0/,IOrders.config.scheme0).replace(/Схема1/,IOrders.config.scheme1)
 					
 					+'<div class="swipable schemeBonus volumeBonus">'
 						+ '<p>Бонус: {volumeBonus}</p>'

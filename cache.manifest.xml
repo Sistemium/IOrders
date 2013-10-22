@@ -50,7 +50,7 @@
         <file>../XML/sencha/Ext.data.Engine.js</file>
         <file>../XML/sencha/Ext.data.XmlInterface.js</file>
         <file>../XML/sencha/Ext.data.SQLiteProxy.js</file>
-        <file>../XML/config/js/iorders.js</file>
+        <file>../config/js/iorders.js</file>
         
     </cache>
     <network>*</network>
