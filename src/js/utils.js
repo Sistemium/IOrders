@@ -710,7 +710,10 @@ var createFieldSet = function(columnsStore, modelName, view) {
 				if (importFields) {
 					fieldConfig.importFields = [];
 					Ext.each(importFields.split(' '), function(fieldToImport) {
-						fieldConfig.importFields.push({name: fieldToImport});
+						fieldConfig.importFields.push({
+							name: fieldToImport.match(/^[^:]*/)[0],
+							toName: fieldToImport.match(/[^:]*$/)[0]
+						});
 					})
 				}
 				

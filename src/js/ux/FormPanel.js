@@ -47,7 +47,7 @@ Ext.override(Ext.form.FormPanel, {
                     }
 					
 					Ext.each(field.importFields, function(imported) {
-						values[imported.name] = imported.value;
+						values[imported.toName || imported.name] = imported.value;
 					})
                 }
             }
