@@ -894,6 +894,10 @@ Ext.regController('SaleOrder', {
 				factor = rec.get(fname);
 			}
 			
+			if (fname.match(/discount.*/)) {
+				factor = 1.0;
+			}
+			
 			((fname == 'volumeCombo' || fname == 'packageRel') && defaultVolume) && (
 				fname = defaultVolume
 			);
