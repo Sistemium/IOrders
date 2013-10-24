@@ -534,7 +534,7 @@ Ext.regController('Navigator', {
 					var importData = function(table, columnName) {
 						
 						var column = table.columns().getById(table.get('id') + columnName),
-							importFields = column.get('importFields'),
+							importFields = column && column.get('importFields'),
 							data = {}
 						;
 						
