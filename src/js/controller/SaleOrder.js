@@ -979,7 +979,7 @@ Ext.regController('SaleOrder', {
 		
 		var cost = 0,
 			price = parseFloat (rec.get('priceOrigin') || '0'),
-			dMin = -25,
+			dMin = -50,
 			dMax = 400
 		;
 		
