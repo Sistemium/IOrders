@@ -355,16 +355,12 @@ Ext.regController('Main', {
 	
 	dbRebuild: function () {
 		
-		IOrders.dbeng.clearListeners();
-		
 		IOrders.viewport.setLoading('Обновляю базу данных ...');
-		IOrders.dbeng.on ('dbstart', function() {
-			IOrders.setItemPersistant ('needSync', true);
-			location.replace(location.origin + location.pathname);
-		});
 		
-		IOrders.xi.request( Ext.applyIf ({
+		IOrders.xi.request({
+			
 			command: 'metadata',
+			
 			success: function(response) {
 				var m = response.responseXML;
 				
@@ -372,14 +368,42 @@ Ext.regController('Main', {
 				
 				var metadata = this.xml2obj(m).metadata;
 				
-				metadata.name = IOrders.dbName(metadata);
+				if (metadata.version) {
+					metadata.name = IOrders.dbName(metadata);
+					IOrders.setItemPersistant('metadata', Ext.encode(metadata));
+				} else {
+					metadata = Ext.decode(IOrders.getItemPersistant('metadata'))
+				}
 				
-				IOrders.setItemPersistant('metadata', Ext.encode(metadata));
+				IOrders.dbeng.clearListeners();
+				
+				IOrders.dbeng.on ('dbstart', function() {
+					IOrders.setItemPersistant ('needSync', true);
+					location.replace(location.origin + location.pathname);
+				});
 				
 				IOrders.dbeng.startDatabase (metadata, true);
-			}},
-			this.prefsCb
-		));
+			},
+			
+			failure: function(r,o) {
+				
+				if (r.status == 401) {
+					IOrders.xi.login({
+						success: function () {
+							Ext.dispatch ({
+								controller: 'Main',
+								action: 'dbRebuild'
+							});
+						}
+					});
+				}
+				
+				IOrders.viewport.setLoading (false);
+				
+				return false;
+			}
+			
+		});
 		
 	},
 
