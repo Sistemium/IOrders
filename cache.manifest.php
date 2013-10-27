@@ -1,6 +1,8 @@
 <?php
     date_default_timezone_set('Europe/Moscow');
     
+    require_once ('../XML/functions.php');
+    
     @$config=simplexml_load_file('cache.manifest.xml');
     
     if (!isset($config->cache)) respond404();
@@ -15,7 +17,7 @@
             $result .= "\n".str_replace(' ', '%20', $filename);
         }
         foreach ($cache->file as $fname){
-            $filename=$fname[0];
+            $filename=localPath($fname[0]);
             if (file_exists($filename)) {
                 $ftime=filemtime($filename);
                 if ($ftime>$lastModified) $lastModified=$ftime;
