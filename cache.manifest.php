@@ -17,8 +17,8 @@
             $result .= "\n".str_replace(' ', '%20', $filename);
         }
         foreach ($cache->file as $fname){
-            $filename=localPath($fname[0]);
-            if (file_exists($filename)) {
+            $filename=$fname[0];
+            if (file_exists(localPath($filename))) {
                 $ftime=filemtime($filename);
                 if ($ftime>$lastModified) $lastModified=$ftime;
                 $result .= "\n# ".date ("M d Y H:i:s", $ftime);
