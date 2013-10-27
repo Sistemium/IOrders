@@ -976,15 +976,25 @@ Ext.regController('Navigator', {
 	
 	onselectfieldLabelTap: function(options) {
 
-		var field = options.field;
-		var view = options.view;
-		var tableRecord = view.isSetView ? view.objectRecord.modelName : field.name[0].toUpperCase() + field.name.substring(1);
-
+		var field = options.field,
+			view = options.view,
+			tableRecord = view.isSetView
+				? view.objectRecord.modelName
+				: field.name[0].toUpperCase() + field.name.substring(1)
+		;
+		
+		if (view.editing) return;
+		
 		var newCard = Ext.create(createNavigatorView(view.objectRecord, IOrders.viewport.getActiveItem(),
 				true, false, 
 				{objectRecord: Ext.ModelMgr.create({id: 1}, 'MainMenu'), tableRecord: tableRecord}
 		));
-		Ext.dispatch(Ext.apply(options, {action: 'loadSetViewStore', newCard: newCard}));
+		
+		Ext.dispatch(Ext.apply(options, {
+			action: 'loadSetViewStore',
+			newCard: newCard
+		}));
+		
 	},	
 
 	onselectfieldInputTap: function(options) {
