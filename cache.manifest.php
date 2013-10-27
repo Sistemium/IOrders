@@ -19,7 +19,7 @@
         foreach ($cache->file as $fname){
             $filename=$fname[0];
             if (file_exists(localPath($filename))) {
-                $ftime=filemtime($filename);
+                $ftime=filemtime(localPath($filename));
                 if ($ftime>$lastModified) $lastModified=$ftime;
                 $result .= "\n# ".date ("M d Y H:i:s", $ftime);
             } else {
