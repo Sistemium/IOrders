@@ -150,8 +150,12 @@ Ext.override(Ext.form.Select, {
 			}
 		}
 		
+		var otherFields = this.ownerCt.items;
+		
 		record && Ext.each(this.importFields, function(extraField) {
 			extraField.value = record.get(extraField.name);
+			var f = otherFields.getByKey(extraField.toName);
+			f && f.setValue (extraField.value);
 		});
         
         return this;

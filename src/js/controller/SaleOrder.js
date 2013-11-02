@@ -864,7 +864,7 @@ Ext.regController('SaleOrder', {
 		var listEl = Ext.get(options.event.target),
 			rec = options.list.store.getAt(options.idx),
 			sign = options.event.direction === 'left' ? -1 : 1,
-			factor = 1,
+			factor = rec.get('factor'),
 			defaultVolume = options.list.defaultVolume,
 			volumeFn = options.list.volumeFn
 		;
@@ -892,6 +892,10 @@ Ext.regController('SaleOrder', {
 			
 			if (fname == 'packageRel') {
 				factor = rec.get(fname);
+			}
+			
+			if (fname.match(/discount.*/)) {
+				factor = 1.0;
 			}
 			
 			((fname == 'volumeCombo' || fname == 'packageRel') && defaultVolume) && (
@@ -936,23 +940,29 @@ Ext.regController('SaleOrder', {
 			
 			var v = options[fname];
 			
+			var gtf = function(f1, f2) {
+				fname ==f1
+					&& rec.get(f1) > options[f2]
+					&& options[f2] < rec.get(f2)
+					&& (v=options[f2])
+				;
+			};
+			
+			var ltf = function(f1, f2) {
+				fname ==f1
+					&& rec.get(f1) < options[f2]
+					&& options[f2] > rec.get(f2)
+					&& (v=options[f2])
+				;
+			};
+			
 			if (!v) {
-				fname == 'discount0' && rec.get(fname) > options['discount10']
-					&& options['discount10'] < rec.get('discount10')
-					&& (v=options['discount10'])
-				;
-				fname == 'discount1' && rec.get(fname) > options['discount11']
-					&& options['discount11'] < rec.get('discount11')
-					&& (v=options['discount11'])
-				;
-				fname == 'discount10' && rec.get(fname) < options['discount0']
-					&& options['discount0'] > rec.get('discount0')
-					&& (v=options['discount0'])
-				;
-				fname == 'discount11' && rec.get(fname) < options['discount1']
-					&& options['discount1'] > rec.get('discount1')
-					&& (v=options['discount1'])
-				;
+				
+				gtf ('discount0','discount10');
+				gtf ('discount1','discount11');
+				ltf ('discount10','discount0');
+				ltf ('discount11','discount1');
+				
 			}
 			
 			v == undefined && (v = data[fname]);
@@ -979,16 +989,16 @@ Ext.regController('SaleOrder', {
 		
 		var cost = 0,
 			price = parseFloat (rec.get('priceOrigin') || '0'),
-			dMin = -25,
+			dMin = -50,
 			dMax = 400
 		;
 		
 		Ext.each (['price0', 'price1', 'price10', 'price11'], function (fname) {
-			options[fname] && (
-				data[fname.replace(/[a-z]*(.*)/,'discount$1')] = (
+			if (options[fname]) {
+				options[fname.replace(/[a-z]*(.*)/,'discount$1')] = (
 					(options[fname] - price) / price * 100.0
 				).toDecimal(5)
-			)
+			}
 		});
 		
 		Ext.each (['0', '1'], function (fname) {

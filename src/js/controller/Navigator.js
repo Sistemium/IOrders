@@ -425,27 +425,34 @@ Ext.regController('Navigator', {
 	onAddButtonTap: function(options) {
 		
 		var rec = undefined,
-			restrictMsg
+			restrictMsg,
+			objectRecord = options.view.objectRecord			
 		;
 		
 		if(options.view.isObjectView) {
 			
-            var tableRec = Ext.getStore('tables').getById(options.view.objectRecord.modelName),
+            var tableRec = Ext.getStore('tables').getById(objectRecord.modelName),
                 parentColumns = tableRec.getParentColumns()
             ;
 			
-            rec = Ext.ModelMgr.create({serverPhantom: true}, options.view.objectRecord.modelName);
+            rec = Ext.ModelMgr.create({serverPhantom: true}, objectRecord.modelName);
 			
             parentColumns.each(function(col) {
-                rec.set(col.get('name'), options.view.objectRecord.get(col.get('name')));
+                rec.set(col.get('name'), objectRecord.get(col.get('name')));
             });
+			
+			options.view.form.fields.each (function(f) {
+				if (f.importFields) Ext.each (f.importFields, function(ff) {
+					rec.set(ff.toName, ff.value);
+				})
+			})
 			
 		} else if(options.view.isSetView) {
 			rec = Ext.ModelMgr.create({serverPhantom: true}, options.view.tableRecord);
 			
 			rec.set (
-				lowercaseFirstLetter(options.view.objectRecord.modelName),
-				options.view.objectRecord.getId()
+				lowercaseFirstLetter(objectRecord.modelName),
+				objectRecord.getId()
 			);
 		}
 		
@@ -519,8 +526,33 @@ Ext.regController('Navigator', {
 					
 				Ext.defer ( function () {
 					
+					var targetColumnName = lowercaseFirstLetter(objectRecord.modelName);
+					
 					rec = Ext.ModelMgr.create({serverPhantom: true}, createdRecordModelName);
-					rec.set( lowercaseFirstLetter(objectRecord.modelName), objectRecord.getId() );
+					rec.set( targetColumnName, objectRecord.getId() );
+					
+					var importData = function(table, columnName) {
+						
+						var column = table.columns().getById(table.get('id') + columnName),
+							importFields = column && column.get('importFields'),
+							data = {}
+						;
+						
+						importFields &&
+							Ext.each (importFields.split(' '), function(fieldToImport) {
+								data[fieldToImport.match(/[^:]*$/)[0]]
+									= objectRecord.get (fieldToImport.match(/^[^:]*/)[0])
+								;
+							})
+						;
+						
+						return data;
+					};
+					
+					rec.set(importData (
+						Ext.getStore('tables').getById(createdRecordModelName),
+						targetColumnName
+					));
 					
 					if (rec.modelName === 'SaleOrder')
 						rec.set('totalCost', '0')
@@ -944,15 +976,25 @@ Ext.regController('Navigator', {
 	
 	onselectfieldLabelTap: function(options) {
 
-		var field = options.field;
-		var view = options.view;
-		var tableRecord = view.isSetView ? view.objectRecord.modelName : field.name[0].toUpperCase() + field.name.substring(1);
-
+		var field = options.field,
+			view = options.view,
+			tableRecord = view.isSetView
+				? view.objectRecord.modelName
+				: field.name[0].toUpperCase() + field.name.substring(1)
+		;
+		
+		if (view.editing) return;
+		
 		var newCard = Ext.create(createNavigatorView(view.objectRecord, IOrders.viewport.getActiveItem(),
 				true, false, 
 				{objectRecord: Ext.ModelMgr.create({id: 1}, 'MainMenu'), tableRecord: tableRecord}
 		));
-		Ext.dispatch(Ext.apply(options, {action: 'loadSetViewStore', newCard: newCard}));
+		
+		Ext.dispatch(Ext.apply(options, {
+			action: 'loadSetViewStore',
+			newCard: newCard
+		}));
+		
 	},	
 
 	onselectfieldInputTap: function(options) {

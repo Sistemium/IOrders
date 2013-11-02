@@ -517,6 +517,9 @@ var getItemTplStatic = function (modelName) {
 							+ '</span>'
 						+ '</tpl>'
 					+ '</p>'
+					
+					+ '<tpl if="factor &gt; 1"><p>Кратность: {factor}</p></tpl>'
+					
 					+ '<tpl if="cost"><p>Стоимость: {cost}</p></tpl>'
 					
 				+ '</div>'
@@ -571,7 +574,7 @@ var getItemTplStatic = function (modelName) {
 					
 					+ ('<div class="swipable scheme0 volume0">'
 						+ '<p>Схема0: {volume0}</p>'
-					+ '</div>').tpl01().replace(/Схема0/,'Схема2')
+					+ '</div>').tpl01().replace(/Схема0/,IOrders.config.scheme0).replace(/Схема1/,IOrders.config.scheme1)
 					
 					+'<div class="swipable schemeBonus volumeBonus">'
 						+ '<p>Бонус: {volumeBonus}</p>'
@@ -687,6 +690,24 @@ var createFieldSet = function(columnsStore, modelName, view) {
 			
 			if (parentStore) {
 				
+				predicateFilters = [];
+				
+				column.predicates().each(function(predicate) {
+					
+					predicateFilters.push ({
+						property: predicate.get('name'),
+						value: predicate.get('init'),
+						exactMatch: true
+					})
+					
+				});
+				
+				parentStore.clearFilter(true);
+				
+				if (predicateFilters.length) {
+					parentStore.filter(predicateFilters);
+				}
+				
 				fieldConfig = {
 					xtype: 'selectfield',
 					store: parentStore,
@@ -707,7 +728,10 @@ var createFieldSet = function(columnsStore, modelName, view) {
 				if (importFields) {
 					fieldConfig.importFields = [];
 					Ext.each(importFields.split(' '), function(fieldToImport) {
-						fieldConfig.importFields.push({name: fieldToImport});
+						fieldConfig.importFields.push({
+							name: fieldToImport.match(/^[^:]*/)[0],
+							toName: fieldToImport.match(/[^:]*$/)[0]
+						});
 					})
 				}
 				
