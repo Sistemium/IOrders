@@ -21,6 +21,10 @@
 	-webkit-box-shadow: none;
 }
 
+.keyboard-button-line.title {
+	background-color: rgb(113, 145, 185); 
+}
+
 .keyboard-button-line {
 	display: -webkit-box;
 	-webkit-box-orient: horizontal;
@@ -41,12 +45,6 @@
 .keyboard-value {
 	width: 170px;
 	margin: 5px 0;
-}
-
-.x-list-item .hbox {
-	display: -webkit-box;
-	-webkit-box-orient: horizontal;
-	-webkit-box-align: stretch;
 }
 
 .x-product-list .x-list-header {
@@ -79,10 +77,74 @@
 	padding: 0.25em 0.4em;
 }
 
-.x-list-item .hbox .volume, .x-list-item .hbox .encashSumm {
-	color: green;
-	padding: 10px 16px 0;
+.x-list-item .hbox .rightbox.total, .x-list-item .hbox .encashSumm {
+	color: gray;
+	margin-right: -4px;
+	text-align: center;
 	font-weight: bold;
+	padding: 0.5em 18px;
+	background-color: #EEEEEE;
+	-webkit-border-radius: 5px;
+}
+
+.total {
+	width: 5em;
+}
+
+.x-list-item .hbox .leftbox {
+	padding-top: 0.5em;
+	margin-left: -9px;
+	color: gray;
+	width: 4em;
+	text-align: center;
+}
+
+.x-list-item .swipable {
+	background-color: #EEEEEE;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+
+.x-list-item small {
+	display: block;
+	padding-top: 0.5em;
+}
+
+.x-list-item small p {
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
+
+.x-list-item .quoted{
+	font-weight: bold;
+}
+
+.x-list-item .needle{
+	font-weight: bold;
+	color: blue;
+	background-color: #DDDDDD;
+	border-radius: 3px;
+	padding: 2px 4px;
+}
+
+.x-list-item .info small > span {
+	margin-right: 0.5em;
+	display: inline-block;
+}
+
+.x-list-item .info .taste {
+	background-color: silver;
+	border-radius: 3px;
+	padding: 2px 4px;
+}
+
+.swipable.discount {
+	color: #22D022;
+}
+
+.x-field-toggle.isWhite .x-toggle-off {
+	background-color: #FF6000;
+	background-image: none;
 }
 
 .x-list-item--- .hbox .cost {
@@ -127,6 +189,7 @@
 
 .x-list-item-body > .dep > .x-button.extend {
 	margin: -10px -10px -10px;
+	padding: 0px 22px;
 }
 .x-product-category-list {
 	border-right: 2px black groove;
@@ -204,7 +267,6 @@
 	color: gray;
 }
 
-
 .x-list.x-table-list .x-item-selected .x-list-disclosure {
 	background-color: #0E6EE9;
 
@@ -222,20 +284,24 @@
 	color: blue;
 }
 
-.negative, .isBlockedPlong, .isOverdue, .red, .caution{
-	color: red !important;
+.white {
+	color: white;
 }
 
-.blue {
-	color: blue !important;
+.green {
+	color: green !important;
 }
 
 .yellow {
 	color: yellow !important;
 }
 
-.green {
-	color: green !important;
+.blue {
+	color: blue !important;
+}
+
+.negative, .isBlockedPlong, .isOverdue, .red, .caution{
+	color: red !important;
 }
 
 .prefsheet .x-layout-box > .x-button  {
@@ -328,10 +394,6 @@
 	margin: 1px;
 }
 
-.x-product-selected .price, .x-product-selected .cost {
-	font-weight: bold;
-	color: black;
-}
 
 .x-button.disable {
 	opacity: 0.5;
@@ -365,3 +427,127 @@
 .title {
 	color: black;
 }
+
+.vSpacer {
+	padding: 0.5em;
+}
+
+.flex {
+	box-flex: 1;
+	-webkit-box-flex: 1;
+}
+
+
+.x-list-item .hbox {
+	display: -webkit-box;
+	-webkit-box-orient: horizontal;
+	-webkit-box-align-: stretch;
+}
+
+.vbox {
+	display: -webkit-box;
+    -webkit-box-orient: vertical;
+	-webkit-box-pack: justify;
+	-webkit-box-align: stretch;
+}
+
+.justify {
+	-webkit-box-pack: justify;
+	-webkit-box-align: stretch;
+}
+
+.packStart {
+	-webkit-box-pack: start;
+}
+
+.packCenter {
+	-webkit-box-pack: center;
+}
+
+.volumebox.rightbox {
+	text-align: right;
+}
+
+.hbox > * {
+	margin-right: 1em;
+}
+
+.vbox .swipable, .vbox .scheme0, .vbox .scheme1 {
+	margin-top: 4px;
+}
+
+.x-list-item .unfolded .rightbox.volumebox {
+	width:200px;
+	text-align: center;
+}
+
+.rightbox.volumebox p {
+	-webkit-box-pack: center;
+	-webkit-box-align: center;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+}
+
+
+.x-list-item .folded .tapme {
+	display: none;
+}
+
+.x-list-item .unfolded .untapme {
+	display: none;
+}
+
+.scheme0 {
+	color: red;
+}
+
+.scheme1 {
+	color: green;
+}
+
+.schemeBonus {
+	color: #E0E000;
+}
+
+.vbox.packStart {
+	-webkit-box-pack: start;
+}
+
+.vbox.volumes {
+	width: 120px;
+}
+
+.x-input-template {
+	padding: 10px 7px;
+}
+
+.minLastActive, .lastActive {
+	color: silver;
+}
+
+.untapme.discounts {
+	font-weight: bold;
+}
+
+.attention {
+	background-color: red;
+	color: white;
+}
+
+.ctrl {
+	position: relative;
+	left: -1.25em;
+	top: 0.2em;
+	font-weight: 400;
+	font-size: x-large !important;
+	display: inline-block;
+	border: solid 1px gray;
+	width: 1em;
+	text-align: center;
+	-webkit-border-radius: 6px;
+}
+
+.pricesComboWrap {
+	height:0
+} 

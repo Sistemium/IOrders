@@ -35,9 +35,11 @@ Ext.regModel('Table', {
 	hasIdColumn: function() {
 		return this.columns().findExact('name', 'id') !== -1 ? true : false;
 	},
+	
 	hasNameColumn: function() {
 		return this.columns().findExact('name', 'name') !== -1 ? true : false;
 	},
+	
 	hasAggregates: function() {
 		return this.getAggregates().getCount() > 0 ? true : false;
 	},
@@ -66,24 +68,31 @@ Ext.regModel('Table', {
 	}
 });
 
+
 Ext.regModel('Column', {
 	fields: [
-			{name: 'id', type: 'string'},
-			{name: 'name', type: 'string'},
-			{name: 'label', type: 'string'},
-			{name: 'type', type: 'string'},
-			{name: 'table_id', type: 'string'},
-			{name: 'key', type: 'boolean'},
-			{name: 'aggregable', type: 'string'},
-			{name: 'parent', type: 'string'},
-			{name: 'contains', type: 'boolean'},
-			{name: 'editable', type: 'boolean'},
-			{name: 'title', type: 'boolean'},
-			{name: 'init', type: 'string'},
-			{name: 'serverPhantom', type: 'boolean'}
+		{name: 'id', type: 'string'},
+		{name: 'name', type: 'string'},
+		{name: 'label', type: 'string'},
+		{name: 'type', type: 'string'},
+		{name: 'table_id', type: 'string'},
+		{name: 'key', type: 'boolean'},
+		{name: 'aggregable', type: 'string'},
+		{name: 'parent', type: 'string'},
+		{name: 'contains', type: 'boolean'},
+		{name: 'editable', type: 'boolean'},
+		{name: 'title', type: 'boolean'},
+		{name: 'init', type: 'string'},
+		{name: 'compute', type: 'string'},
+		{name: 'template', type: 'string'},
+		{name: 'serverPhantom', type: 'boolean'},
+		{name: 'importFields', type: 'string'},
+		{name: 'optional', type: 'boolean'},
+		{name: 'predicate-for', type: 'string'},
 	],
 	associations: [
-		{type: 'belongsTo', model: 'Table'}
+		{type: 'belongsTo', model: 'Table'},
+		{type: 'hasMany', model: 'Column', name: 'predicates', foreignKey: 'predicate-for'}
 	]
 });
 
@@ -106,17 +115,26 @@ var addMainMenu = function(store, tables) {
 
 	var mainMenu = Ext.ModelMgr.create({
 		id: 'MainMenu',
-		name: 'Главное меню'
+		name: 'Основные понятия'
 	}, 'Table');
 
 	mainMenu.columns().add (
-		{id: 'MainMenuid', type: 'string', name: 'id', label: 'Логин', table_id: 'MainMenu'}
+		{id: 'MainMenuid', type: 'string', name: 'id', label: 'Пользователь', table_id: 'MainMenu'}
 	)
 
 	var mmDeps = mainMenu.deps();
 	
 	Ext.each(tables, function(table) {
-		if((table.deps().getCount() > 0 || table.get('mainMenu')) && table.get('nameSet')) {
+		if((table.deps().getCount() > 0 || table.get('mainMenu'))
+			&& table.get('nameSet')
+			&& (function(table){
+				var cnt = 0;
+				Ext.each(table.raw.columns, function(column) {
+					cnt += column.key ? 1 : 0;
+				});
+				return cnt;
+			}) (table) == 1
+		) {
 			mmDeps.add({
 				id: table.getId() + 'id',
 				table_id: table.getId()

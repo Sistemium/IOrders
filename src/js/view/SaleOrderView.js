@@ -47,17 +47,37 @@ var SaleOrderView = Ext.extend(AbstractView, {
 		this.productCategoryList.lockScrollOnExpand
 			&& this.productCategoryList.on('render', function() {this.scroller.disable();});
 
-		this.productPanel = Ext.create({xtype: 'panel', layout: {type: 'vbox', pack: 'justify', align: 'stretch'}, flex: 3});
+		this.productPanel = Ext.create({
+			xtype: 'panel',
+			layout: {type: 'vbox', pack: 'justify', align: 'stretch'},
+			flex: 3
+		});
 
 		this.items = [this.productCategoryList, this.productPanel];
 		
 		var summTpl = new Ext.XTemplate(
-				'<p>'
-			+	'<tpl if="packageName"><small>Упаковка: {packageName}</small></tpl>'
-			+	'Сумма заказа: <span <tpl if="totalGain &lt; 0">class="negative"</tpl> >{totalCost}</span>'
-			+	'<tpl if="bonusRemains"> Остаток бонуса: <span <tpl if="bonusRemains &lt; 0">class="negative"</tpl> >{bonusRemains}</span></tpl>'
-//			+	'<tpl if="totalSelfCost"> Выгода: <span <tpl if="totalGain &lt; 0">class="negative"</tpl> >{totalGain}</span></tpl>'
-			+	'</p>'
+			'<p>'
+				+ 'Сумма заказа: <span class="'
+					+ '<tpl if="totalGain &lt; 0"> red</tpl>'
+					+ '<tpl if="totalCost &lt; orderThreshold"> yellow</tpl>'
+				+ '">{totalCost}'
+					+ '<tpl if="totalCost &gt; 0 || totalCostBonus &gt; 0"> ('
+						+ '<tpl if="totalCost0 &gt; 0">'
+							+ ' <span class="scheme0">{totalCost0}</span>'
+						+ '</tpl>'
+						+ '<tpl if="totalCost1 &gt; 0">'
+							+ ' <span class="scheme1">{totalCost1}</span>'
+						+ '</tpl>'
+						+ '<tpl if="totalCostBonus &gt; 0">'
+							+ ' <span class="schemeBonus">{totalCostBonus}</span>'
+						+ '</tpl>'
+					+ ' )</tpl>'
+					+ '<tpl if="markupAgent"><span class="markup"> ({markupAgent}%)</span></tpl>'
+				+ '</span>'
+				
+				+ '<tpl if="bonusRemains"> Остаток бонуса: <span <tpl if="bonusRemains &lt; 0">class="negative"</tpl> >{bonusRemains}</span></tpl>'
+				// + '<tpl if="totalSelfCost"> Выгода: <span <tpl if="totalGain &lt; 0">class="negative"</tpl> >{totalGain}</span></tpl>'
+			+ '</p>'
 		);
 		
 		var applySearch = function(field, event) {
@@ -82,16 +102,24 @@ var SaleOrderView = Ext.extend(AbstractView, {
 		var bb = {
 			id: 'bottomToolbar', xtype: 'toolbar', dock: 'bottom',
 			items: [
-				{xtype: 'spacer'},
-				{xtype: 'segmentedbutton', itemId: 'GroupChanger',
+				{xtype: 'spacer'}, {xtype: 'segmentedbutton', itemId: 'GroupChanger',
 					items: [{
 							name: 'GroupLastname', itemId: 'GroupLastname', text: 'По производителю', scope: this
 						},{
 							name: 'GroupFirstname', itemId: 'GroupFirstname', text: 'По наименованию', scope: this, pressed: true
 					}]
-				},
-				{text: this.indexBarMode ? 'Скрыть индекс-бар' : 'Показать индекс-бар', altText: !this.indexBarMode ? 'Скрыть индекс-бар' : 'Показать индекс-бар', itemId: 'ShowIndexBar', name: 'ShowIndexBar', scope: this},
-				{text: summTpl.apply({totalCost: 0}), itemId: 'ShowCustomer', name: 'ShowCustomer', scope: this}
+				}, {
+					text: this.indexBarMode ? 'Скрыть индекс' : 'Показать индекс',
+					altText: !this.indexBarMode ? 'Скрыть индекс' : 'Показать индекс',
+					itemId: 'ShowIndexBar',
+					name: 'ShowIndexBar',
+					scope: this
+				}, {
+					text: summTpl.apply({totalCost: 0}),
+					itemId: 'ShowCustomer',
+					name: 'ShowCustomer',
+					scope: this
+				}
 			],
 			titleTpl: summTpl
 		}
@@ -106,10 +134,16 @@ var SaleOrderView = Ext.extend(AbstractView, {
 				xtype: 'searchfield',
 				name: 'productSearch',
 				itemId: 'ProductSearcher',
+				placeHolder: 'Поиск по названию',
 				listeners:{
 					change: applySearch,
 					action: function(f,e) {
 						console.log ('SaleOrderSearch action');
+					},
+					focus: function (f,e) {
+						setTimeout (function() {
+							e.target.setSelectionRange (0, 9999);
+						}, 1);
 					}
 				}
 			},
@@ -136,7 +170,8 @@ var SaleOrderView = Ext.extend(AbstractView, {
 					}
 				}
 			},
-			{ui: 'save', name: 'Save', text: 'Сохранить', scope: this}
+			{ui: 'save', name: 'Save', text: 'Сохранить', scope: this},
+			{ui: 'plain', iconMask: true, name: 'Add', iconCls: 'add', scope: this}
 		);
 	},
 	
@@ -155,7 +190,7 @@ var SaleOrderView = Ext.extend(AbstractView, {
 	
 	initComponent: function() {
 
-		this.indexBarMode = localStorage.getItem('indexBarMode') == 'true';
+		this.indexBarMode = IOrders.getItemPersistant('indexBarMode') == 'true';
 
 		SaleOrderView.superclass.initComponent.apply(this, arguments);
 	}

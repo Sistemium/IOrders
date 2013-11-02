@@ -38,14 +38,16 @@ Ext.regApplication({
 	
 	init: function() {
 		
-		IOrders.newDesign = localStorage.getItem('newDesign') == 'true' ? true : false;
+		IOrders.newDesign = IOrders.getItemPersistant('newDesign') == 'true' ? true : false;
 		
 		var store = Ext.getStore('tables');
 		
 		createModels(store);
 		createStores(store, { pageSize: 400 });
 		
-		IOrders.mainMenuRecord = Ext.ModelMgr.create({id: localStorage.getItem('login')}, 'MainMenu');
+		IOrders.mainMenuRecord = Ext.ModelMgr.create({
+			id: IOrders.getItemPersistant('username') || IOrders.getItemPersistant('login')
+		}, 'MainMenu');
 		
 		this.viewport.setActiveItem(Ext.create({
 			xtype: 'navigatorview',
@@ -54,14 +56,28 @@ Ext.regApplication({
 			objectRecord: IOrders.mainMenuRecord
 		}));
 		
+		var iOS = parseFloat(
+			('' + (/CPU.*OS ([0-9_]{1,5})|(CPU like).*AppleWebKit.*Mobile/i.exec(navigator.userAgent) || [0,''])[1])
+			.replace('undefined', '3_2').replace('_', '.').replace('_', '')
+			) || false
+		;
+		
+		if (iOS >= 7) IOrders.viewport.on('orientationchange', function(e) {
+			var fixY = 0;
+			if (e.orientation == 'landscape') fixY = 20;
+			this.setPosition({y:fixY});
+		});
+		
 		this.viewport.getActiveItem().loadData();
 	},
 	
 	launch: function() {
 		
+		this.prefix = location.pathname.match(/\/[^\~].*/)[0].split('/')[1] + '.';
+		
 		var tStore = Ext.getStore('tables'),
-			metadata = Ext.decode(localStorage.getItem('metadata')),
-			vp = this.viewport = Ext.create({xtype: 'viewport'});
+			metadata = Ext.decode(IOrders.getItemPersistant('metadata')),
+			vp = (this.viewport = Ext.create({xtype: 'viewport'}))
 		;
 		
 		this.dbeng = new Ext.data.Engine({
@@ -90,47 +106,11 @@ Ext.regApplication({
 						data: 'dbversion:'+db.version
 					});
 					
-					window.onerror = function(msg, url, line) {
-						
-						console.log ('UnhandledException: ' + msg + ' at line ' + line);
-						
-						var part = '/js/',
-							modulePos = url.lastIndexOf(part),
-							module = url,
-							viewTitle
-						;
-						
-						if (IOrders.viewport1) {
-							var ai = IOrders.viewport.getActiveItem();
-							
-							if (ai && ai.dockedItems) {
-								var tb = ai.dockedItems.getAt(0);
-								viewTitle = tb.title;
-							}
-						}
-						
-						if (modulePos < 0)
-							modulePos = url.lastIndexOf(part = '/')
-						;
-						
-						if (modulePos > 0)
-							module = url.slice(modulePos + part.length)
-						;
-						
-						IOrders.logEvent({
-							module: module,
-							action: 'UnhandledException' ,
-							data: 'title: ' + viewTitle + ' '
-								+ msg + ' at line ' + line
-						});
-						
-						return false;
-						
-					}
+					if (DEBUG) window.onerror = IOrders.onError;
 					
 				},
 				fail: function() {
-					localStorage.clear();
+					//localStorage.clear();
 					location.reload();
 				}
 			}
@@ -138,119 +118,175 @@ Ext.regApplication({
 		
 		IOrders.xi = new Ext.data.XmlInterface({
 			view: 'iorders',
-			noServer: !location.protocol == 'https:' || localStorage.getItem('realServer') == 'false'
+			noServer: !location.protocol == 'https:' || IOrders.getItemPersistant('realServer') == 'false'
 		});
 		
-		IOrders.getMetadata = {
-			success: function() {
-				var me=this;
-				
-				me.request({
-					command: 'metadata',
-					success: function(response) {
-						var m = response.responseXML;
-						
-						IOrders.viewport.setLoading(false);
-						
-						console.log(m);
-						
-						var metadata = me.xml2obj(m).metadata;
-						
-						localStorage.setItem('metadata', Ext.encode(metadata));
-						
-						IOrders.dbeng.startDatabase(metadata);
-						
-					}
-				});
-			}
-		};
+		var actk = accessTokenFromLocation();
 		
-		if(!metadata) {
+		if (actk) {
 			
-			this.viewport.setActiveItem(Ext.create({
-				xtype: 'form',
-				name: 'Login',
-				ownSubmit: true,
-				items: [
-					{xtype: 'fieldset', 
-						items: [
-					    	{
-								xtype: 'textfield',
-								id: 'login', name: 'login', label: 'Логин',
-								autoCorrect: false, autoCapitalize: false,
-								value: 'demo'
-							},
-					    	{
-								xtype: 'passwordfield',
-								id: 'password', name: 'password', label: 'Пароль',
-								value: 'demo'
-							}
-						]
-					},
-					{xtype: 'button', text: 'Логин', name: 'Login'}
-				]
-			}));
+			IOrders.xi.accessToken = actk;
+			
+			IOrders.xi.password = undefined;
+			IOrders.xi.username = undefined;
+			
+			IOrders.viewport.setLoading('Проверяю авторизацию');
+			
+			IOrders.xi.reconnect(IOrders.getMetadata);
 			
 		} else {
 			
-			Ext.dispatch({controller: 'Navigator', action: 'afterAppLaunch'});
-			
-			Ext.apply (this.xi, {
-				username: localStorage.getItem('login'),
-				password: localStorage.getItem('password')
-			});
-			
-			var r = function(db) {
-				IOrders.xi.login ({
-					success: function() {
-						if (db.clean || localStorage.getItem('needSync') == 'true'){
-							localStorage.removeItem('needSync');
-							IOrders.xi.download(IOrders.dbeng);
-						} else {
+			if(!(metadata && metadata.tables)) {
+				
+				Ext.dispatch(Ext.apply({controller: 'Navigator', action: 'createLoginPage'}, this.config));
+				
+			} else {
+				
+				Ext.dispatch({controller: 'Navigator', action: 'afterAppLaunch'});
+				
+				Ext.apply (this.xi, {
+					username: IOrders.getItemPersistant('login'),
+				});
+				
+				var password = IOrders.getItemPersistant('password');
+				var actk = IOrders.getItemPersistant('accessToken');
+				
+				if (password) this.xi.password = password;
+				if (actk) this.xi.accessToken = actk;
+				
+				var r = function(db) {
+					IOrders.xi.login ({
+						success: function() {
+							
+							IOrders.setItemPersistant('login', IOrders.xi.username);
+							IOrders.setItemPersistant('username', IOrders.xi.userLabel);
+							
+							var dbKey = IOrders.xi.username + '.db';
+							
+							if (!IOrders.getItemPersistant(dbKey)) {
+								IOrders.setItemPersistant (dbKey, IOrders.dbeng.metadata.name)
+							}
+							
+							if (db.clean || IOrders.getItemPersistant('needSync') == 'true'){
+								IOrders.removeItemPersistant('needSync');
+								IOrders.xi.download(IOrders.dbeng);
+							} else {
+								p = new Ext.data.SQLiteProxy({engine: IOrders.dbeng, model: 'ToUpload'});
+								
+								p.count(new Ext.data.Operation(),
+									function(o) {
+										if (o.result == 0)
+											Ext.dispatch ({controller: 'Main', action: 'onXiMetaButtonTap', silent: true});
+										else
+											console.log ('There are unuploaded data');
+									}
+								);
+							}
+						},
+						failure: function(o) {
+							if (o && o.exception)
+								Ext.Msg.alert('Ошибка',o.exception)
+							;
+						}
+					});
+				}, f = function() {
+					IOrders.xi.reconnect({
+						success: function() {
 							p = new Ext.data.SQLiteProxy({engine: IOrders.dbeng, model: 'ToUpload'});
 							
-							p.count(new Ext.data.Operation(),
-								function(o) {
-									if (o.result == 0)
-										Ext.dispatch ({controller: 'Main', action: 'onXiMetaButtonTap', silent: true});
-									else
-										console.log ('There are unuploaded data');
-								}
-							);
+							Ext.Msg.confirm ('Не удалось обновить БД', 'Проверим метаданные?', function (b) {
+								if (b == 'yes')
+									IOrders.xi.request( {
+										command: 'logoff',
+										success: function() {
+											this.sessionData.id = false;
+											this.login({
+												success: function() {
+													Ext.dispatch ({controller: 'Main', action: 'onXiMetaButtonTap'});
+												}
+											});
+										}
+									})
+							});
 						}
-					}
-				});
-			}, f = function() {
-				IOrders.xi.reconnect({
-					success: function() {
-						p = new Ext.data.SQLiteProxy({engine: IOrders.dbeng, model: 'ToUpload'});
-						
-						Ext.Msg.confirm ('Не удалось обновить БД', 'Проверим метаданные?', function (b) {
-							if (b == 'yes')
-								IOrders.xi.request( {
-									command: 'logoff',
-									success: function() {
-										this.sessionData.id = false;
-										this.login({
-											success: function() {
-												Ext.dispatch ({controller: 'Main', action: 'onXiMetaButtonTap'});
-											}
-										});
-									}
-								})
-						});
-					}
-			});};
+				});};
+				
+				
+				this.dbeng.on ('dbstart', r);
+				this.dbeng.on ('upgradefail', f);
+				
+				this.dbeng.startDatabase(metadata);
+			}
 			
-			
-			this.dbeng.on ('dbstart', r);
-			this.dbeng.on ('upgradefail', f);
-			
-			this.dbeng.startDatabase(metadata);
 		};
 		
 	},
 	
+	dbName: function(config) {
+		
+		var dbKey = IOrders.xi.username + '.db',
+			dbName = IOrders.getItemPersistant(dbKey)
+		;
+		
+		if (!dbName) {
+			dbName = IOrders.prefix + IOrders.xi.username + '.' + config.name
+		}
+		
+		return dbName;
+	},
+	
+	getMetadata: {
+		
+		success: function() {
+			var me=this;
+			
+			me.request({
+				command: 'metadata',
+				success: function(response) {
+					var m = response.responseXML;
+					
+					IOrders.viewport.setLoading(false);
+					
+					console.log(m);
+					
+					var metadata = me.xml2obj(m).metadata;
+					
+					metadata.name = IOrders.dbName (metadata);
+					
+					IOrders.setItemPersistant('metadata', Ext.encode(metadata));
+					
+					var actk = accessTokenFromLocation();
+					
+					IOrders.setItemPersistant('login', IOrders.xi.username);
+					IOrders.setItemPersistant('username', IOrders.xi.userLabel || IOrders.xi.username);
+					
+					if (actk) {
+						
+						IOrders.setItemPersistant('accessToken', actk);
+						IOrders.setItemPersistant('needLoad', true);
+						
+						Ext.dispatch ({
+							controller: 'Main',
+							action: 'dbRebuild'
+						})
+						
+					} else {
+						
+						IOrders.dbeng.startDatabase(metadata);
+					}
+					
+				}
+			});
+		},
+		
+		failure: function(o) {
+			if (o && o.exception) {
+				IOrders.viewport.setLoading(false);
+				Ext.Msg.alert('Ошибка',o.exception);
+			}
+		}
+		
+	},
 	
 	geoTrack: function() {
 		if (Ext.ModelMgr.getModel('Geolocation')) {
@@ -310,10 +346,84 @@ Ext.regApplication({
 	logEvent: function (eventData){
 		var model = Ext.ModelMgr.getModel('Eventlog');
 		
-		if (model) {
+		if (model && eventData) {
+			
+			if (!eventData.force) {
+				if (eventData.action == 'ProductNameFilter') return;
+				
+				if (!DEBUG && eventData.action != 'dbstart') return;
+			}
+			
 			Ext.ModelMgr.create( eventData, model ).save();
 		}
 		
+	},
+	
+	onError: function(msg, url, line) {
+		
+		console.log ('UnhandledException: ' + msg + ' at line ' + line);
+		
+		var part = '/js/',
+			modulePos = url.lastIndexOf(part),
+			module = url,
+			viewTitle
+		;
+		
+		if (IOrders.viewport) {
+			var ai = IOrders.viewport.getActiveItem();
+			
+			if (ai && ai.dockedItems) {
+				var tb = ai.dockedItems.getAt(0);
+				viewTitle = tb.title;
+			}
+		}
+		
+		if (modulePos < 0)
+			modulePos = url.lastIndexOf(part = '/')
+		;
+		
+		if (modulePos > 0)
+			module = url.slice(modulePos + part.length)
+		;
+		
+		IOrders.logEvent({
+			module: module,
+			action: 'UnhandledException' ,
+			data: 'title: ' + viewTitle + ' '
+				+ msg + ' at line ' + line
+		});
+		
+		return false;
+		
+	},
+	
+	setItemPersistant: function (key, value) {
+		localStorage.setItem ( IOrders.prefix + key, value );
+	},
+
+	getItemPersistant: function (key) {
+		var prefixedValue = localStorage.getItem ( IOrders.prefix + key );
+		return  (prefixedValue == undefined) ? localStorage.getItem ( key ) : prefixedValue
+	},
+	
+	removeItemPersistant: function(key) {
+		localStorage.removeItem ( IOrders.prefix + key )
+	},
+	
+	clearLocalStorage: function() {
+		
+		var keysToRemove = [];
+		
+		for (var i = 0; i < localStorage.length; i++){
+			var key = localStorage.key(i);
+			if (key.match(IOrders.prefix.replace(/[\.]/g,'\\.'))) 
+				keysToRemove.push(key)
+		}
+		
+		Ext.each(keysToRemove, function(key) {
+			localStorage.removeItem (key)
+		});
 	}
+
 	
 });

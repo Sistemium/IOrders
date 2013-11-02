@@ -2,7 +2,7 @@
 <manifest>
     <cache>
         
-        <http>connect.facebook.net/ru_RU/all.js#xfbml=1&amp;appId=175881429178414</http>
+        <!--http>connect.facebook.net/ru_RU/all.js#xfbml=1&amp;appId=175881429178414</http-->
         
         <file>index.html</file>
         
@@ -18,10 +18,17 @@
         <file>src/js/model/Models.js</file>
         
         <file>src/js/ux/ExpandableGroupedList.js</file>
+        <file>src/js/ux/Filter.js</file>
         <file>src/js/ux/FilterField.js</file>
+        <file>src/js/ux/FormPanel.js</file>
         <file>src/js/ux/HorizontalIndexBar.js</file>
+        <file>src/js/ux/List.js</file>
         <file>src/js/ux/ListPagingPlugin.js</file>
         <file>src/js/ux/PagingSelectField.js</file>
+        <file>src/js/ux/SegmentedButton.js</file>
+        <file>src/js/ux/SelectField.js</file>
+        <file>src/js/ux/Stateful.js</file>
+        <file>src/js/ux/TemplateField.js</file>
         
         <file>src/js/view/AbstractView.js</file>
         <file>src/js/view/EncashmentView.js</file>
@@ -33,8 +40,8 @@
         <file>src/js/view/Viewport.js</file>
         
         <file>src/js/app.js</file>
-        <file>src/js/utils.js</file>
         <file>src/js/Ext.ux.js</file>
+        <file>src/js/utils.js</file>
         
         <file>../senchatouch/sencha-touch-debug.js</file>
         <file>../senchatouch/resources/css/apple.css</file>
@@ -43,6 +50,7 @@
         <file>../XML/sencha/Ext.data.Engine.js</file>
         <file>../XML/sencha/Ext.data.XmlInterface.js</file>
         <file>../XML/sencha/Ext.data.SQLiteProxy.js</file>
+        <file>../config/js/iorders.js</file>
         
     </cache>
     <network>*</network>

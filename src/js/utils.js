@@ -1,6 +1,28 @@
 Ext.util.Format.defaultDateFormat = 'd/m/Y';
 Date.monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
 
+var accessTokenFromLocation = function () {
+	var test = location.search.match(/access-token=([^&]*)/);
+	
+	if (test) return test[1];
+	
+	return false;
+	
+}
+
+
+var tableHasColumn = function (tbl, column) {
+	var table = Ext.getStore('tables').getById(tbl),
+		columns = table && table.columns()
+	;
+	return columns && columns.getById(table.getId() + column)
+}
+
+var tableProperty = function (tbl, property) {
+	var table = Ext.getStore('tables').getById(tbl);
+	return table.get(property);
+}
+
 var lowercaseFirstLetter = function (string) {
 	
     return string.charAt(0).toLowerCase() + string.slice(1);
@@ -15,7 +37,12 @@ var getParentInfo = function(field, value) {
 	return new Ext.XTemplate(getItemTplMeta(rec.modelName, {useDeps: false}).itemTpl).apply(rec.data);
 };
 
-var getItemTplMeta = function(modelName, config) {
+var getBoolText = function (value) {
+	return value ? 'Да' : 'Нет';
+}
+
+
+var getItemTplCompute = function(modelName, config) {
 
 	var tableStore = Ext.getStore('tables'),
 		tableRecord = tableStore.getById(modelName),
@@ -31,7 +58,7 @@ var getItemTplMeta = function(modelName, config) {
 	var templateString = '<div class="hbox {cls}">'
 				+		'<div class="data">'
 				+			'<tpl if="hasName">'
-				+				'<p class="name">\\{name\\}</p>'
+				+				'<p class="name<tpl if="clsColumn"> \\{{clsColumn}\\}</tpl>">\\{name\\}</p>'
 				+			'</tpl>'
 				+			'<tpl if="!hasName && keyColumnsLength &gt; 0">'
 				+				'<p class="key">'
@@ -43,7 +70,15 @@ var getItemTplMeta = function(modelName, config) {
 				+							'<div class="parent-info">\\{[getParentInfo("{name}", values.{name})]\\}</div>'
 				+						'</tpl>'
 				+						'<tpl if="!parent">'
-				+							'<span class="{cls}">\\{{name}\\}<tpl if="!end"> : </tpl></span>&nbsp;'
+				+							'<tpl if="boolType">'
+				+								'<span>{label}-'
+				+								'\\{\\[getBoolText(values.{name})\\]\\}'
+				+								'</span>'
+				+							'</tpl>'
+				+							'<tpl if="!boolType">'
+				+								'<span class="{cls}">\\{{name}\\}</span>'
+				+							'</tpl>'
+				+							'<tpl if="!end"><span>: </span></tpl>'
 				+						'</tpl>'
 				+					'</tpl>'
 				+				'</p>'
@@ -54,19 +89,16 @@ var getItemTplMeta = function(modelName, config) {
 				+						'<tpl for="otherColumns">'
 				+							'<tpl if="parent">'
 				+								'<tpl if="label || name">'
-				+									'<div>'
-				+										'<span class="label-parent x-button">'
-				+											'<input type="hidden" property="{name}" value="\\{{name}\\}" />'
-				+											'{label}'
-				+										'</span>'
-				+										'<tpl if="name_br">: \\{{name_br}\\}</tpl>'
-				+									'</div>'
+				+									'{renderTpl}'
 				+								'</tpl>'
 				+							'</tpl>'
-				+							'<tpl if="!parent">'
+				+							'<tpl if="!(parent||template)">'
 				+								'<tpl if="label || name">'
 				+									'<div class="{cls}"><tpl if="name">{name}</tpl></div>'
 				+								'</tpl>'
+				+							'</tpl>'
+				+							'<tpl if="template">'
+				+								'<div class="{cls}">{label} : {template}</div>'
 				+							'</tpl>'
 				+						'</tpl>'
 				+					'</small>'
@@ -74,7 +106,18 @@ var getItemTplMeta = function(modelName, config) {
 				+			'</div>'
 				+		'</div>'
 				+		'{buttons}'
-				+	'</div>';
+				+	'</div>'
+	;
+	
+	var renderTpl = function(name_br,name,label) {
+		return '<tpl if="'+name+'"><div>'
+			+ '<span class="label-parent x-button">'
+			+	'<input type="hidden" property="'+name+'" value="{'+name+'}" />'
+			+	label
+			+ '</span>'
+			+ ': {'+name_br+'}'
+		+ '</div></tpl>'
+	}
 	
 	var buttons = 
 		'<div class="buttons">' 
@@ -99,50 +142,53 @@ var getItemTplMeta = function(modelName, config) {
 		otherColumnsLength: 0,
 		otherColumns: [],
 		buttons: useDeps && !onlyKey ? buttons : '',
-		cls: '<tpl if="needUpload">needUpload</tpl>'
+		cls: '<tpl if="needUpload">needUpload</tpl>',
+		clsColumn: tableRecord.get('clsColumn')
 	};
 	
 	var idColExist = columnStore.findExact('name', 'id') === -1 ? false : true;
 	var queryValue = idColExist ? 'parent' : 'key';
 	
 	if(columnStore.findExact('name', 'name') != -1) {
-
+		
 		templateData.hasName = true;
 		queryValue = 'key';
+		
 	} else {
-
+		
 		var keyColumns = columnStore.queryBy(function(rec) {
 			return rec.get(queryValue)
 				&& ( !filterObject || lowercaseFirstLetter(filterObject.modelName) != lowercaseFirstLetter(rec.get('name')))
-				&& groupField !== rec.get('name') ? true : false;
+				&& (groupField !== rec.get('name') ? true : false)
+				&& !rec.get('optional');
 		});
-
+		
 		templateData.keyColumnsLength = keyColumns.getCount(); 
-
+		
 		if(keyColumns.getCount() > 0) {
-
-			var length = keyColumns.getCount(); 
-
+			
+			var length = keyColumns.getCount();
+			
 			keyColumns.each(function(col) {
-
+				
 				var parentName = col.get('name')[0].toUpperCase() + col.get('name').substring(1),
 					titleCols = undefined,
-					parentInfo = keyColumns.getCount() === 1 && !tableRecord.hasIdColumn()
+					parentInfo = false && keyColumns.getCount() === 1 && !tableRecord.hasIdColumn()
 				;
-
-				if(col.get('parent')) {
-
+				
+				if(col.get('parent')) {	
 					titleCols = tableStore.getById(parentName).getTitleColumns();
-
 					length += titleCols.getCount();
 				}
-
+				
 				templateData.keyColumns.push({
 					parent: col.get('parent') ? true: false,
 					name: col.get('name'),
 					name_br: col.get('parent') ? parentName + '_name' : col.get('name'),
 					parentInfo: parentInfo,
-					end: keyColumns.indexOf(col) + 1 >= length
+					end: keyColumns.indexOf(col) + 1 >= length,
+					boolType: col.get('type') == 'boolean',
+					label: col.get('label')
 				});
 
 				titleCols && !parentInfo && titleCols.each(function(tCol) {
@@ -168,7 +214,7 @@ var getItemTplMeta = function(modelName, config) {
 
 		var otherColumns = columnStore.queryBy(function(rec) {
 			var colName = rec.get('name');
-			return !rec.get(queryValue)
+			return (!rec.get(queryValue) || rec.get('optional'))
 				&& ( !groupField || (groupField !== colName
 						&& groupField[0].toLowerCase() + groupField.replace('_name', '').substring(1) !== colName)
 				)
@@ -210,7 +256,8 @@ var getItemTplMeta = function(modelName, config) {
 					label: label,
 					cls: colName === 'processing' ? colName + ' is-{' + colName + '}' : colName + (isTitle ? ' title' : ''),
 					name: name,
-					name_br: colName[0].toUpperCase() + colName.substring(1) + '_name'
+					template: col.get('template'),
+					renderTpl: renderTpl(colName[0].toUpperCase() + colName.substring(1) + '_name', name, label)
 				});
 
 				templateData.cls += (colName === 'processing' ? ' is-{' + colName + '}' : '');
@@ -227,10 +274,80 @@ var getItemTplMeta = function(modelName, config) {
 	return res;
 };
 
-function getItemTpl (modelName) {
+var getItemTpl = function (modelName) {
+
+	var res = getItemTplStatic (modelName);
+	
+	!res && (
+		res = getItemTplCompute (modelName, {useDeps:false}).itemTpl
+	);
+	
+	return res;
+	
+};
+
+
+var getItemTplMeta = function (modelName, config) {
+
+	var tpl = getItemTplStatic (modelName);
+	
+	if (tpl) {
+		return Ext.apply ({
+			itemTpl: tpl
+		}, config)
+	}
+	
+	return getItemTplCompute (modelName, config);
+	
+}
+
+String.prototype.tplIf = function (o) {
+
+	typeof o == 'string' && (
+		o = { elem: o }
+	);
+	
+	var me = this,
+		replacer = function (p) {
+			return o[p.replace('$','')] || me.toString()
+		}
+	;
+	
+	return '<tpl if="$cond"><$elem>{$vname}</$elem></tpl>'.replace(
+		/(\$[a-z]*(?=\>|\<|\"|\}))/g, replacer
+	);
+
+}
+
+String.prototype.tpl01 = function (arr, divider) {
+	
+	var res = this,
+		me = this
+	;
+	
+	typeof arr != 'array'
+		&& (arr = [arr || ['1']])
+	;
+	
+	Ext.each (arr, function (a) {
+		res += (divider||'') + me.replace(/0/g,a)
+	});
+	
+	return res;
+}
+
+Number.prototype.toDecimal = function (d) {
+	return parseFloat(this.toFixed(d))
+}
+
+String.prototype.toSpan = function (cls) {
+	return '<span class="'+cls+'">'+this+'</span>'
+}
+
+var getItemTplStatic = function (modelName) {
 
 	switch(modelName) {
-		case 'BonusProgramByCustomer': {
+		case 'BonusProgramByCustomer':
 			return '<div class="hbox"><div class="data">'
 						+'<p class="name">{name}</p>'
 						+'<div>'
@@ -241,67 +358,259 @@ function getItemTpl (modelName) {
 							+'</small>'
 						+'</div>'
 					+'</div></div>'
-			;
-		}
-		case 'Dep': {
+		;
+		case 'Dep':
 			return '<div class="hbox dep <tpl if="loading">loading</tpl>">'
 					+	'<div class="count"><tpl if="count &gt; 0">{count}</tpl></div>'
 					+	'<div class="stats"><tpl if="stats != \'0\'">{stats}</tpl></div>'
 					+	'<div class="data">{nameSet}</div>'
 					+	'<div class="aggregates">{aggregates}</div>'
 					+	'<tpl if="extendable && (!editing && !contains || editing && contains)"><div class="x-button extend add">+</div></tpl>'
-				 + '</div>';
-		}
-		case 'Debt' : {
+				 + '</div>'
+		;
+		case 'Debt' :
 			return '<div class="hbox dep">'
 					+ '<div class="data">'
 					+	'<div>Дата: {[Ext.util.Format.date(values.ddate)]} Документ№: {ndoc} Сумма: {[values.fullSumm]} <tpl if="isWhite">Нужен чек</tpl></div>'
 					+	'<div>Остаток задолженности: {[parseFloat(values.remSumm).toFixed(2)]}</div>'
 					+ '</div>'
 					+ '<div class="encashSumm"><tpl if="encashSumm &gt; 0">{[parseFloat(values.encashSumm).toFixed(2)]}</tpl></div>'
-				 + '</div>';
-		}
-		case 'OfferCategory': {
-			return '<div class="hbox">'
-				 + '<div class="data <tpl if="lastActive || minLastActive">active</tpl>">{name}</div>'
-				   + '<tpl if="minLastActive"><div class="green">({maxLastActive})</div></tpl>'
-//				   + '<tpl if="maxLastActive && maxLastActive != minLastActive"><small class="green">[{maxLastActive}]</small></tpl>'
 				 + '</div>'
+		;
+		
+		case 'OfferCategory': {
+			return '<div>'
+					+ '<span class="data <tpl if="lastActive || minLastActive">active</tpl>">{name}</span>'
+				    + '<tpl if="minLastActive"><span class="minLastActive"> ({maxLastActive})</span></tpl>'
+//				    + '<tpl if="maxLastActive && maxLastActive != minLastActive"><small class="green">[{maxLastActive}]</small></tpl>'
+				+ '</div>'
 			;
 		}
-		case 'ShipmentProduct': {
+		case 'ShipmentProduct':
 			return '<div class="data">'
 				+		'<div class="date">Дата: {[Ext.util.Format.date(values.date)]}</div>'
 				+		'<small>'
-				+			'<div class="name">Товар: {name}</div>'
+				//+			'<div class="name">Товар: {name}</div>'
 				+			'<div class="price">Цена: {price}</div>'
 				+			'<div class="volume">Количество: {volume}</div>'
 				+		'</small>'
 				+	'</div>';
-		}
-		case 'OfferProduct': {
-			return '<div class="hbox '
-						+'<tpl if="lastActive"> active</tpl>'
-						+'<tpl if="isNonHidable"> isNonHidable</tpl>'
-						+'<tpl if="BonusProgram_tag.search(\'Ф\') != -1"> focused</tpl>">'
-			       +'<div class="info {cls} data ' + '<tpl if="stockLevel==1">caution</tpl>' + '">'
-				     + '<p>{name}'
-						+'<tpl if="extraLabel"><span class="blue"> [{extraLabel}]</span></tpl>'
-						+'<tpl if="lastActive"><span class="green"> ({lastActive})</span></tpl>'
-						+'<tpl if="BonusProgram_tag"><span class="crec {BonusProgram_tagColor}">{BonusProgram_tag}</span></tpl>'
-					 +'</p>'
-				     + '<small><span class="price">Цена: {price} руб. </span>'
-					   + '<tpl if="rel &gt; 1"><span>Вложение: {rel}; </span></tpl>'
-					   + '<span>Кратность: {factor} </span>'
-					   + '<span>Стоимость: <span class="cost">{cost}</span></span>'
-				     + '</small>'
-				   + '</div>'
-				   + '<div class="volume">{volume}</div>'
-				 + '</div>';
-		}
+		;
+		
+		case 'SaleOrderPosition':
+			return '<div class="hbox">'
+				+ '<div class="data">'
+					+ '<p class="key"><span>{Product_name}</span></p>'
+					+ '<div class="other">'
+						+ '<small class="other-fields">'
+							+ '<div class="volume">'
+								+ '<tpl if="volume &gt; 0"><span>Кол-во: {volume} =</span>'
+									+ '<tpl if="volume0">'
+										+ '<span class="scheme0"> {volume0}</span>'
+									+ '</tpl>'
+									+ '<tpl if="volume1">'
+										+ '<tpl if="volume0"> +</tpl>'
+										+ '<span class="scheme1"> {volume1}</span>'
+									+ '</tpl>'
+									+ '<tpl if="volumeBonus">'
+										+ '<tpl if="volume0 || volume1"> +</tpl>'
+										+'<span class="schemeBonus"> {volumeBonus}</span>'
+									+ '</tpl>'
+								+ '</tpl>'
+							+ '</div>'
+							+ '<div class="cost">'
+								+'<tpl if="cost"><span>Стоимость: {cost}'
+									+ '<tpl if="(volume0 && price0 != price10) || (volume1 && price1 != price11)"> ['
+										+ '{[(values.price11 * values.volume1 + values.price10 * values.volume0).toFixed(2)]}'
+									+ ']</tpl>'
+									+ ' =</span>'
+									+ '<tpl if="volume0">'
+										+ '<span class="scheme0"> {price0}'
+											+ '<tpl if="price0 != priceOrigin">'
+												+ '({[((values.price0/values.priceOrigin - 1) * 100.0).toDecimal(2)]}%)'
+											+ '</tpl>'
+											+ '<tpl if="price0 != price10"> ['
+												+ '{price10}'
+												+ '<tpl if="price10 != priceOrigin">'
+													+ '({[((values.price10/values.priceOrigin - 1) * 100.0).toDecimal(2)]}%)'
+												+ '</tpl>'
+											+ ']</tpl>'
+											+ ' * {volume0}'
+										+ '</span>'
+									+ '</tpl>'
+									+ '<tpl if="volume0 && volume1"><span> + </span></tpl>'
+									+ '<tpl if="volume1">'
+										+ '<span class="scheme1"> {price1}'
+											+ '<tpl if="price1 != priceOrigin">'
+												+ '({[((values.price1/values.priceOrigin - 1) * 100.0).toDecimal(2)]}%)'
+											+ '</tpl>'
+											+ '<tpl if="price1 != price11"> ['
+												+ '{price11}'
+												+ '<tpl if="price11 != priceOrigin">'
+													+ '({[((values.price11/values.priceOrigin - 1) * 100.0).toDecimal(2)]}%)'
+												+ ']</tpl>'
+											+ ']</tpl>'
+											+ ' * {volume1}'
+										+ '</span>'
+									+ '</tpl>'
+								+'</tpl>'
+							+ '</div>'
+						+ '</small>'
+					+ '</div>'
+				+ '</div>'
+			+ '</div>'
+		;
+		
+		case 'OfferProduct':
+			return '<div class="<tpl if="unfolded">un</tpl>folded'
+				+'<tpl if="lastActive"> active</tpl>'
+				+'">'
+				+'<div class="hbox volumeCombo'
+				+'<tpl if="isNonHidable"> isNonHidable</tpl>'
+				+'<tpl if="BonusProgram_tag.search(\'Ф\') != -1"> focused</tpl>'
+			+ '">'
+				
+				+'<div class="info {cls} data flex ' + '<tpl if="stockLevel &lt; packageRel*2">caution</tpl>' + '">'
+					
+					+ '<div class="name">{name}'
+					   +'<tpl if="extraLabel"><span class="blue"> [{extraLabel}]</span></tpl>'
+					   +'<tpl if="BonusProgram_tag"><span class="crec {BonusProgram_tagColor}">{BonusProgram_tag}</span></tpl>'
+					+'</div>'
+					
+				+ '</div>'
+				
+				+ '<div class="rightbox total volume folderUnfolder">'
+					+ '<p>{volume}</p>'
+				+ '</div>'
+				
+			+ '</div>'
+			
+			+ '<small class="hbox justify">'
+				
+				+ '<div class="untapme hbox">'
+				
+					+ '<tpl if="packageRel &gt; 1">'
+						+'<p class="swipable packageRel">В коробе: {packageRel}</p>'
+					+ '</tpl>'
+					
+					+ '<p class="price">Цена: {priceOrigin}'
+						+ '<tpl if="discount0 || discount10">'
+							+ '<span class="untapme discounts '+
+									'<tpl if="discount1!=discount0 || discount11!=discount10">scheme0</tpl>'
+									+'">&nbsp;'
+								+ '<tpl if="discount0==discount10">'
+									+ '({discount0}%)'.toSpan()
+								+ '</tpl>'
+								+ '<tpl if="discount0!=discount10">'
+									+ '({discount0}%К {discount10}%Ц)'.toSpan()
+								+ '</tpl>'
+							+ '</span>'
+						+ '</tpl>'
+						+ '<tpl if="(discount1 || discount11) && (discount1!=discount0 || discount11!=discount10)">'
+							+ '<span class="untapme discounts scheme1">&nbsp;'
+								+ '<tpl if="discount1==discount11">'
+									+ '({discount1}%)'.toSpan()
+								+ '</tpl>'
+								+ '<tpl if="discount1!=discount11">'
+									+ '({discount1}%К {discount11}%Ц)'.toSpan()
+								+ '</tpl>'
+							+ '</span>'
+						+ '</tpl>'
+					+ '</p>'
+					
+					+ '<tpl if="factor &gt; 1"><p>Кратность: {factor}</p></tpl>'
+					
+					+ '<tpl if="cost"><p>Стоимость: {cost}</p></tpl>'
+					
+				+ '</div>'
+				
+				+ '<div class="tapme vbox justify">'
+				
+					+ '<tpl if="packageRel &gt; 1">'
+						+'<p class="swipable packageRel">В коробе: {packageRel}</p>'
+					+ '</tpl>'
+					+ '<tpl if="rel &gt; 1"><p>Вложение: {rel}</p></tpl>'
+					+ '<tpl if="factor &gt; 1"><p>Кратность: {factor}</p></tpl>'
+					+ '<tpl if="stockLevel &gt; 0"><p>Остаток: {stockLevel}</p></tpl>'
+					+ '<tpl if="priceAgent"><p>Цена агента: {priceAgent} ({[(values.priceOrigin / values.priceAgent * 100.0 - 100.0).toDecimal(0)]}%)</p></tpl>'
+					+ '<tpl if="priceOrigin"><p>Цена базовая: {priceOrigin}</p></tpl>'
+					+ '<tpl if="cost"><p>Цена ср.: {price}</p></tpl>'
+					+ '<tpl if="cost"><p>Стоимость: {cost}</p></tpl>'
+					
+				+ '</div>'
+				
+				+ '<div class="vbox tapme prices'
+					+ '<tpl if="!values.pricesUncombo && price0==price1 && price10==price11 && price1==price10">'
+						+ ' packCenter'
+					+ '</tpl>'
+					+ '">'
+					+ '<tpl if="price0==price1 && price10==price11 && price1==price10">'
+						+ '<div class="pricesComboWrap">'
+							+ '<span class="pricesCombo ctrl">'
+								+ '<tpl if="!values.pricesUncombo">+</tpl>'
+								+ '<tpl if="values.pricesUncombo">-</tpl>'
+							+'</span>'
+						+ '</div>'
+					+ '</tpl>'
+					+ '<tpl if="!values.pricesUncombo && price0==price1 && price10==price11 && price1==price10">'
+						+ '<div class="swipable discount0 discount1 discount10 discount11 price0 price1 price10 price11">'
+							+ '<p>Цена: {price0} ({discount0}%)</p>'
+						+ '</div>'
+					+ '</tpl>'
+					+ '<tpl if="values.pricesUncombo || price0!=price1 || price10!=price11 || price1!=price10">'
+						+ ('<div class="scheme0">'
+							+ '<div class="swipable discount0 price0">'
+								+ '<p>Код: {price0} ({discount0}%)</p>'
+							+ '</div>'
+							+ '<div class="swipable discount10 price10">'
+								+ '<p>Цена: {price10} ({discount10}%)</p>'
+							+ '</div>'
+						+ '</div>').tpl01()
+					+ '</tpl>'
+					
+				+ '</div>'
+				
+				+ '<div class="vbox tapme justify volumes">'
+					
+					+ ('<div class="swipable scheme0 volume0">'
+						+ '<p>Схема0: {volume0}</p>'
+					+ '</div>').tpl01().replace(/Схема0/,IOrders.config.scheme0).replace(/Схема1/,IOrders.config.scheme1)
+					
+					+'<div class="swipable schemeBonus volumeBonus">'
+						+ '<p>Бонус: {volumeBonus}</p>'
+					+ '</div>'
+					
+				+ '</div>'
+				
+				+ '<small class="untapme">'
+				
+					+ '<tpl if="volumeBonus &gt; 0 || volume0 &gt; 0 && volume1 &gt; 0">'
+						+ '<tpl if="volume0 &gt; 0"><span class="scheme0">{volume0}</span></tpl>'
+						+ '<tpl if="volume0 &gt; 0 && volume1 &gt; 0">'
+							+'+'
+						+ '</tpl>'
+						+ '<tpl if="volume1 &gt; 0"><span class="scheme1">{volume1}</span></tpl>'
+					+ '</tpl>'
+					
+					+ '<tpl if="volumeBonus &gt; 0">'
+						+ '<tpl if="volume0 &gt; 0 || volume1 &gt; 0">'
+							+'+'
+						+ '</tpl>'
+						+ '<span class="schemeBonus">{volumeBonus}</span>'
+					+ '</tpl>'
+					
+					+'<tpl if="lastActive && !volume"><span class="lastActive"> ( {lastActive}д )</span></tpl>'
+					
+				+ '</small>'
+				
+			+ '</small>'
+		+ '</div>'
+		;
+		
 	}
 	
-	return getItemTplMeta(modelName, {useDeps:false}).itemTpl;
+	return false;
+	
 };
 
 var createFieldSet = function(columnsStore, modelName, view) {
@@ -368,9 +677,36 @@ var createFieldSet = function(columnsStore, modelName, view) {
 				break;
 			}
 			
-			var parentStore = Ext.getStore(column.get('parent'));
+			var tpl = column.get('template');
+			
+			if (tpl) {
+				field.template = new Ext.XTemplate(tpl);
+				fieldConfig = {xtype: 'templatefield'};
+			}
+			
+			var parentName = column.get('parent'),
+				parentStore = Ext.getStore(parentName)
+			;
 			
 			if (parentStore) {
+				
+				predicateFilters = [];
+				
+				column.predicates().each(function(predicate) {
+					
+					predicateFilters.push ({
+						property: predicate.get('name'),
+						value: predicate.get('init'),
+						exactMatch: true
+					})
+					
+				});
+				
+				parentStore.clearFilter(true);
+				
+				if (predicateFilters.length) {
+					parentStore.filter(predicateFilters);
+				}
 				
 				fieldConfig = {
 					xtype: 'selectfield',
@@ -379,11 +715,24 @@ var createFieldSet = function(columnsStore, modelName, view) {
 					displayField: 'name',
 					onFieldLabelTap: true,
 					onFieldInputTap: true,
+					clsColumn: tableProperty(parentName,'clsColumn'),
 					getListPanel: function() {
 						Ext.form.Select.prototype.getListPanel.apply(this, arguments);
 						this.setItemTplWithTitle();
 						return this.listPanel;
 					}
+				}
+				
+				var importFields = column.get('importFields');
+				
+				if (importFields) {
+					fieldConfig.importFields = [];
+					Ext.each(importFields.split(' '), function(fieldToImport) {
+						fieldConfig.importFields.push({
+							name: fieldToImport.match(/^[^:]*/)[0],
+							toName: fieldToImport.match(/[^:]*$/)[0]
+						});
+					})
 				}
 				
 			}
@@ -396,13 +745,26 @@ var createFieldSet = function(columnsStore, modelName, view) {
 	return { xtype: 'fieldset', items: fsItems , itemId: 'formFields'};
 };
 
-var createFilterField = function(objectRecord) {
+var createFilterField = function(objectRecord, onLoadCallback) {
 
 	var modelName = objectRecord.modelName;	
 	var selectStore = createStore(modelName, getSortersConfig(modelName, {}));
-	selectStore.load();
-	selectStore.add(objectRecord);
-
+	
+	selectStore.load(function(records, operation, success) {
+		
+	    if (success) {
+			
+			if (! this.data.findBy(function(o) { return o.get('id') == objectRecord.getId() }))
+				selectStore.add(objectRecord)
+			;
+			
+			if (typeof onLoadCallback == 'function') {
+				onLoadCallback(this.arguments)
+			}
+		}
+		
+	});
+	
 	return {
 		xtype: 'fieldset',
 		items: {
@@ -519,7 +881,7 @@ var loadDepData = function(depRec, depTable, view, config, force) {
 			
 			if (aggCols) {
 				var aggDepResult = '';
-				var aggDepTpl = new Ext.XTemplate('<tpl if="value &gt; 0"><tpl if="name">{name} : </tpl>{[values.value.toFixed(2)]} </tpl>');
+				var aggDepTpl = new Ext.XTemplate('<tpl if="value"><tpl if="name">{name} : </tpl>{[values.value.toFixed(2)]} </tpl>');
 				var aggResults = operation.resultSet.records[0].data;
 				
 				aggCols.each(function(aggCol) {
@@ -615,12 +977,24 @@ var getGroupConfig = function(model) {
 		case 'EncashmentRequest':
 		case 'Shipment':
 		case 'SaleOrder' : {
+			
+			var sorterProperty = 'date',
+				grouperFunction = function(rec) {
+					return Ext.util.Format.date(rec.get(sorterProperty));
+				}
+			;
+			
+			if (tableHasColumn (model, 'customerDeliveryOption')) {
+				sorterProperty = 'customerDeliveryOption';
+				grouperFunction = function(rec) {
+					return rec.get('CustomerDeliveryOption_name');
+				}
+			}
+			
 			return {
-				getGroupString: function(rec) {
-					return Ext.util.Format.date(rec.get('date'));
-				},
-				sorters: [{property: 'date', direction: 'DESC'}],
-				field: 'date'
+				getGroupString: grouperFunction,
+				sorters: [{property: sorterProperty, direction: 'DESC'}],
+				field: sorterProperty
 			};
 		}
 		case 'BonusProgramByCustomer' : {
@@ -678,23 +1052,39 @@ var getGroupConfig = function(model) {
 			return result;
 		}
 		default : {
-			return {};
+			
+			var grouperFunction, sorterProperty, direction, result = {};
+			
+			if (tableHasColumn (model, 'date')) {
+				sorterProperty = 'date';
+				direction = 'DESC';
+				grouperFunction = function(rec) {
+					return Ext.util.Format.date(rec.get(sorterProperty));
+				};
+			}
+			
+			if (sorterProperty && grouperFunction) {
+				result = {
+					sorters: [{
+						property: sorterProperty,
+						direction: direction
+					}],
+					field: sorterProperty,
+					getGroupString: grouperFunction
+				}
+			}
+			
+			return result;
 		}
 	}
 };
-
-var tableHasColumn = function (tbl, column) {
-	var table = Ext.getStore('tables').getById(tbl),
-		columns = table.columns()
-	;
-	return columns.getById(table.getId() + column)
-}
 
 var getSortersConfig = function(model, storeConfig) {
 
 	var table = Ext.getStore('tables').getById(model),
 		sortConfig = {sorters: storeConfig.sorters ? storeConfig.sorters : []},
-		columns = table.columns()
+		columns = table.columns(),
+		column
 	;
 	
 	var parentSort = true;
@@ -709,7 +1099,9 @@ var getSortersConfig = function(model, storeConfig) {
 		parentSort = false;
 	}
 	
-	if (columns.getById(table.getId() + 'name')) {
+	column = columns.getById(table.getId() + 'name');
+	
+	if (column && !(column.compute || column.template)) {
 		sortConfig.sorters.push ({ property: 'name' });
 		parentSort = false;
 	}

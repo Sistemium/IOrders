@@ -9,7 +9,7 @@ var NavigatorView = Ext.extend(AbstractView, {
 	
 	createItems: function() {
 		
-		var tablesStore = Ext.getStore('tables')
+		var tablesStore = Ext.getStore('tables'),
 			modelName = this.objectRecord.modelName,
 		    table = tablesStore.getById(modelName),
 		    formItems = [],
@@ -17,78 +17,17 @@ var NavigatorView = Ext.extend(AbstractView, {
 			statusesStore = Ext.getStore('statuses'),
 			formConfig = {}
 		;
-
+		
 		this.items = [];
-
+		
 		this.dockedItems[0].title = table.get('name');
-
-		var sb = this.syncButton = new Ext.Button ({
-			
-			iconMask: true,
-			name: 'Sync',
-			iconCls: 'action',
-			scope: this,
-			
-			checkDisabled: function(){
-				this.setDisabled(IOrders.xi.isBusy())
-			},
-			
-			rebadge: function(){
-				var me = sb,
-					p = new Ext.data.SQLiteProxy({
-						engine: IOrders.dbeng,
-						model: 'ToUpload'
-					})
-				;
-				
-				p.count(new Ext.data.Operation({filters:[{property:'visibleCnt', value: 1}]}), function(o) {
-					if (o.wasSuccessful())
-						me.setBadge(me.cnt = o.result);
-				});
-			}
-			
-		});
-		
-		sb.checkDisabled();
-		
-		sb.mon (
-			this,
-			'saved',
-			sb.rebadge,
-			sb
+		this.dockedItems[0].items.push (
+			this.syncButton = this.createSyncButton()
 		);
 		
-		sb.mon (
-			IOrders.xi.connection,
-			'beforerequest',
-			sb.setDisabled,
-			sb
-		);
-		sb.mon (
-			IOrders.xi.connection,
-			'requestcomplete',
-			function () {
-				sb.checkDisabled();
-				if (sb.getBadgeText() == '!!')
-					sb.setBadge(sb.cnt);
-			},
-			sb, {delay: 1000}
-		);
-		sb.mon (
-			IOrders.xi.connection,
-			'requestexception',
-			function () {
-				sb.checkDisabled();
-				sb.setBadge('!!');
-			},
-			sb, {delay: 1000}
-		);
+		//this.fbBtn = Ext.create({xtype: 'button', name: 'FacebookFeed', text: 'Новости', scope: this});
+		//this.dockedItems[0].items.push(this.fbBtn);
 		
-		this.dockedItems[0].items.push (this.syncButton);
-
-		this.fbBtn = Ext.create({xtype: 'button', name: 'FacebookFeed', text: 'Новости', scope: this});
-		this.dockedItems[0].items.push(this.fbBtn);
-
 		if(this.isObjectView) {
 			
 			table.columns().each( function (c) {
@@ -103,64 +42,7 @@ var NavigatorView = Ext.extend(AbstractView, {
 			
 			this.cls = 'objectView';
 			
-			var columnsStore = table.columns(),
-				fieldSet = createFieldSet(columnsStore, modelName, this),
-				useForSelectFilters = new Ext.util.MixedCollection();
-			;
-			
-			Ext.each (fieldSet.items, function(field) {
-				if (field.xtype == 'selectfield' && field.store) {
-					
-					var parentColumns = tablesStore.getById(field.store.model.modelName).columns();
-					
-					parentColumns.each(function(parentColumn) {
-						
-						var grandParent = parentColumn.get('name'),
-							id = modelName+grandParent;
-						
-						if (parentColumn.get('parent') && columnsStore.getById(id)){
-							useForSelectFilters.add(id, {
-								name: grandParent,
-								store: field.store,
-								property: parentColumn.get('name')
-							});
-						}
-						
-					});
-					
-				}
-			});
-			
-			var filterFn = function (store, property, value) {
-				store.clearFilter(true);
-				store.filter({
-					property: property,
-					value: value
-				});
-			};
-			
-			useForSelectFilters.each(function (c) {
-				
-				var value = me.objectRecord.get(c.name);
-				
-				fieldSet.items.forEach(function(field) {
-					if (field.name == c.name) field.listeners = {
-						change: function(field, value) {
-							console.log('Select value changed: ' + value);
-							useForSelectFilters.each(function (c) {
-								if (c.name == field.name) 
-									filterFn (c.store, c.property, value)
-								;
-							});
-						}
-					}
-				});
-				
-				filterFn (c.store, c.property, value);
-				
-			});
-			
-			formItems.push(fieldSet);
+			formItems.push(this.fieldSetConfig(this, table, modelName));
 			
 			var spacerExist = false,
 				btnLockByStatus = this.objectRecord.fields.getByKey('processing')
@@ -199,7 +81,9 @@ var NavigatorView = Ext.extend(AbstractView, {
 			}
 			
 			table.get('extendable') && !table.get('belongs') && this.dockedItems[0].items.push({
-				itemId: 'Add', ui: 'plain', iconMask: true, name: 'Add', iconCls: 'add', scope: this, disabled: this.editing
+				ui: 'plain', iconMask: true,
+				itemId: 'Add', name: 'Add', iconCls: 'add',
+				scope: this, disabled: this.editing
 			});
 			
 			if (this.objectRecord.modelName === 'MainMenu') {
@@ -221,71 +105,10 @@ var NavigatorView = Ext.extend(AbstractView, {
 				formItems.push(createDepsList(table.deps(), tablesStore, this))
 			;
 			
-			if(IOrders.newDesign && table.hasNameColumn()) {
-				
-				var store = createStore(
-					this.objectRecord.modelName,
-					getSortersConfig(this.objectRecord.modelName, getSortersConfig(this.objectRecord.modelName, {}))
-				);
-				
-				var limit = 0, curPage = 1;
-				
-				if(me.ownerViewConfig.tableRecord.modelName === me.objectRecord.modelName) {
-					limit = me.ownerViewConfig.storeLimit;
-					curPage = me.ownerViewConfig.storePage;
-				};
-				
-				store.load({limit: limit});
-				store.currentPage = curPage;
-				
-				this.items.push(me.objectList = Ext.create ({
-					
-					xtype: 'list',
-					cls: 'sidefilter',
-					flex: 1,
-					plugins: limit !== 0 ? new Ext.plugins.ListPagingPlugin({autoPaging: true}) : undefined, 
-					itemTpl: getItemTplMeta(this.objectRecord.modelName, {useDeps: false, onlyKey: true}).itemTpl,
-					store: store,
-					
-					initComponent: function() {
-						var scroll = this.scroll;
-						Ext.List.prototype.initComponent.apply(this, arguments);
-						if (typeof scroll == 'object')
-							this.scroll = scroll;
-					},
-					
-					listeners: {
-						
-						scope: this,
-						
-						refresh: function(list) {
-							if(list.store.getCount() > 1) {
-								
-								var idx = list.store.findExact('id', this.objectRecord.getId());
-								
-								list.selModel.select(idx);
-								
-								item = Ext.fly(list.getNode(idx));
-								item && list.scroller.setOffset({
-									y: -item.getOffsetsTo(list.scrollEl)[1]
-								});
-							}
-						},
-						
-						selectionchange: function(selModel, recs) {
-							
-							if(recs.length) {
-								Ext.dispatch ({
-									controller: 'Navigator',
-									action: 'onObjectListItemSelect',
-									selected: recs[0],
-									view: me
-								})
-							}
-						}
-					}
-				}));
-			}
+			if(IOrders.newDesign && table.hasNameColumn())
+				this.createSideFilter()
+			;
+			
 			
 		} else if (this.isSetView) {
 			
@@ -296,49 +119,15 @@ var NavigatorView = Ext.extend(AbstractView, {
 				formItems.push(createFilterField(this.objectRecord));
 			}
 			
-			var listGroupedConfig = getGroupConfig(this.tableRecord);
-			var sortersConfig = getSortersConfig(this.tableRecord, listGroupedConfig);
-			
-			this.setViewStore = createStore(this.tableRecord, Ext.apply(listGroupedConfig, sortersConfig));
-			
-			formItems.push(Ext.apply({
-				xtype: 'list',
-				itemId: 'list',
-				plugins: function (view) {
-					var res = [
-						new Ext.plugins.ListPagingPlugin({autoPaging: true})
-					];
-					
-					if (me.objectRecord.modelName == 'MainMenu')
-						res.push(new Ext.plugins.PullRefreshPlugin({
-							isLoading: tablesStore.getById(view.tableRecord).get('loading'),
-							render: function() {
-								Ext.plugins.PullRefreshPlugin.prototype.render.apply(this, arguments);
-								
-								if(this.isLoading)
-									this.setViewState('loading');
-							},
-							refreshFn: function(onCompleteCallback, pullPlugin) {
-								this.list.pullPlugin = pullPlugin;
-								IOrders.xi.fireEvent('pullrefresh', this.list.store.model.modelName, onCompleteCallback);
-							}
-						}));
-						
-					return res;
-				} (this),
-				scroll: false,
-				cls: 'x-table-list',
-				grouped: listGroupedConfig.field ? true : false,
-				disableSelection: true,
-				onItemDisclosure: true,
-				store: this.setViewStore
-			}, getItemTplMeta(this.tableRecord, {filterObject: this.objectRecord, groupField: listGroupedConfig.field})));
+			formItems.push(this.theSetListConfig());
 			
 			var table = tablesStore.getById(this.tableRecord);
 			
-			table.get('extendable') && !table.get('belongs') && this.dockedItems[0].items.push({xtype: 'spacer'}, {
-				ui: 'plain', iconMask: true, name: 'Add', iconCls: 'add', scope: this
-			});
+			table.get('extendable') && !table.get('belongs')
+				&& this.dockedItems[0].items.push({xtype: 'spacer'}, {
+					ui: 'plain', iconMask: true, name: 'Add', iconCls: 'add', scope: this
+				}
+			);
 		}
 		
 		this.mon (this, 'activate', this.syncButton.rebadge);
@@ -385,11 +174,152 @@ var NavigatorView = Ext.extend(AbstractView, {
 				
 				var column = columnStore.getById(table.getId() + fieldName);
 				
-				field.setDisabled(!column.get('editable') || disable);
+				if (!(column.get('template') || column.get('compute')))
+					field.setDisabled(!column.get('editable') || disable);
 			});
 			
 		}
 		
+	},
+	
+	theSetListConfig: function () {
+		
+		var tablesStore = Ext.getStore('tables'),
+			listGroupedConfig = getGroupConfig(this.tableRecord),
+			sortersConfig = getSortersConfig(this.tableRecord, listGroupedConfig),
+			me=this
+		;
+		
+		this.setViewStore = createStore(this.tableRecord, Ext.apply(listGroupedConfig, sortersConfig));
+		
+		var config = {
+			xtype: 'list',
+			itemId: 'list',
+			plugins: function (view) {
+				
+				var res = [
+					new Ext.plugins.ListPagingPlugin({autoPaging: true})
+				];
+				
+				if (me.objectRecord.modelName == 'MainMenu')
+					res.push(new Ext.plugins.PullRefreshPlugin({
+						
+						isLoading: tablesStore.getById(view.tableRecord).get('loading'),
+						
+						render: function() {
+							Ext.plugins.PullRefreshPlugin.prototype.render.apply(this, arguments);
+							
+							if(this.isLoading)
+								this.setViewState('loading');
+						},
+						
+						refreshFn: function(onCompleteCallback, pullPlugin) {
+							this.list.pullPlugin = pullPlugin;
+							IOrders.xi.fireEvent(
+								'pullrefresh',
+								this.list.store.model.modelName,
+								onCompleteCallback
+							);
+						}
+						
+					}))
+				;
+				
+				return res;
+				
+			} (this),
+			
+			scroll: false,
+			cls: 'x-table-list',
+			grouped: listGroupedConfig.field ? true : false,
+			disableSelection: true,
+			onItemDisclosure: true,
+			store: this.setViewStore
+		};
+		
+		return Ext.apply( config,
+			getItemTplMeta(
+				this.tableRecord,
+				{
+					filterObject: this.objectRecord,
+					groupField: listGroupedConfig.field
+				}
+			)
+		)
+	
+	},
+	
+	createSideFilter: function() {
+		
+		var store = createStore(
+			
+			this.objectRecord.modelName,
+			
+			getSortersConfig(
+				this.objectRecord.modelName,
+				getSortersConfig(this.objectRecord.modelName,{})
+			)
+			
+		);
+		
+		var limit = 0, curPage = 1, me=this;
+		
+		if(me.ownerViewConfig.tableRecord.modelName === me.objectRecord.modelName) {
+			limit = me.ownerViewConfig.storeLimit;
+			curPage = me.ownerViewConfig.storePage;
+		};
+		
+		store.load({limit: limit});
+		store.currentPage = curPage;
+		
+		this.items.push(me.objectList = Ext.create ({
+			
+			xtype: 'list',
+			cls: 'sidefilter',
+			flex: 1,
+			plugins: limit !== 0 ? new Ext.plugins.ListPagingPlugin({autoPaging: true}) : undefined, 
+			itemTpl: getItemTplMeta(this.objectRecord.modelName, {useDeps: false, onlyKey: true}).itemTpl,
+			store: store,
+			
+			initComponent: function() {
+				var scroll = this.scroll;
+				Ext.List.prototype.initComponent.apply(this, arguments);
+				if (typeof scroll == 'object')
+					this.scroll = scroll;
+			},
+			
+			listeners: {
+				
+				scope: this,
+				
+				refresh: function(list) {
+					if(list.store.getCount() > 1) {
+						
+						var idx = list.store.findExact('id', this.objectRecord.getId());
+						
+						list.selModel.select(idx);
+						
+						var item = Ext.fly(list.getNode(idx));
+						
+						item && list.scroller.setOffset({
+							y: -item.getOffsetsTo(list.scrollEl)[1]
+						});
+					}
+				},
+				
+				selectionchange: function(selModel, recs) {
+					
+					if(recs.length) {
+						Ext.dispatch ({
+							controller: 'Navigator',
+							action: 'onObjectListItemSelect',
+							selected: recs[0],
+							view: me
+						})
+					}
+				}
+			}
+		}));
 	},
 	
 	statusButtonsConfig: function (me, cName, c) {
@@ -471,6 +401,147 @@ var NavigatorView = Ext.extend(AbstractView, {
 			}
 		);
 		
+	},
+	
+	createSyncButton: function() {
+		
+		var me = this, sb = new Ext.Button ({
+			
+			iconMask: true,
+			name: 'Sync',
+			iconCls: 'action',
+			scope: this,
+			
+			checkDisabled: function(){
+				this.setDisabled(IOrders.xi.isBusy() || me.editing)
+			},
+			
+			rebadge: function(){
+				var me = sb,
+					p = new Ext.data.SQLiteProxy({
+						engine: IOrders.dbeng,
+						model: 'ToUpload'
+					})
+				;
+				
+				p.count(new Ext.data.Operation({filters:[{property:'visibleCnt', value: 1}]}), function(o) {
+					if (o.wasSuccessful())
+						me.setBadge(me.cnt = o.result);
+				});
+			}
+			
+		});
+		
+		sb.checkDisabled();
+		
+		sb.mon (
+			this,
+			'saved',
+			sb.rebadge,
+			sb
+		);
+		
+		sb.mon (
+			IOrders.xi.connection,
+			'beforerequest',
+			sb.setDisabled,
+			sb
+		);
+		sb.mon (
+			IOrders.xi.connection,
+			'requestcomplete',
+			function () {
+				sb.checkDisabled();
+				if (sb.getBadgeText() == '!!')
+					sb.setBadge(sb.cnt);
+			},
+			sb, {delay: 1000}
+		);
+		sb.mon (
+			IOrders.xi.connection,
+			'requestexception',
+			function () {
+				sb.checkDisabled();
+				sb.setBadge('!!');
+			},
+			sb, {delay: 1000}
+		);
+		
+		sb.mon( this, 'saved', function (o) {
+			sb.checkDisabled();
+			sb.rebadge();
+		}, sb);
+		
+		return sb;
+	},
+	
+	fieldSetConfig: function (me, table, modelName) {
+		
+		var columnsStore = table.columns(),
+			tablesStore = Ext.getStore('tables'),
+			fieldSet = createFieldSet(columnsStore, modelName, this),
+			useForSelectFilters = new Ext.util.MixedCollection()
+		;
+		
+		Ext.each (fieldSet.items, function(field) {
+			
+			field.cls = field.name;
+			
+			if (field.xtype == 'selectfield' && field.store) {
+				
+				var parentColumns = tablesStore.getById(field.store.model.modelName).columns();
+				
+				parentColumns.each(function(parentColumn) {
+					
+					var grandParent = parentColumn.get('name'),
+						id = modelName+grandParent;
+					
+					if (parentColumn.get('parent') && columnsStore.getById(id)){
+						useForSelectFilters.add(id, {
+							name: grandParent,
+							store: field.store,
+							field: field.name,
+							property: parentColumn.get('name')
+						});
+					}
+					
+				});
+				
+			}
+		});
+		
+		var filterFn = function (store, property, value) {
+			store.clearFilter(true);
+			store.filter({
+				property: property,
+				value: value
+			});
+		};
+		
+		useForSelectFilters.each(function (c) {
+			
+			var value = me.objectRecord.get(c.name);
+			
+			fieldSet.items.forEach(function(field) {
+				if (field.name == c.name) field.listeners = {
+					change: function(field, value) {
+						console.log('Select value changed: ' + value);
+						useForSelectFilters.each(function (c) {
+							if (c.name == field.name) {
+								filterFn (c.store, c.property, value);
+								var f = field.ownerCt.items.getByKey(c.field);
+								f && f.reset();
+							}
+						});
+					}
+				}
+			});
+			
+			filterFn (c.store, c.property, value);
+			
+		});
+		
+		return fieldSet;
 	}
 	
 });

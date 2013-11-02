@@ -16,7 +16,8 @@ Ext.regController('Main', {
 		} else {
 			var sb = view.up('segmentedbutton');
 			if (sb && sb.name) {
-				action = 'statusChange';
+				redirectTo = 'Navigator';
+				action = 'onStatusButtonTap';
 				if (options.btn.wasPressed) action = false;
 			}
 		}
@@ -247,8 +248,8 @@ Ext.regController('Main', {
 		
 		if(login && password) {
 			
-			localStorage.setItem('login', login);
-			localStorage.setItem('password', password);
+			IOrders.setItemPersistant('login', login);
+			IOrders.setItemPersistant('password', password);
 			
 			IOrders.xi.username = login;
 			IOrders.xi.password = password;
@@ -266,7 +267,10 @@ Ext.regController('Main', {
 			Ext.Msg.alert(o.command, 'Получилось');
 		},
 		failure: function(r,o) {
-			Ext.Msg.alert(o.command, 'Не получилось: ' + r.responseText);
+			var msg = 'Не получилось: ';
+			r.responseText && (msg += r.responseText);
+			r.exception && (msg += r.exception);
+			Ext.Msg.alert(o.command, msg);
 		}
 	},
 	
@@ -300,6 +304,8 @@ Ext.regController('Main', {
 				
 				var metadata = this.xml2obj(m).metadata;
 				
+				metadata.name = IOrders.dbName(metadata);
+				
 				if ( metadata.version > IOrders.dbeng.db.version )
 					Ext.Msg.confirm(
 						'Требуется пересоздать БД',
@@ -308,13 +314,13 @@ Ext.regController('Main', {
 						'Стереть все данные и загрузить то, что лежит на сервере?',
 						function (yn) {
 							if (yn == 'yes'){
-								localStorage.setItem('metadata', Ext.encode(metadata));				
+								IOrders.setItemPersistant('metadata', Ext.encode(metadata));				
 								location.reload();
 							}
 						}
 					);
 				else if (!options.silent) {
-					localStorage.setItem('metadata', Ext.encode(metadata));
+					IOrders.setItemPersistant('metadata', Ext.encode(metadata));
 					Ext.Msg.alert('Метаданные в норме', 'Версия: ' + metadata.version);
 				}
 				
@@ -326,7 +332,7 @@ Ext.regController('Main', {
 	onClearLocalStorageButtonTap: function(options) {
 		Ext.Msg.confirm('Внимание', 'Действительно нужно все стереть?', function(yn){
 			if (yn == 'yes'){
-				localStorage.clear();
+				IOrders.clearLocalStorage();
 				Ext.defer (function() {
 					Ext.Msg.alert('Все стерто', 'Необходим перезапуск', function() {
 						location.reload();
@@ -340,36 +346,65 @@ Ext.regController('Main', {
 		
 		Ext.Msg.confirm('Внимание', 'Действительно нужно безвозвратно стереть данные из всех таблиц ?', function(yn){
 			if (yn == 'yes'){
-				IOrders.dbeng.clearListeners();
-				
-				IOrders.viewport.setLoading({msg: 'Все стираю ...'});
-				IOrders.dbeng.on ('dbstart', function() {
-					localStorage.setItem ('needSync', true);
-					location.reload();
-				});
-				
-				IOrders.xi.request( Ext.applyIf ({
-					command: 'metadata',
-					success: function(response) {
-						var m = response.responseXML;
-						
-						console.log(m);
-						
-						var metadata = this.xml2obj(m).metadata;
-						
-						if ( metadata.version > IOrders.dbeng.db.version ) {
-							localStorage.setItem('metadata', Ext.encode(metadata));
-						}
-						
-						IOrders.dbeng.startDatabase (
-							Ext.decode(localStorage.getItem('metadata')),
-							true
-						);
-					}},
-					this.prefsCb
-				));
+				Ext.dispatch (Ext.apply(options, {
+					action: 'dbRebuild'
+				}));
 			}
 		}, this);
+	},
+	
+	dbRebuild: function () {
+		
+		IOrders.viewport.setLoading('Обновляю базу данных ...');
+		
+		IOrders.xi.request({
+			
+			command: 'metadata',
+			
+			success: function(response) {
+				var m = response.responseXML;
+				
+				console.log(m);
+				
+				var metadata = this.xml2obj(m).metadata;
+				
+				if (metadata.version) {
+					metadata.name = IOrders.dbName(metadata);
+					IOrders.setItemPersistant('metadata', Ext.encode(metadata));
+				} else {
+					metadata = Ext.decode(IOrders.getItemPersistant('metadata'))
+				}
+				
+				IOrders.dbeng.clearListeners();
+				
+				IOrders.dbeng.on ('dbstart', function() {
+					IOrders.setItemPersistant ('needSync', true);
+					location.replace(location.origin + location.pathname);
+				});
+				
+				IOrders.dbeng.startDatabase (metadata, true);
+			},
+			
+			failure: function(r,o) {
+				
+				if (r.status == 401) {
+					IOrders.xi.login({
+						success: function () {
+							Ext.dispatch ({
+								controller: 'Main',
+								action: 'dbRebuild'
+							});
+						}
+					});
+				}
+				
+				IOrders.viewport.setLoading (false);
+				
+				return false;
+			}
+			
+		});
+		
 	},
 
 	onReloadButtonTap: function(options) {
@@ -396,12 +431,12 @@ Ext.regController('Main', {
 	
 	onXiNoServerButtonTap: function(options) {
 		IOrders.xi.noServer = true;
-		localStorage.setItem('realServer', false);
+		IOrders.setItemPersistant('realServer', false);
 	},
 
 	onXiYesServerButtonTap: function(options) {
 		IOrders.xi.noServer = false;
-		localStorage.setItem('realServer', true);
+		IOrders.setItemPersistant('realServer', true);
 	},
 
 	onEnableLogButtonTap: function(options) {
@@ -416,12 +451,12 @@ Ext.regController('Main', {
 
 	onNewDesignButtonTap: function(options) {
 		IOrders.newDesign = true;
-		localStorage.setItem('newDesign', true);
+		IOrders.setItemPersistant('newDesign', true);
 	},
 
 	onOldDesignButtonTap: function(options) {
 		IOrders.newDesign = false;
-		localStorage.setItem('newDesign', false);
+		IOrders.setItemPersistant('newDesign', false);
 	},
 
 	onApplyPatchButtonTap: function(options) {
@@ -456,42 +491,6 @@ Ext.regController('Main', {
 			Ext.dispatch(Ext.apply(options, {controller: 'Navigator', view: navView}));
 		}
 		
-	},
-
-	statusChange: function (options) {
-		
-		var btn = options.btn,
-			bar = btn.up('segmentedbutton'),
-			view = bar.up('navigatorview'),
-			rec = view.form.getRecord(),
-			field = view.form.getFields(bar.name)
-		;
-
-		rec.set(bar.name, btn.name);
-		
-		if(!view.isNew) {
-			rec.save({callback: function() {
-                var tableRec = Ext.getStore('tables').getById(rec.modelName);
-                loadDepData(tableRec, tableRec, undefined, undefined, true);
-            }});
-		}
-
-		rec.fields.getByKey('processing') &&
-			this.controlButtonsVisibilities(
-				view,
-				!view.editing && rec.get('processing') != 'draft' && !rec.get('serverPhantom')
-			);
-	},
-
-	controlButtonsVisibilities: function(view, hide) {
-
-		var topBar = view.getDockedComponent('top'),
-			delBtn = topBar.getComponent('Delete'),
-			editBtn = topBar.getComponent('SaveEdit')
-		;
-	
-		delBtn && delBtn[hide ? 'addCls' : 'removeCls']('disable');
-		
-		editBtn && editBtn[hide ? 'addCls' : 'removeCls']('disable');
 	}
+	
 });

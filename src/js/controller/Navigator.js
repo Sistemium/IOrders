@@ -71,6 +71,32 @@ Ext.regController('Navigator', {
         IOrders.xi.on('beforeupload', this.onBeforeUpload, this);
 	},
 
+	onStatusButtonTap: function (options) {
+		
+		var btn = options.btn,
+			bar = btn.up('segmentedbutton'),
+			view = bar.up('navigatorview'),
+			rec = view.form.getRecord(),
+			field = view.form.getFields(bar.name)
+		;
+
+		rec.set(bar.name, btn.name);
+		
+		if(!view.isNew) {
+			rec.save({callback: function() {
+                var tableRec = Ext.getStore('tables').getById(rec.modelName);
+                loadDepData(tableRec, tableRec, undefined, undefined, true);
+				view.fireEvent ('saved', rec);
+            }});
+		}
+
+		rec.fields.getByKey('processing') &&
+			this.controlButtonsVisibilities(
+				view,
+				!view.editing && rec.get('processing') != 'draft' && !rec.get('serverPhantom')
+			);
+	},
+
     onBeforeUpload: function(store) {
         
         var view = IOrders.viewport.getActiveItem();
@@ -255,57 +281,7 @@ Ext.regController('Navigator', {
 		
 		var errors = rec.validate();
 		
-		if(errors.isValid()) {
-			
-			var btn = options.btn;
-			
-			if (btn) {
-				btn.setText('Редактировать');
-				
-				Ext.apply(btn, {name: 'Edit'});
-				
-				options.view.depStore.each(function(rec) {
-					rec.set('editing', false);
-				});
-                
-                if(options.view.isNew) {
-                    var statusBar = form.getComponent('statusToolbar'),
-                        state = undefined
-                    ;
-                        
-                    if(statusBar) {
-                        
-                        var segBtn = statusBar.getComponent('processing');
-                        
-                        segBtn.items.each(function(b) {
-                            if(b.pressed) {
-                                state = b.name;
-                                return false;
-                            }
-                            return true;
-                        });
-                        
-                    }
-                    
-                    rec.set('processing', state);
-                }
-				
-				var toolbar = btn.up('toolbar');
-                
-				Ext.dispatch(Ext.apply(options, {action: 'setEditing', editing: false}));
-
-				rec.fields.getByKey('processing') && this.controlButtonsVisibilities(view, rec.get('processing') != 'draft' && !rec.get('serverPhantom'));
-			}
-			
-            view.isNew = false;
-            
-			rec.save({callback: function() {
-                var tableRec = Ext.getStore('tables').getById(rec.modelName);
-                loadDepData(tableRec, tableRec, undefined, undefined, true);
-            }});
-			view.fireEvent ('saved', rec);
-			
-		} else {
+		if(!errors.isValid()) {
 			
 			var msg = '';
 			
@@ -315,8 +291,63 @@ Ext.regController('Navigator', {
 			
 			Ext.Msg.alert('Ошибка валидации', msg, Ext.emptyFn);
 			
+			return;
+			
 		}
+		
+		var btn = options.btn;
+		
+		if (btn) {
+			btn.setText('Редактировать');
+			
+			Ext.apply(btn, {name: 'Edit'});
+			
+			options.view.depStore.each(function(rec) {
+				rec.set('editing', false);
+			});
+			
+			if(options.view.isNew) {
+				var statusBar = form.getComponent('statusToolbar'),
+					state = undefined
+				;
+					
+				if(statusBar) {
+					
+					var segBtn = statusBar.getComponent('processing');
+					
+					segBtn.items.each(function(b) {
+						if(b.pressed) {
+							state = b.name;
+							return false;
+						}
+						return true;
+					});
+					
+				}
+				
+				rec.set('processing', state);
+			}
+			
+			var toolbar = btn.up('toolbar');
+			
+			Ext.dispatch(Ext.apply(options, {action: 'setEditing', editing: false}));
+			rec.fields.getByKey('processing') && this.controlButtonsVisibilities(view, rec.get('processing') != 'draft' && !rec.get('serverPhantom'));
+		}
+		
+		view.isNew = false;
+		
+		rec.save({callback: function() {
+			
+			var tableRec = Ext.getStore('tables').getById(rec.modelName);
+			
+			loadDepData(tableRec, tableRec, undefined, undefined, true);
+			
+			view.fireEvent ('saved', rec);
+			
+		}});
+		
 	},
+
 	
 	onEditButtonTap: function(options) {
 		
@@ -365,55 +396,72 @@ Ext.regController('Navigator', {
 	},
 
 	controlButtonsVisibilities: function(view, hide) {
-
+		
 		var topBar = view.getDockedComponent('top'),
 			delBtn = topBar.getComponent('Delete'),
 			editBtn = topBar.getComponent('SaveEdit')
 		;
-	
+		
 		delBtn && delBtn[hide ? 'addCls' : 'removeCls']('disable');
-	
+		
 		editBtn && editBtn[hide ? 'addCls' : 'removeCls']('disable');
 	},
 
 	setEditing: function(options) {
-		options.view.setFieldsDisabled(!options.editing);
-		options.view.editing = options.editing;
-
+		
+		var view = options.view;
+		
+		view.setFieldsDisabled(!options.editing);
+		view.editing = options.editing;
+		
 		var toolbar = options.btn.up('toolbar');
-		toolbar.getComponent('Add')[options.editing ? 'disable' : 'enable']();
+		
+		toolbar && toolbar.getComponent('Add')[options.editing ? 'disable' : 'enable']();
+		
+		view.syncButton && view.syncButton.setDisabled(options.editing);
+		
 	},
 	
 	onAddButtonTap: function(options) {
 		
 		var rec = undefined,
-			restrictMsg
+			restrictMsg,
+			objectRecord = options.view.objectRecord			
 		;
 		
 		if(options.view.isObjectView) {
 			
-            var tableRec = Ext.getStore('tables').getById(options.view.objectRecord.modelName),
+            var tableRec = Ext.getStore('tables').getById(objectRecord.modelName),
                 parentColumns = tableRec.getParentColumns()
             ;
 			
-            rec = Ext.ModelMgr.create({serverPhantom: true}, options.view.objectRecord.modelName);
+            rec = Ext.ModelMgr.create({serverPhantom: true}, objectRecord.modelName);
 			
             parentColumns.each(function(col) {
-                rec.set(col.get('name'), options.view.objectRecord.get(col.get('name')));
+                rec.set(col.get('name'), objectRecord.get(col.get('name')));
             });
+			
+			options.view.form.fields.each (function(f) {
+				if (f.importFields) Ext.each (f.importFields, function(ff) {
+					rec.set(ff.toName, ff.value);
+				})
+			})
 			
 		} else if(options.view.isSetView) {
 			rec = Ext.ModelMgr.create({serverPhantom: true}, options.view.tableRecord);
 			
 			rec.set (
-				lowercaseFirstLetter(options.view.objectRecord.modelName),
-				options.view.objectRecord.getId()
+				lowercaseFirstLetter(objectRecord.modelName),
+				objectRecord.getId()
 			);
 		}
 		
-		if (rec.modelName === 'SaleOrder' || rec.modelName === 'EncashmentRequest') {
-			rec.set('date', getNextWorkDay());
-		}
+		if (
+			(rec.modelName === 'SaleOrder' && !tableHasColumn (rec.modelName, 'customerDeliveryOption'))
+			|| rec.modelName === 'EncashmentRequest'
+		)
+			rec.set('date', rec.getDateDefault())
+		;
 		
 		var oldCard = IOrders.viewport.getActiveItem(),
 			viewOpen = function () {
@@ -478,15 +526,43 @@ Ext.regController('Navigator', {
 					
 				Ext.defer ( function () {
 					
+					var targetColumnName = lowercaseFirstLetter(objectRecord.modelName);
+					
 					rec = Ext.ModelMgr.create({serverPhantom: true}, createdRecordModelName);
-					rec.set( lowercaseFirstLetter(objectRecord.modelName), objectRecord.getId() );
+					rec.set( targetColumnName, objectRecord.getId() );
+					
+					var importData = function(table, columnName) {
+						
+						var column = table.columns().getById(table.get('id') + columnName),
+							importFields = column && column.get('importFields'),
+							data = {}
+						;
+						
+						importFields &&
+							Ext.each (importFields.split(' '), function(fieldToImport) {
+								data[fieldToImport.match(/[^:]*$/)[0]]
+									= objectRecord.get (fieldToImport.match(/^[^:]*/)[0])
+								;
+							})
+						;
+						
+						return data;
+					};
+					
+					rec.set(importData (
+						Ext.getStore('tables').getById(createdRecordModelName),
+						targetColumnName
+					));
 					
 					if (rec.modelName === 'SaleOrder')
 						rec.set('totalCost', '0')
 					;
 					
-					if (rec.modelName === 'SaleOrder' || rec.modelName === 'EncashmentRequest')
-						rec.set('date', getNextWorkDay())
+					if (
+						(rec.modelName === 'SaleOrder' && !tableHasColumn (rec.modelName, 'customerDeliveryOption'))
+						|| rec.modelName === 'EncashmentRequest'
+					)
+						rec.set('date', rec.getDateDefault())
 					;
 					
 					var restrictMsg, viewOpen = function() {
@@ -900,15 +976,25 @@ Ext.regController('Navigator', {
 	
 	onselectfieldLabelTap: function(options) {
 
-		var field = options.field;
-		var view = options.view;
-		var tableRecord = view.isSetView ? view.objectRecord.modelName : field.name[0].toUpperCase() + field.name.substring(1);
-
+		var field = options.field,
+			view = options.view,
+			tableRecord = view.isSetView
+				? view.objectRecord.modelName
+				: field.name[0].toUpperCase() + field.name.substring(1)
+		;
+		
+		if (view.editing) return;
+		
 		var newCard = Ext.create(createNavigatorView(view.objectRecord, IOrders.viewport.getActiveItem(),
 				true, false, 
 				{objectRecord: Ext.ModelMgr.create({id: 1}, 'MainMenu'), tableRecord: tableRecord}
 		));
-		Ext.dispatch(Ext.apply(options, {action: 'loadSetViewStore', newCard: newCard}));
+		
+		Ext.dispatch(Ext.apply(options, {
+			action: 'loadSetViewStore',
+			newCard: newCard
+		}));
+		
 	},	
 
 	onselectfieldInputTap: function(options) {
@@ -944,7 +1030,10 @@ Ext.regController('Navigator', {
 		store.currentPage = 1;
 		
 		var filters = [];
-		options.filter && filters.push({property: lowercaseFirstLetter(filterRecord.modelName), value: field.getValue()});
+		options.filter && filters.push({
+			property: lowercaseFirstLetter(filterRecord.modelName),
+			value: field.getValue()
+		});
 		
 		options.removeFilter && view.form.remove(0);
 		store.filter(filters);
@@ -1013,8 +1102,14 @@ Ext.regController('Navigator', {
 				enter: 'right',
 				items: [
 					{ text: 'Закрыть панель настроек', name: 'PrefsClose'},
-					//{ text: 'Запросить данные', name: 'XiDownload'},
+					
+					{ xtype: 'panel', cls: 'vSpacer'},
+					
 					{ text: 'Пересоздать БД', name: 'DbRebuild'},
+					//{ text: 'Запросить данные', name: 'XiDownload'},
+					
+					{ xtype: 'panel', cls: 'vSpacer'},
+					
 					{ text: 'Сервер-логин', name: 'XiLogin'},
 					{ text: 'Сервер-логоф', name: 'XiLogoff'},
 					{ xtype: 'segmentedbutton', items: [
@@ -1034,6 +1129,9 @@ Ext.regController('Navigator', {
 					{ text: 'Забыть пароль', name: 'ClearLocalStorage'},
 					//{ text: 'Патч', name: 'ApplyPatch'},
 					//{ text: 'Обновить кэш', name: 'CacheRefresh'},
+					
+					{ xtype: 'panel', cls: 'vSpacer'},
+					
 					{ text: 'Перезапустить', name: 'Reload'}
 				],
 				setDisabled: function(state) {
@@ -1185,5 +1283,36 @@ Ext.regController('Navigator', {
             xfbml      : true,
             oauth      : true
         });
+	},
+	
+	createLoginPage: function (options) {
+		
+		if (options.loginPage)
+			location.replace(options.loginPage);
+		
+		
+		IOrders.viewport.setActiveItem(Ext.create({
+			xtype: 'form',
+			name: 'Login',
+			ownSubmit: true,
+			items: [
+				{xtype: 'fieldset', 
+					items: [
+						{
+							xtype: 'textfield',
+							id: 'login', name: 'login', label: 'Логин',
+							autoCorrect: false, autoCapitalize: false
+						},
+						{
+							xtype: 'passwordfield',
+							id: 'password', name: 'password', label: 'Пароль'
+						}
+					]
+				},
+				{xtype: 'button', text: 'Логин', name: 'Login'}
+			]
+		}));
+		
 	}
+
 });
