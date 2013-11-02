@@ -87,10 +87,12 @@ Ext.regModel('Column', {
 		{name: 'template', type: 'string'},
 		{name: 'serverPhantom', type: 'boolean'},
 		{name: 'importFields', type: 'string'},
-		{name: 'optional', type: 'boolean'}
+		{name: 'optional', type: 'boolean'},
+		{name: 'predicate-for', type: 'string'},
 	],
 	associations: [
-		{type: 'belongsTo', model: 'Table'}
+		{type: 'belongsTo', model: 'Table'},
+		{type: 'hasMany', model: 'Column', name: 'predicates', foreignKey: 'predicate-for'}
 	]
 });
 
