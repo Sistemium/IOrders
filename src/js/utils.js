@@ -684,6 +684,10 @@ var createFieldSet = function(columnsStore, modelName, view) {
 				fieldConfig = {xtype: 'templatefield'};
 			}
 			
+			if (view.isNew && !column.get('editable'))
+				fieldConfig = undefined
+			;
+			
 			var parentName = column.get('parent'),
 				parentStore = Ext.getStore(parentName)
 			;
@@ -737,7 +741,9 @@ var createFieldSet = function(columnsStore, modelName, view) {
 				
 			}
 			
-			fsItems.push(Ext.apply(field,fieldConfig));
+			fieldConfig
+				&& fsItems.push(Ext.apply(field,fieldConfig))
+			;
 			
 		}
 	});

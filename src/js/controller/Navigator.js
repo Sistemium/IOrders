@@ -469,7 +469,12 @@ Ext.regController('Navigator', {
 					if (rec.modelName === 'Uncashment') {
 						Ext.dispatch(Ext.apply(options, {action: 'createUncashmentView'}));
 					} else {
-						IOrders.viewport.setActiveItem(Ext.create(Ext.apply(createNavigatorView(rec, oldCard, false, true), {isNew: true})));
+						IOrders.viewport.setActiveItem(
+							Ext.create(Ext.apply(
+								createNavigatorView(rec, oldCard, false, true),
+								{isNew: true}
+							))
+						);
 					}
 				} else if (restrictMsg) {
 					Ext.Msg.alert('Внимание', restrictMsg)
