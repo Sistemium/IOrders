@@ -424,6 +424,29 @@ Ext.regController('Navigator', {
 	
 	onAddButtonTap: function(options) {
 		
+		var model = options.view.objectRecord.modelName;
+		
+		var setViewStore = options.view.setViewStore;
+		
+		if (setViewStore) 
+			model = setViewStore.model.modelName
+		;
+		
+		var tables = Ext.getStore ('tables'),
+			label = tables.getById(model).get('name')
+		;
+		
+		Ext.Msg.confirm('Внимание', 'Хотите добавить новый '+ label +' ?', function(yn){
+			if (yn == 'yes'){
+				Ext.dispatch (Ext.apply(options, {
+					action: 'objectCreateView'
+				}));
+			}
+		}, this);
+	},
+	
+	objectCreateView: function (options) {
+		
 		var rec = undefined,
 			restrictMsg,
 			objectRecord = options.view.objectRecord			

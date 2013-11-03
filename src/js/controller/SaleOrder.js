@@ -18,6 +18,17 @@ Ext.regController('SaleOrder', {
 
 	onAddButtonTap: function (options) {
 		
+		Ext.Msg.confirm('Внимание', 'Хотите добавить отдельный Заказ ?', function(yn){
+			if (yn == 'yes'){
+				Ext.dispatch (Ext.apply(options, {
+					action: 'objectCreateView'
+				}));
+			}
+		}, this);
+		
+	},
+	
+	objectCreateView: function (options) {
 		var saleOrder = options.view.saleOrder,
 			view = options.view,
 			rec
