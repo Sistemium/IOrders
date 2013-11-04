@@ -150,10 +150,12 @@ Ext.regController('SaleOrder', {
 			
 			posRec.set('selfCost', selfCost);
 			
+			rec.set('SaleOrderPosition_deviceCts',posRec.get('deviceCts'));
+			
 			rec.commit(true);
-
+			
 		});
-
+		
 		var tc = saleOrderPosStore.sum('cost'),
 			tsc = 0,
 			tc0 = 0,
@@ -1510,10 +1512,17 @@ Ext.regController('SaleOrder', {
 		btnClearFilter.disable();
 		productSearcher.disable();
 		
-		view.offerProductStore.saleOrderModeFiltersSnapshot = view.offerProductStore.filters.items;
-		view.offerProductStore.clearFilter(true);
-		view.offerProductStore.filter(view.offerProductStore.volumeFilter);
-
+		var ops = view.offerProductStore;
+		
+		ops.saleOrderModeFiltersSnapshot = view.offerProductStore.filters.items;
+		ops.clearFilter(true);
+		ops.filter(view.offerProductStore.volumeFilter);
+		
+		if (tableHasColumn ('Offer','SaleOrderPosition_deviceCts')) {
+			ops.sorters && (ops.sortersBeforeShowSaleOrder = ops.sorters);
+			ops.sort ({ property: 'SaleOrderPosition_deviceCts', direction: 'desc'});
+		}
+		
 		view.productCategoryList.deselect(
 			view.productCategoryList.saleOrderModeSelectionSnaphot = view.productCategoryList.getSelectedRecords()
 		);
@@ -1549,12 +1558,19 @@ Ext.regController('SaleOrder', {
 		btnClearFilter.enable();
 		productSearcher.enable();
 		
-		view.offerProductStore.clearFilter(true);
-		view.offerProductStore.saleOrderModeFiltersSnapshot
-			&& view.offerProductStore.filter(view.offerProductStore.saleOrderModeFiltersSnapshot)
+		var ops = view.offerProductStore;
+		
+		ops.clearFilter(true);
+		ops.saleOrderModeFiltersSnapshot
+			&& ops.filter(ops.saleOrderModeFiltersSnapshot)
 		;
 		
 		view.offerCategoryStore.clearFilter(true);
+		
+		if (ops.sortersBeforeShowSaleOrder) {
+			ops.sorters = ops.sortersBeforeShowSaleOrder;
+			ops.sort();
+		}
 		
 		if (view.productSearchFilter)
 			view.offerCategoryStore.filter(new Ext.util.Filter({
