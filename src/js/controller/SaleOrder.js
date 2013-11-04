@@ -1026,9 +1026,15 @@ Ext.regController('SaleOrder', {
 				price * (1.0 + setVolumeLogic ('discount'+fname, dMin, dMax) / 100.0)
 			) .toDecimal(2);
 			
-			data['price1'+fname] = (
+			var p1 = data['price1'+fname] = (
 				price * (1.0 + setVolumeLogic ('discount1'+fname, dMin, dMax) / 100.0)
 			) .toDecimal(2);
+			
+			var price1Min = rec.get('price1Min');
+			
+			if (p1 < price1Min)
+				data['price1'+fname] = price1Min
+			;
 			
 			data['cost'+fname] += (rel
 				* parseFloat (data ['volume' + fname])
