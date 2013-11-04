@@ -637,7 +637,7 @@ Ext.regController('Navigator', {
 			
 		} else if (options.isSetView) {
 			
-			tappedRec.get('count') && Ext.dispatch(Ext.apply(options, {
+			tappedRec.get('count') && !view.editing && Ext.dispatch(Ext.apply(options, {
 				action: 'createAndActivateView'
 			}));
 			
