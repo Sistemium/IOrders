@@ -1524,10 +1524,10 @@ Ext.regController('SaleOrder', {
 		ops.clearFilter(true);
 		ops.filter(view.offerProductStore.volumeFilter);
 		
-		if (tableHasColumn ('Offer','SaleOrderPosition_deviceCts')) {
-			ops.sorters && (ops.sortersBeforeShowSaleOrder = ops.sorters);
-			ops.sort ({ property: 'SaleOrderPosition_deviceCts', direction: 'desc'});
-		}
+		//if (tableHasColumn ('Offer','SaleOrderPosition_deviceCts')) {
+		//	ops.sorters && (ops.sortersBeforeShowSaleOrder = ops.sorters);
+		//	ops.sort ({ property: 'SaleOrderPosition_deviceCts', direction: 'desc'});
+		//}
 		
 		view.productCategoryList.deselect(
 			view.productCategoryList.saleOrderModeSelectionSnaphot = view.productCategoryList.getSelectedRecords()
