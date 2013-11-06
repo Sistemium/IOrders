@@ -29,6 +29,12 @@ var lowercaseFirstLetter = function (string) {
 
 };
 
+var uppercaseFirstLetter = function (string) {
+	
+    return string.charAt(0).toUpperCase() + string.slice(1);
+
+};
+
 var getParentInfo = function(field, value) {
 
 	var parentStore = Ext.getStore(field[0].toUpperCase() + field.substring(1));
@@ -520,7 +526,13 @@ var getItemTplStatic = function (modelName) {
 					
 					+ '<tpl if="factor &gt; 1"><p>Кратность: {factor}</p></tpl>'
 					
-					+ '<tpl if="cost"><p>Стоимость: {cost}</p></tpl>'
+					+ '<tpl if="cost">'
+						+ '<p>Стоимость: {cost}</p>'
+					+ '</tpl>'
+					
+					+ '<tpl if="chargeBase">'
+						+ '<p class="chargeBase blue">Нагрузка</p>'
+					+ '</tpl>'
 					
 				+ '</div>'
 				

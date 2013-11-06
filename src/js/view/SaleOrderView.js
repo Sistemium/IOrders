@@ -24,7 +24,11 @@ var SaleOrderView = Ext.extend(AbstractView, {
 					
 					if(lastActive) {
 						
-						var category = this.findRecord('category', product.get('category'), undefined, undefined, true, true),
+						var category = this.findRecord(
+								'category',
+								product.get('category'),
+								undefined, undefined, true, true
+							),
 							min = category.get('minLastActive'),
 							max = category.get('maxLastActive')
 						;
@@ -151,11 +155,29 @@ var SaleOrderView = Ext.extend(AbstractView, {
 			{xtype: 'spacer'},
 			{xtype: 'segmentedbutton', allowMultiple: true, itemId: 'ModeChanger',
 				items: [
-					{itemId: 'Active', text: 'Показать актив', altText: 'Скрыть актив', handler: Ext.emptyFn},
-					{itemId: 'Bonus', text: 'По акциям', handler: Ext.emptyFn
-						, hidden: metastore.getById('BonusProgram') ? false : true
+					{
+						itemId: 'Active',
+						text: 'Показать актив', altText: 'Скрыть актив',
+						handler: Ext.emptyFn
 					},
-					{itemId: 'ShowSaleOrder', text: 'Показать заказ', altText: 'Показать все', handler: Ext.emptyFn}
+					{
+						itemId: 'Charge',
+						text: 'Нагрузки',
+						handler: Ext.emptyFn,
+						hidden: metastore.getById('Charge') ? false : true
+					},
+					{
+						itemId: 'Bonus',
+						text: 'Акции',
+						handler: Ext.emptyFn,
+						hidden: metastore.getById('BonusProgram') ? false : true
+					},
+					{
+						itemId: 'ShowSaleOrder',
+						text: 'Показать заказ',
+						altText: 'Показать все',
+						handler: Ext.emptyFn
+					}
 				],
 				listeners: {
 					toggle: function(segBtn, btn, pressed) {
@@ -170,7 +192,7 @@ var SaleOrderView = Ext.extend(AbstractView, {
 					}
 				}
 			},
-			{ui: 'save', name: 'Save', text: 'Сохранить', scope: this},
+			{ui: 'save', name: 'Save', text: 'Завершить', scope: this},
 			{ui: 'plain', iconMask: true, name: 'Add', iconCls: 'add', scope: this}
 		);
 	},

@@ -103,19 +103,23 @@ Ext.regController('SaleOrder', {
 	},
 
 	onSaveButtonTap: function(options) {
-
-		var saleOrder = options.view.saleOrder;
-		options.view.isNew && saleOrder.set('processing', options.view.saleOrderStatus);
-
-		options.view.isNew = false;
+		
+		var view = options.view,
+			saleOrder = view.saleOrder
+		;
+		
+		view.isNew && saleOrder.set('processing', view.saleOrderStatus);
+		view.isNew = false;
+		
 		Ext.dispatch(Ext.apply(options, {
 			action: 'saveOffer'
 		}));
-
+		
 		Ext.dispatch(Ext.apply(options, {
 			action: 'onBackButtonTap',
 			closeEditing: true
 		}));
+		
 	},
 
 	saveOffer: function(options) {
@@ -232,6 +236,79 @@ Ext.regController('SaleOrder', {
 		
 		btb.getComponent('ShowCustomer').setText( btb.titleTpl.apply (data));
 		
+		var ocs = Ext.getStore('OfferCharge');
+		
+		if (ocs) {
+			ocs.load({
+				limit:0
+			})
+		}
+		
+	},
+	
+	onChargeBaseTap: function (options) {
+		
+		var rec = options.rec,
+			store = Ext.getStore('OfferCharge')
+		;
+		
+		store.load({
+			limit:0
+		});
+		
+		Ext.dispatch(Ext.apply(options, {
+			action: 'toggleFilterPanelOn',
+			filterName: 'Charge',
+			filterStore: store,
+			rec: rec
+		}));
+		
+	},
+	
+	toggleChargeOn: function (options) {
+		
+		Ext.dispatch(Ext.apply(options, {
+			action: 'onChargeBaseTap'
+		}));
+		
+	},
+	
+	toggleChargeOff: function (options) {
+		
+		Ext.dispatch(Ext.apply(options, {
+			action: 'onClearFilterButtonTap',
+			btn: undefined
+		}));
+		
+	},
+	
+	onChargePanelListItemSelect: function (options) {
+		
+		var view = options.view,
+			ops = view.offerProductStore,
+			rec = options.list.store.getAt(options.idx)
+		;
+		
+		ops.filtersSnapshot = ops.filters.items;
+		ops.clearFilter(true);
+		ops.filter({property: 'charge', value: rec.get('id')});
+		
+		Ext.dispatch(Ext.apply(options, {
+			action: 'beforeFilterofferProductStore'
+		}));
+		
+		Ext.dispatch(Ext.apply(options, {
+			action: 'afterFilterofferProductStore',
+			filterSet: true
+		}));
+		
+		view.chargeMode = true;
+		
+		var cf = view.dockedItems.get(0).getComponent('ClearFilter');
+		
+		cf && cf.show('fade');
+		
+		options.panel.hide();
 	},
 	
 	onListItemTap: function(options) {
@@ -242,7 +319,14 @@ Ext.regController('SaleOrder', {
 			tapedEl = Ext.get(options.event.target)
 		;
 		
-		if ( rec && tapedEl && tapedEl.is('.pricesCombo, .pricesCombo *') ){
+		if ( rec && tapedEl && tapedEl.is('.chargeBase, .chargeBase *') ){
+			
+			Ext.dispatch(Ext.apply(options, {
+				action: 'onChargeBaseTap',
+				rec: rec
+			}));
+			
+		} else if ( rec && tapedEl && tapedEl.is('.pricesCombo, .pricesCombo *') ){
 			
 			rec.editing = true;
 			rec.set('pricesUncombo', rec.get('pricesUncombo') ? false : true);
@@ -403,6 +487,30 @@ Ext.regController('SaleOrder', {
 				}
 			}
 		});
+		
+		var ocs = Ext.getStore('OfferCharge');
+		
+		if (ocs) {
+			
+			ocs.filters.clear();
+			ocs.filters.add(new Ext.util.Filter({
+				property: 'saleOrder',
+				value: options.saleOrder.get('id'),
+				exactMatch: true
+			}));
+			
+			var segBtn = newCard.getDockedComponent('top').getComponent('ModeChanger'),
+				chargeBtn = segBtn.getComponent('Charge')
+			;
+			
+			chargeBtn && chargeBtn.mon (ocs, 'load', function (store, records, success) {
+				chargeBtn.setBadge (records.length || null);
+			});
+			
+			ocs.load({
+				limit:0
+			})
+		};
 		
 	},
 	
@@ -1655,6 +1763,79 @@ Ext.regController('SaleOrder', {
 		}));
 	},
 
+	toggleFilterPanelOn: function(options) {
+
+		var view = options.view || options.list.up('saleorderview'),
+			filterStore = options.filterStore,
+			name = options.filterName,
+			
+			panelName = lowercaseFirstLetter(name) + 'Panel',
+			listName = panelName + 'List'
+		;
+		
+		var segBtn = view.getDockedComponent('top').getComponent('ModeChanger'),
+			modeBtn = segBtn.getComponent(name)
+		;
+		
+		if (modeBtn ) {
+			segBtn.setPressed(modeBtn , true, true);
+			changeBtnText(modeBtn);
+		}
+		
+		if(!view[panelName]) { 
+			view [panelName] = Ext.create({
+				id: panelName,
+				xtype: 'panel',
+				floating: true,
+				centered: true,
+				layout: 'fit',
+				width: view.getWidth() / 2,
+				height: view.getHeight() * 2 / 3,
+				dockedItems: [],
+				items: [{
+					xtype: 'list',
+					itemId: listName,
+					itemTpl: getItemTpl(filterStore.model.modelName),
+					store: filterStore,
+					listeners: {
+						itemtap: function(list, idx, item, e) {
+							Ext.dispatch({
+								controller: 'SaleOrder',
+								action: 'on'+uppercaseFirstLetter(panelName)+'ListItemSelect',
+								view: view,
+								panel: list.up(),
+								list: list, idx: idx, item: item, event: e
+							});
+						}
+					}
+				}],
+				listeners: {
+					hide: function() {
+						if(!view[lowercaseFirstLetter(name)+'Mode'] && modeBtn) {
+							segBtn.setPressed(modeBtn, false, true);
+							changeBtnText(modeBtn);
+						}
+					}
+				}
+			});
+			
+			view.cmpLinkArray.push(view[panelName]);
+		}
+		
+		var panel = view[panelName],		
+			list = panel.getComponent(listName)
+		;
+		
+		list.refresh();
+		panel.show();
+		
+		if(filterStore.getCount() < 1) {
+			//view.bonusPanel.hide();
+		}
+		
+		list.scroller.scrollTo({y: 0});
+	},
+	
 	toggleBonusOn: function(options) {
 
 		var view = options.view,
@@ -1859,8 +2040,10 @@ Ext.regController('SaleOrder', {
 	},
 	
 	onClearFilterButtonTap: function(options) {
-		var view=options.view,
-			btn = options.btn || view.dockedItems.get(0).getComponent('ClearFilter'),
+		
+		var view=options.view;
+		
+		var	btn = options.btn || view.dockedItems.get(0).getComponent('ClearFilter'),
 			bonusList = view.bonusPanel && view.bonusPanel.getComponent('bonusList'),
 			productSearcher = view.dockedItems.get(0).getComponent('ProductSearcher'),
 			segBtn = view.getDockedComponent('top').getComponent('ModeChanger'),
@@ -1898,9 +2081,13 @@ Ext.regController('SaleOrder', {
 			filterSet: false
 		}));
 		
-		segBtn.setPressed(bonusBtn, false);
-		
-		view.bonusMode = false;
+		Ext.each (['Bonus','Charge'], function (b) {
+			var btn = segBtn.getComponent(b);
+			if (btn) {
+				segBtn.setPressed(btn, false);
+				view [lowercaseFirstLetter(b)+'Mode'] = false;
+			}
+		});
 		
 		if (bonusList) {
 			bonusList.selectSnapshot = undefined;
