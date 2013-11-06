@@ -65,5 +65,28 @@ Ext.override(Ext.List, {
 		}
 
 		return Ext.query(this.itemSelector, div);
+	},
+	
+	unGroup: function () {
+		
+		if (!this.grouped) return this;
+		
+		this.groupedTpl = this.tpl;
+		
+		this.grouped = false;
+		this.tpl = this.listItemTpl;
+		
+		return this;
+	},
+
+	reGroup: function () {
+		
+		if (!this.groupedTpl) return false;
+		if (this.grouped) return this;
+		
+		this.grouped = true;
+		this.tpl = this.groupedTpl;
+		
+		return this;
 	}
 })
