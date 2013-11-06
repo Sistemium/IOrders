@@ -1525,8 +1525,12 @@ Ext.regController('SaleOrder', {
 		ops.filter(view.offerProductStore.volumeFilter);
 		
 		if (tableHasColumn ('Offer','SaleOrderPosition_deviceCts')) {
+			
+			view.productList.unGroup();
+			
 			ops.sorters && (ops.sortersBeforeShowSaleOrder = ops.sorters);
 			ops.sort ({ property: 'SaleOrderPosition_deviceCts', direction: 'desc'});
+			
 		}
 		
 		view.productCategoryList.deselect(
@@ -1575,6 +1579,7 @@ Ext.regController('SaleOrder', {
 		
 		if (ops.sortersBeforeShowSaleOrder) {
 			ops.sorters = ops.sortersBeforeShowSaleOrder;
+			view.productList.reGroup();
 			ops.sort();
 		}
 		
