@@ -550,4 +550,13 @@
 
 .pricesComboWrap {
 	height:0
-} 
+}
+
+.avoid {
+	color: silver;
+}
+
+.pseudo-hbox > * {
+	display: inline-block;
+	margin-right: 0.5em;
+}

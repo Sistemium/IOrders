@@ -476,7 +476,7 @@ var getItemTplStatic = function (modelName) {
 				+'<tpl if="BonusProgram_tag.search(\'Ф\') != -1"> focused</tpl>'
 			+ '">'
 				
-				+'<div class="info {cls} data flex ' + '<tpl if="stockLevel &lt; packageRel*2">caution</tpl>' + '">'
+				+'<div class="info {cls} data flex ' + '<tpl if="stockLevel &lt; packageRel*2">avoid</tpl>' + '">'
 					
 					+ '<div class="name">{name}'
 					   +'<tpl if="extraLabel"><span class="blue"> [{extraLabel}]</span></tpl>'
@@ -493,7 +493,7 @@ var getItemTplStatic = function (modelName) {
 			
 			+ '<small class="hbox justify">'
 				
-				+ '<div class="untapme hbox">'
+				+ '<div class="untapme flex pseudo-hbox">'
 				
 					+ '<tpl if="packageRel &gt; 1">'
 						+'<p class="swipable packageRel">В коробе: {packageRel}</p>'
@@ -526,12 +526,16 @@ var getItemTplStatic = function (modelName) {
 					
 					+ '<tpl if="factor &gt; 1"><p>Кратность: {factor}</p></tpl>'
 					
+					+ '<tpl if="stockLevel &gt; packageRel">'
+						+'<p>Остаток: {[Math.floor(values.stockLevel / values.packageRel)]} к.</p>'
+					+ '</tpl>'
+					
 					+ '<tpl if="cost">'
 						+ '<p>Стоимость: {cost}</p>'
 					+ '</tpl>'
 					
 					+ '<tpl if="chargeBase">'
-						+ '<p class="chargeBase blue">Нагрузка</p>'
+						+ '<p class="chargeBase blue">+Нагрузка</p>'
 					+ '</tpl>'
 					
 				+ '</div>'
