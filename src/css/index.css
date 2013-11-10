@@ -300,7 +300,7 @@
 	color: blue !important;
 }
 
-.negative, .isBlockedPlong, .isOverdue, .red, .caution{
+.negative, .isBlockedPlong, .isOverdue, .red, .caution, .isDisabled{
 	color: red !important;
 }
 
