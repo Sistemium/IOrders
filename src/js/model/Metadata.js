@@ -19,7 +19,10 @@ Ext.regModel('Table', {
 		{name: 'hidden', type: 'boolean'},
 		{name: 'clsColumn', type: 'string'},
 		{name: 'loading', type: 'boolean'},
-		{name: 'filtered', type: 'boolean'}
+		{name: 'filtered', type: 'boolean'},
+		{name: 'template', type: 'string'},
+		{name: 'grouperColumn', type: 'string'},
+		{name: 'sorterColumn', type: 'string'}
 	],
  	associations: [
 		{type: 'hasMany', model: 'Column', name: 'columns'},
