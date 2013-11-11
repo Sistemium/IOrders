@@ -138,6 +138,10 @@
 	padding: 2px 4px;
 }
 
+.taste.etc {
+	color: black;
+}
+
 .swipable.discount {
 	color: #22D022;
 }
