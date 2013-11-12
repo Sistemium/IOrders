@@ -1,5 +1,17 @@
 Ext.override(Ext.form.Select, {
 
+	initComponent: function() {
+		
+		if (!this.clsColumn) {
+			var table = Ext.getStore('tables').getById(this.store.model.prototype.modelName);
+			
+			if (table)
+				this.clsColumn = table.get('clsColumn')
+			;
+			
+		}
+	},
+	
     showComponent: function() {
         if (Ext.is.Phone) {
             var picker = this.getPicker(),
