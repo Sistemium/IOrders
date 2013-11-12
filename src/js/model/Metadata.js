@@ -21,6 +21,7 @@ Ext.regModel('Table', {
 		{name: 'loading', type: 'boolean'},
 		{name: 'filtered', type: 'boolean'},
 		{name: 'template', type: 'string'},
+		{name: 'templateConfig', type: 'string'},
 		{name: 'grouperColumn', type: 'string'},
 		{name: 'sorterColumn', type: 'string'}
 	],

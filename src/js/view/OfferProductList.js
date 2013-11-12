@@ -4,7 +4,7 @@ var offerProductListConfig = function (options) {
 		
 		xtype: 'expandableGroupedList',
 		cls: 'x-product-list',
-		itemTpl: getItemTpl('OfferProduct'),
+		itemTpl: getItemTpl('Offer'),
 		selectedItemCls: 'x-product-selected',
 		
 		listeners: {

@@ -71,7 +71,22 @@ var createModels = function(tablesStore) {
 			}
 		);
 		
-		Ext.regModel(tableName, config);
+		var model = Ext.regModel(tableName, config);
+		
+		Ext.apply (model, {
+				tpl: table.get('template'),
+				tplConfig: table.get('templateConfig')
+			}
+		);
+		
+		try {
+			if (model.tplConfig && model.tplConfig.length)
+				model.tplConfig = JSON.parse (model.tplConfig)
+			;
+		} catch (e) {
+			model.tplConfig = undefined;
+			console.log (e);
+		}
 		
 		regStore(tableName);
 	});

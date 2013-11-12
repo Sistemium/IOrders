@@ -1193,7 +1193,7 @@ Ext.regController('SaleOrder', {
 			view = list.up('saleorderview')
 		;
 		
-		view.setLoading(true);
+		view.productList.setLoading(true);
 		
 		Ext.apply(options, {action: 'addOfferProductList', view: view, categoryRec: rec});
 		
@@ -1453,7 +1453,7 @@ Ext.regController('SaleOrder', {
 
 		Ext.dispatch(Ext.apply(options, {action: 'expandFocusedProduct'}));
 
-		view.setLoading(false);
+		view.productList.setLoading(false);
 	},
 
 	expandFocusedProduct: function(options) {

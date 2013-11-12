@@ -307,51 +307,70 @@ var getItemTplMeta = function (modelName, config) {
 	
 }
 
-String.prototype.tplIf = function (o) {
-
-	typeof o == 'string' && (
-		o = { elem: o }
-	);
-	
-	var me = this,
-		replacer = function (p) {
-			return o[p.replace('$','')] || me.toString()
-		}
-	;
-	
-	return '<tpl if="$cond"><$elem>{$vname}</$elem></tpl>'.replace(
-		/(\$[a-z]*(?=\>|\<|\"|\}))/g, replacer
-	);
-
-}
-
-String.prototype.tpl01 = function (arr, divider) {
-	
-	var res = this,
-		me = this
-	;
-	
-	typeof arr != 'array'
-		&& (arr = [arr || ['1']])
-	;
-	
-	Ext.each (arr, function (a) {
-		res += (divider||'') + me.replace(/0/g,a)
-	});
-	
-	return res;
-}
-
 Number.prototype.toDecimal = function (d) {
 	return parseFloat(this.toFixed(d))
 }
 
-String.prototype.toSpan = function (cls) {
-	return '<span class="'+cls+'">'+this+'</span>'
-}
+Ext.apply(String.prototype, {
+	
+	toSpan: function (cls) {
+		return ('<span class="'+cls+'">'+this+'</span>')
+			.replace(/ class=("undefined"|"")/,'')
+	},
+	
+	else: function(fv) {
+		return this.length ? this.concat() : fv
+	},
+	
+	if: function(c) {
+		return c ? this.concat() : ''
+	},
+	
+	tpl01: function (arr, divider) {
+		
+		var res = this,
+			me = this
+		;
+		
+		typeof arr != 'array'
+			&& (arr = [arr || ['1']])
+		;
+		
+		Ext.each (arr, function (a) {
+			res += (divider||'') + me.replace(/0/g,a)
+		});
+		
+		return res;
+	},
+	
+	tplIf: function (o) {
+		
+		typeof o == 'string' && (
+			o = { elem: o }
+		);
+		
+		var me = this,
+			replacer = function (p) {
+				return o[p.replace('$','')] || me.toString()
+			}
+		;
+		
+		return '<tpl if="$cond"><$elem>{$vname}</$elem></tpl>'.replace(
+			/(\$[a-z]*(?=\>|\<|\"|\}))/g, replacer
+		);
+		
+	}
+	
+});
 
 var getItemTplStatic = function (modelName) {
 
+	var model = Ext.ModelMgr.getModel(modelName);
+	
+	if (model && model.tpl)
+		return new Ext.XTemplate(model.tpl, model.tplConfig)
+	;
+	
 	switch(modelName) {
 		case 'BonusProgramByCustomer':
 			return '<div class="hbox"><div class="data">'
@@ -468,160 +487,158 @@ var getItemTplStatic = function (modelName) {
 		;
 		
 		case 'OfferProduct':
-			return '<div class="<tpl if="unfolded">un</tpl>folded'
-				+'<tpl if="lastActive"> active</tpl>'
-				+'">'
-				+'<div class="hbox volumeCombo'
-				+'<tpl if="isNonHidable"> isNonHidable</tpl>'
-				+'<tpl if="BonusProgram_tag.search(\'Ф\') != -1"> focused</tpl>'
-			+ '">'
+		case 'Offer':
+			return new Ext.XTemplate(
+			'<div class="{[this.un.if(values.unfolded)]}folded {[this.active.if(values.lastActive)]}">'
 				
-				+'<div class="info {cls} data flex ' + '<tpl if="stockLevel &lt; packageRel*2">avoid</tpl>' + '">'
+				+'<div class="hbox volumeCombo {[this.isNonHidable.if(values.isNonHidable)]}">'
 					
-					+ '<div class="name">{name}'
-					   +'<tpl if="extraLabel"><span class="blue"> [{extraLabel}]</span></tpl>'
-					   +'<tpl if="BonusProgram_tag"><span class="crec {BonusProgram_tagColor}">{BonusProgram_tag}</span></tpl>'
-					+'</div>'
+					+'<div class="info {cls} data flex {[this.avoid.if(values.stockLevel < values.packageRel*2)]}">'
+						+ '<div class="name">{name}'
+							+'<tpl if="extraLabel"><span class="blue"> [{extraLabel}]</span></tpl>'
+							+'<tpl if="BonusProgram_tag"><span class="crec {BonusProgram_tagColor}">{BonusProgram_tag}</span></tpl>'
+						+'</div>'
+					+ '</div>'
 					
-				+ '</div>'
-				
-				+ '<div class="rightbox total volume folderUnfolder">'
-					+ '<p>{volume}</p>'
-				+ '</div>'
-				
-			+ '</div>'
-			
-			+ '<small class="hbox justify">'
-				
-				+ '<div class="untapme flex pseudo-hbox">'
-				
-					+ '<tpl if="packageRel &gt; 1">'
-						+'<p class="swipable packageRel">В коробе: {packageRel}</p>'
-					+ '</tpl>'
-					
-					+ '<p class="price">Цена: {priceOrigin}'
-						+ '<tpl if="discount0 || discount10">'
-							+ '<span class="untapme discounts '+
-									'<tpl if="discount1!=discount0 || discount11!=discount10">scheme0</tpl>'
-									+'">&nbsp;'
-								+ '<tpl if="discount0==discount10">'
-									+ '({discount0}%)'.toSpan()
-								+ '</tpl>'
-								+ '<tpl if="discount0!=discount10">'
-									+ '({discount0}%К {discount10}%Ц)'.toSpan()
-								+ '</tpl>'
-							+ '</span>'
-						+ '</tpl>'
-						+ '<tpl if="(discount1 || discount11) && (discount1!=discount0 || discount11!=discount10)">'
-							+ '<span class="untapme discounts scheme1">&nbsp;'
-								+ '<tpl if="discount1==discount11">'
-									+ '({discount1}%)'.toSpan()
-								+ '</tpl>'
-								+ '<tpl if="discount1!=discount11">'
-									+ '({discount1}%К {discount11}%Ц)'.toSpan()
-								+ '</tpl>'
-							+ '</span>'
-						+ '</tpl>'
-					+ '</p>'
-					
-					+ '<tpl if="factor &gt; 1"><p>Кратность: {factor}</p></tpl>'
-					
-					+ '<tpl if="stockLevel &gt; packageRel">'
-						+'<p>Остаток: {[Math.floor(values.stockLevel / values.packageRel)]} к.</p>'
-					+ '</tpl>'
-					
-					+ '<tpl if="cost">'
-						+ '<p>Стоимость: {cost}</p>'
-					+ '</tpl>'
-					
-					+ '<tpl if="chargeBase">'
-						+ '<p class="chargeBase blue">+Нагрузка</p>'
-					+ '</tpl>'
-					
-				+ '</div>'
-				
-				+ '<div class="tapme vbox justify">'
-				
-					+ '<tpl if="packageRel &gt; 1">'
-						+'<p class="swipable packageRel">В коробе: {packageRel}</p>'
-					+ '</tpl>'
-					+ '<tpl if="rel &gt; 1"><p>Вложение: {rel}</p></tpl>'
-					+ '<tpl if="factor &gt; 1"><p>Кратность: {factor}</p></tpl>'
-					+ '<tpl if="stockLevel &gt; 0"><p>Остаток: {stockLevel}</p></tpl>'
-					+ '<tpl if="priceAgent"><p>Цена агента: {priceAgent} ({[(values.priceOrigin / values.priceAgent * 100.0 - 100.0).toDecimal(0)]}%)</p></tpl>'
-					+ '<tpl if="priceOrigin"><p>Цена базовая: {priceOrigin}</p></tpl>'
-					+ '<tpl if="cost"><p>Цена ср.: {price}</p></tpl>'
-					+ '<tpl if="cost"><p>Стоимость: {cost}</p></tpl>'
-					
-				+ '</div>'
-				
-				+ '<div class="vbox tapme prices'
-					+ '<tpl if="!values.pricesUncombo && price0==price1 && price10==price11 && price1==price10">'
-						+ ' packCenter'
-					+ '</tpl>'
-					+ '">'
-					+ '<tpl if="price0==price1 && price10==price11 && price1==price10">'
-						+ '<div class="pricesComboWrap">'
-							+ '<span class="pricesCombo ctrl">'
-								+ '<tpl if="!values.pricesUncombo">+</tpl>'
-								+ '<tpl if="values.pricesUncombo">-</tpl>'
-							+'</span>'
-						+ '</div>'
-					+ '</tpl>'
-					+ '<tpl if="!values.pricesUncombo && price0==price1 && price10==price11 && price1==price10">'
-						+ '<div class="swipable discount0 discount1 discount10 discount11 price0 price1 price10 price11">'
-							+ '<p>Цена: {price0} ({discount0}%)</p>'
-						+ '</div>'
-					+ '</tpl>'
-					+ '<tpl if="values.pricesUncombo || price0!=price1 || price10!=price11 || price1!=price10">'
-						+ ('<div class="scheme0">'
-							+ '<div class="swipable discount0 price0">'
-								+ '<p>Код: {price0} ({discount0}%)</p>'
-							+ '</div>'
-							+ '<div class="swipable discount10 price10">'
-								+ '<p>Цена: {price10} ({discount10}%)</p>'
-							+ '</div>'
-						+ '</div>').tpl01()
-					+ '</tpl>'
-					
-				+ '</div>'
-				
-				+ '<div class="vbox tapme justify volumes">'
-					
-					+ ('<div class="swipable scheme0 volume0">'
-						+ '<p>Схема0: {volume0}</p>'
-					+ '</div>').tpl01().replace(/Схема0/,IOrders.config.scheme0).replace(/Схема1/,IOrders.config.scheme1)
-					
-					+'<div class="swipable schemeBonus volumeBonus">'
-						+ '<p>Бонус: {volumeBonus}</p>'
+					+ '<div class="rightbox total volume folderUnfolder">'
+						+ '<p>{volume}</p>'
 					+ '</div>'
 					
 				+ '</div>'
 				
-				+ '<small class="untapme">'
-				
-					+ '<tpl if="volumeBonus &gt; 0 || volume0 &gt; 0 && volume1 &gt; 0">'
-						+ '<tpl if="volume0 &gt; 0"><span class="scheme0">{volume0}</span></tpl>'
-						+ '<tpl if="volume0 &gt; 0 && volume1 &gt; 0">'
-							+'+'
-						+ '</tpl>'
-						+ '<tpl if="volume1 &gt; 0"><span class="scheme1">{volume1}</span></tpl>'
-					+ '</tpl>'
+				+ '<small class="hbox justify">'
 					
-					+ '<tpl if="volumeBonus &gt; 0">'
-						+ '<tpl if="volume0 &gt; 0 || volume1 &gt; 0">'
-							+'+'
-						+ '</tpl>'
-						+ '<span class="schemeBonus">{volumeBonus}</span>'
-					+ '</tpl>'
+					+ '<div class="untapme flex pseudo-hbox">'
 					
-					+'<tpl if="lastActive && !volume"><span class="lastActive"> ( {lastActive}д )</span></tpl>'
+						+ '<tpl if="packageRel &gt; 1">'
+							+'<p class="swipable packageRel">В коробе: {packageRel}</p>'
+						+ '</tpl>'
+						
+						+ '<p class="price">Цена: {priceOrigin}'
+							+ '<tpl if="discount0 || discount10">'
+								+ '<span class="untapme discounts {[this.scheme0.if(values.discount1!=values.discount0 || values.discount11!=values.discount10)]}">'
+									+ '&nbsp;<tpl if="discount0==discount10">'
+										+ '({discount0}%)'.toSpan()
+									+ '</tpl>'
+									+ '<tpl if="discount0!=discount10">'
+										+ '({discount0}%К {discount10}%Ц)'.toSpan()
+									+ '</tpl>'
+								+ '</span>'
+							+ '</tpl>'
+							+ '<tpl if="(discount1 || discount11) && (discount1!=discount0 || discount11!=discount10)">'
+								+ '<span class="untapme discounts scheme1">'
+									+ '&nbsp;<tpl if="discount1==discount11">'
+										+ '({discount1}%)'.toSpan()
+									+ '</tpl>'
+									+ '<tpl if="discount1!=discount11">'
+										+ '({discount1}%К {discount11}%Ц)'.toSpan()
+									+ '</tpl>'
+								+ '</span>'
+							+ '</tpl>'
+						+ '</p>'
+						
+						+ '<tpl if="factor &gt; 1"><p>Кратность: {factor}</p></tpl>'
+						
+						+ '<tpl if="stockLevel &gt; packageRel">'
+							+'<p>Остаток: {[Math.floor(values.stockLevel / values.packageRel)]} к.</p>'
+						+ '</tpl>'
+						
+						+ '<tpl if="cost">'
+							+ '<p>Стоимость: {cost}</p>'
+						+ '</tpl>'
+						
+						+ '<tpl if="chargeBase">'
+							+ '<p class="chargeBase blue">+Нагрузка</p>'
+						+ '</tpl>'
+						
+					+ '</div>'
+					
+					+ '<div class="tapme vbox justify">'
+					
+						+ '<tpl if="packageRel &gt; 1">'
+							+'<p class="swipable packageRel">В коробе: {packageRel}</p>'
+						+ '</tpl>'
+						+ '<tpl if="rel &gt; 1"><p>Вложение: {rel}</p></tpl>'
+						+ '<tpl if="factor &gt; 1"><p>Кратность: {factor}</p></tpl>'
+						+ '<tpl if="stockLevel &gt; 0"><p>Остаток: {stockLevel}</p></tpl>'
+						+ '<tpl if="priceAgent"><p>Цена агента: {priceAgent} ({[(values.priceOrigin / values.priceAgent * 100.0 - 100.0).toDecimal(0)]}%)</p></tpl>'
+						+ '<tpl if="priceOrigin"><p>Цена базовая: {priceOrigin}</p></tpl>'
+						+ '<tpl if="cost"><p>Цена ср.: {price}</p></tpl>'
+						+ '<tpl if="cost"><p>Стоимость: {cost}</p></tpl>'
+						
+					+ '</div>'
+					
+					+ '<div class="vbox tapme prices {[this.packCenter.if(!values.pricesUncombo && values.price0==values.price1 && values.price10==values.price11 && values.price1==values.price10)]}">'
+						+ '<tpl if="price0==price1 && price10==price11 && price1==price10">'
+							+ '<div class="pricesComboWrap">'
+								+ '<span class="pricesCombo ctrl">'
+									+ '<tpl if="!values.pricesUncombo">+</tpl>'
+									+ '<tpl if="values.pricesUncombo">-</tpl>'
+								+'</span>'
+							+ '</div>'
+						+ '</tpl>'
+						+ '<tpl if="!values.pricesUncombo && price0==price1 && price10==price11 && price1==price10">'
+							+ '<div class="swipable discount0 discount1 discount10 discount11 price0 price1 price10 price11">'
+								+ '<p>Цена: {price0} ({discount0}%)</p>'
+							+ '</div>'
+						+ '</tpl>'
+						+ '<tpl if="values.pricesUncombo || price0!=price1 || price10!=price11 || price1!=price10">'
+							+ ('<div class="scheme0">'
+								+ '<div class="swipable discount0 price0">'
+									+ '<p>Код: {price0} ({discount0}%)</p>'
+								+ '</div>'
+								+ '<div class="swipable discount10 price10">'
+									+ '<p>Цена: {price10} ({discount10}%)</p>'
+								+ '</div>'
+							+ '</div>').tpl01()
+						+ '</tpl>'
+						
+					+ '</div>'
+					
+					+ '<div class="vbox tapme justify volumes">'
+						
+						+ ('<div class="swipable scheme0 volume0">'
+							+ '<p>Схема0: {volume0}</p>'
+						+ '</div>').tpl01().replace(/Схема0/,IOrders.config.scheme0).replace(/Схема1/,IOrders.config.scheme1)
+						
+						+'<div class="swipable schemeBonus volumeBonus">'
+							+ '<p>Бонус: {volumeBonus}</p>'
+						+ '</div>'
+						
+					+ '</div>'
+					
+					+ '<small class="untapme">'
+					
+						+ '<tpl if="volumeBonus &gt; 0 || volume0 &gt; 0 && volume1 &gt; 0">'
+							+ '<tpl if="volume0 &gt; 0"><span class="scheme0">{volume0}</span></tpl>'
+							+ '<tpl if="volume0 &gt; 0 && volume1 &gt; 0">'
+								+'+'
+							+ '</tpl>'
+							+ '<tpl if="volume1 &gt; 0"><span class="scheme1">{volume1}</span></tpl>'
+						+ '</tpl>'
+						
+						+ '<tpl if="volumeBonus &gt; 0">'
+							+ '<tpl if="volume0 &gt; 0 || volume1 &gt; 0">'
+								+'+'
+							+ '</tpl>'
+							+ '<span class="schemeBonus">{volumeBonus}</span>'
+						+ '</tpl>'
+						
+						+'<tpl if="lastActive && !volume"><span class="lastActive"> ( {lastActive}д )</span></tpl>'
+						
+					+ '</small>'
 					
 				+ '</small>'
-				
-			+ '</small>'
-		+ '</div>'
-		;
+			+ '</div>',
+			{
+				un:'un',
+				active: 'active',
+				avoid: 'avoid',
+				scheme0: 'scheme0',
+				isNonHidable: 'isNonHidable',
+				packCenter: 'packCenter'
+			}
+		);
 		
 	}
 	
