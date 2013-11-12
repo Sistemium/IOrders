@@ -564,3 +564,7 @@
 	display: inline-block;
 	margin-right: 0.5em;
 }
+
+.needless .needle {
+	display: none;
+}

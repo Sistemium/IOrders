@@ -85,7 +85,7 @@ var createModels = function(tablesStore) {
 			;
 		} catch (e) {
 			model.tplConfig = undefined;
-			console.log (e);
+			//console.log (e);
 		}
 		
 		regStore(tableName);
@@ -211,7 +211,7 @@ function afterCreateModels() {
 
 function continueLoad (store,r,s){
 	if (s) {
-		console.log ('Store '+store.storeId+' load success: '+r.length);
+		//console.log ('Store '+store.storeId+' load success: '+r.length);
 		
 		if (r.length >= store.pageSize) {
 			store.currentPage++;

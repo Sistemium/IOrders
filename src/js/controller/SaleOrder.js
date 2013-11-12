@@ -363,12 +363,14 @@ Ext.regController('SaleOrder', {
 			var 
 				item = options.item,
 				view = (options.view = list.up('saleorderview')),
-				iel = (options.iel = Ext.get(item))
+				iel = (options.iel = Ext.get(item)),
+				tapedCls = tapedEl.dom.classList[0]
 			;
 			
 			Ext.defer (function() {
 				Ext.dispatch(Ext.apply(options, {
-					action: 'toggleParticleFilter'
+					action: 'toggleParticleFilter',
+					filterField: rec.get(tapedCls) ? tapedCls : 'name'
 				}));
 			}, 100);
 			
@@ -1232,14 +1234,16 @@ Ext.regController('SaleOrder', {
 		var
 			view = options.view,
 			list = options.list,
-			iel = options.iel
+			iel = options.iel,
+			filterField = options.filterField || 'name'
 		;
 		
 		var
 			value = options.event.target.innerText,
 			store = view.offerProductStore,
 			groupEl = iel.up ('.x-list-group'),
-			groupClass = groupEl && groupEl.dom.className
+			groupClass = groupEl && groupEl.dom.className,
+			willResume = false
 		;
 		
 		list.suspendEvents (false);
@@ -1248,9 +1252,12 @@ Ext.regController('SaleOrder', {
 			
 			store.filter ( {
 				id: value,
-				property: 'name',
-				value: '>'+value+'<',
-				anyMatch: true,
+				property: filterField,
+				value: (filterField == 'name')
+					? '>'+value+'<'
+					: value,
+				anyMatch: (filterField == 'name'),
+				exactMatch: (filterField != 'name'),
 				caseSensitive: false
 			});
 			
@@ -1272,21 +1279,26 @@ Ext.regController('SaleOrder', {
 				
 				var el = Ext.get(groupsToExpand[0]);
 				
-				el && Ext.defer(function() {
+				if (el) {
 					
-					list.onListHeaderTap(
-						false, el.down('.x-list-header')
-					);
+					willResume = true;
 					
-					list.resumeEvents();
-					
-				}, 50, list);
-				
+					Ext.defer(function() {
+						
+						list.onListHeaderTap(
+							false, el.down('.x-list-header')
+						);
+						
+						list.resumeEvents();
+						
+					}, 50, list);
+				}
 			}
-			//Ext.dispatch(Ext.apply(options, {
-			//	action: 'expandFocusedProduct'
-			//}));
+			
 		}
+		
+		!willResume && list.resumeEvents();
+		
 	},
 	
 	
