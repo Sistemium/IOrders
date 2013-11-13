@@ -1052,6 +1052,8 @@ Ext.regController('SaleOrder', {
 			priceAgent = rec.get('priceAgent')
 		;
 		
+		if (rec.get('Restriction_tags')) return;
+		
 		var data = {
 			volume: options.volume,
 			discount: options.discount,

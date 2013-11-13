@@ -473,7 +473,7 @@
 }
 
 .hbox > * {
-	margin-right: 1em;
+	margin-right: 0.8em;
 }
 
 .vbox .swipable, .vbox .scheme0, .vbox .scheme1 {
@@ -567,4 +567,14 @@
 
 .needless .needle {
 	display: none;
+}
+
+.pieceVolume.needle {
+	width: 3em;
+	text-align: center;
+}
+
+.restriction {
+	border-radius: 3px;
+	padding: 2px 4px;
 }
