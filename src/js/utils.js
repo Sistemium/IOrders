@@ -595,15 +595,11 @@ var getItemTplStatic = function (modelName) {
 						
 					+ '</div>'
 					
-					+ '<div class="vbox tapme justify volumes">'
+					+ '<div class="vbox tapme packCenter volumes">'
 						
 						+ ('<div class="swipable scheme0 volume0">'
 							+ '<p>Схема0: {volume0}</p>'
 						+ '</div>').tpl01().replace(/Схема0/,IOrders.config.scheme0).replace(/Схема1/,IOrders.config.scheme1)
-						
-						+'<div class="swipable schemeBonus volumeBonus">'
-							+ '<p>Бонус: {volumeBonus}</p>'
-						+ '</div>'
 						
 					+ '</div>'
 					
