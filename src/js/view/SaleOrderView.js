@@ -59,30 +59,40 @@ var SaleOrderView = Ext.extend(AbstractView, {
 
 		this.items = [this.productCategoryList, this.productPanel];
 		
-		var summTpl = new Ext.XTemplate(
-			'<p>'
-				+ 'Сумма заказа: <span class="'
-					+ '<tpl if="totalGain &lt; 0"> red</tpl>'
-					+ '<tpl if="totalCost &lt; orderThreshold"> yellow</tpl>'
-				+ '">{totalCost}'
-					+ '<tpl if="totalCost &gt; 0 || totalCostBonus &gt; 0"> ('
-						+ '<tpl if="totalCost0 &gt; 0">'
-							+ ' <span class="scheme0">{totalCost0}</span>'
-						+ '</tpl>'
-						+ '<tpl if="totalCost1 &gt; 0">'
-							+ ' <span class="scheme1">{totalCost1}</span>'
-						+ '</tpl>'
-						+ '<tpl if="totalCostBonus &gt; 0">'
-							+ ' <span class="schemeBonus">{totalCostBonus}</span>'
-						+ '</tpl>'
-					+ ' )</tpl>'
-					+ '<tpl if="markupAgent"><span class="markup"> ({markupAgent}%)</span></tpl>'
-				+ '</span>'
-				
-				+ '<tpl if="bonusRemains"> Остаток бонуса: <span <tpl if="bonusRemains &lt; 0">class="negative"</tpl> >{bonusRemains}</span></tpl>'
-				// + '<tpl if="totalSelfCost"> Выгода: <span <tpl if="totalGain &lt; 0">class="negative"</tpl> >{totalGain}</span></tpl>'
-			+ '</p>'
-		);
+		var summTpl = '<p>'
+			+ 'Сумма заказа: <span class="'
+				+ '<tpl if="totalGain &lt; 0"> red</tpl>'
+				+ '<tpl if="totalCost &lt; orderThreshold"> yellow</tpl>'
+			+ '">{totalCost}'
+				+ '<tpl if="totalCost &gt; 0 || totalCostBonus &gt; 0"> ('
+					+ '<tpl if="totalCost0 &gt; 0">'
+						+ ' <span class="scheme0">{totalCost0}</span>'
+					+ '</tpl>'
+					+ '<tpl if="totalCost1 &gt; 0">'
+						+ ' <span class="scheme1">{totalCost1}</span>'
+					+ '</tpl>'
+					+ '<tpl if="totalCostBonus &gt; 0">'
+						+ ' <span class="schemeBonus">{totalCostBonus}</span>'
+					+ '</tpl>'
+				+ ' )</tpl>'
+				+ '<tpl if="markupAgent"><span class="markup"> ({markupAgent}%)</span></tpl>'
+			+ '</span>'
+			
+			+ '<tpl if="bonusRemains"> Остаток бонуса: <span <tpl if="bonusRemains &lt; 0">class="negative"</tpl> >{bonusRemains}</span></tpl>'
+			// + '<tpl if="totalSelfCost"> Выгода: <span <tpl if="totalGain &lt; 0">class="negative"</tpl> >{totalGain}</span></tpl>'
+		+ '</p>';
+		
+		var tt = tableHasColumn('SaleOrder','totalsTpl');
+		
+		if (tt) {
+			var tc = tt.get('template');
+			
+			if (tc) {
+				summTpl = tc;
+			}
+		}
+		
+		summTpl = new Ext.XTemplate(summTpl);
 		
 		var applySearch = function(field, event) {
 			if (field.getValue() == '') {
