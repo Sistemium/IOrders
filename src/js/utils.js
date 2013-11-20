@@ -1093,12 +1093,15 @@ var getGroupConfig = function(model) {
 			var meta=Ext.getStore('tables').getById(model);
 			
 			if (meta) {
+				
 				var gc = meta.get('grouperColumn'),
-					sc = meta.get('sorterColumn');
+					sc = meta.get('sorterColumn')
+				;
+				
+				sorterProperty = sc || gc;
+				direction = 'ASC';
 				
 				if (gc) {
-					sorterProperty = sc || gc;
-					direction = 'ASC';
 					grouperFunction = function(rec) {
 						return rec.get(gc);
 					}
@@ -1132,11 +1135,25 @@ var getSortersConfig = function(model, storeConfig) {
 
 	var table = Ext.getStore('tables').getById(model),
 		sortConfig = {sorters: storeConfig.sorters ? storeConfig.sorters : []},
-		columns = table.columns(),
-		column
+		columns = table.columns()
 	;
 	
 	var parentSort = true;
+	
+	var meta=Ext.getStore('tables').getById(model);
+	
+	if (meta) {
+		
+		var sc = meta.get('sorterColumn');
+		
+		var direction = 'ASC';
+		
+		if (sc) {
+			sortConfig.sorters.push ({ property: sc, direction: direction });
+			return sortConfig;
+		}
+		
+	}
 	
 	if (columns.getById(table.getId() + 'datetime')) {
 		sortConfig.sorters.push ({ property: 'datetime', direction: 'DESC' });
@@ -1148,7 +1165,7 @@ var getSortersConfig = function(model, storeConfig) {
 		parentSort = false;
 	}
 	
-	column = columns.getById(table.getId() + 'name');
+	var column = columns.getById(table.getId() + 'name');
 	
 	if (column && !(column.compute || column.template)) {
 		sortConfig.sorters.push ({ property: 'name' });
