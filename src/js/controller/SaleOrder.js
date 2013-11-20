@@ -642,7 +642,7 @@ Ext.regController('SaleOrder', {
 			],
 			
 			getGroupString: function(rec) {
-				return rec.get(this.groupField).replace(/ +|\./g, '_');
+				return rec.get(this.groupField).replace(/ +|\.|\(|\)/g, '_');
 			},
 			
 			listeners: {
@@ -1273,7 +1273,7 @@ Ext.regController('SaleOrder', {
 			
 		}
 		
-		if (groupClass) {
+		if (groupClass) try {
 			
 			var groupsToExpand = list.getEl().query('.'+groupClass.replace(/ +/g,'.'));
 			
@@ -1297,7 +1297,11 @@ Ext.regController('SaleOrder', {
 				}
 			}
 			
-		}
+		} catch (e) { IOrders.logEvent ({
+			module:'SaleOrder',
+			action: 'toggleParticleFilter' ,
+			data: 'groupClass:' + groupClass + ' value:' + value
+		})}
 		
 		!willResume && list.resumeEvents();
 		
