@@ -642,7 +642,7 @@ Ext.regController('SaleOrder', {
 			],
 			
 			getGroupString: function(rec) {
-				return rec.get(this.groupField).replace(/ +|\.|\(|\)/g, '_');
+				return rec.get(this.groupField).replace(/[^a-я0-9]/ig, '_');
 			},
 			
 			listeners: {
