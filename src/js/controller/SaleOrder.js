@@ -319,62 +319,65 @@ Ext.regController('SaleOrder', {
 			tapedEl = Ext.get(options.event.target)
 		;
 		
-		if ( rec && tapedEl && tapedEl.is('.chargeBase, .chargeBase *') ){
+		if (rec && tapedEl) {
 			
-			Ext.dispatch(Ext.apply(options, {
-				action: 'onChargeBaseTap',
-				rec: rec
-			}));
-			
-		} else if ( rec && tapedEl && tapedEl.is('.pricesCombo, .pricesCombo *') ){
-			
-			rec.editing = true;
-			rec.set('pricesUncombo', rec.get('pricesUncombo') ? false : true);
-			rec.editing = false;
-			rec.commit();
-			
-			Ext.defer(function() {
-				list.updateOffsets();
-				list.scroller && list.scroller.updateBoundary();
-			}, 500, list);
-			
-		} else if ( rec && tapedEl && tapedEl.is('.folderUnfolder, .folderUnfolder *') ){
-			
-			rec.editing = true;
-			rec.get('unfolded') && rec.get('pricesUncombo')
-				&& rec.set('pricesUncombo', false)
-			;
-			rec.set('unfolded', rec.get('unfolded') ? false : true);
-			rec.editing = false;
-			rec.commit();
-			
-			options.list && rec.get('lastActive') && (function (el) {
-				el.addCls('active');
-			}) (Ext.get(options.list.getNode(rec)));
-			
-			Ext.defer(function() {
-				this.updateOffsets();
-				this.scroller && this.scroller.updateBoundary();
-			}, 50, list);
-		}
-		
-		if ( /taste|needle|quoted/.test(options.event.target.className) ){
-			
-			var 
-				item = options.item,
-				view = (options.view = list.up('saleorderview')),
-				iel = (options.iel = Ext.get(item)),
-				tapedCls = tapedEl.dom.classList[0]
-			;
-			
-			Ext.defer (function() {
+			if ( tapedEl.is('.chargeBase, .chargeBase *') ){
+				
 				Ext.dispatch(Ext.apply(options, {
-					action: 'toggleParticleFilter',
-					filterField: rec.get(tapedCls) ? tapedCls : 'name'
+					action: 'onChargeBaseTap',
+					rec: rec
 				}));
-			}, 100);
+				
+			} else if ( tapedEl.is('.pricesCombo, .pricesCombo *') ){
+				
+				rec.editing = true;
+				rec.set('pricesUncombo', rec.get('pricesUncombo') ? false : true);
+				rec.editing = false;
+				rec.commit();
+				
+				Ext.defer(function() {
+					list.updateOffsets();
+					list.scroller && list.scroller.updateBoundary();
+				}, 500, list);
+				
+			} else if ( tapedEl.is('.folderUnfolder, .folderUnfolder *') ){
+				
+				rec.editing = true;
+				rec.get('unfolded') && rec.get('pricesUncombo')
+					&& rec.set('pricesUncombo', false)
+				;
+				rec.set('unfolded', rec.get('unfolded') ? false : true);
+				rec.editing = false;
+				rec.commit();
+				
+				options.list && rec.get('lastActive') && (function (el) {
+					el.addCls('active');
+				}) (Ext.get(options.list.getNode(rec)));
+				
+				Ext.defer(function() {
+					this.updateOffsets();
+					this.scroller && this.scroller.updateBoundary();
+				}, 50, list);
+				
+			} else if ( /(taste|needle|quoted)([ ]|$)/.test(options.event.target.className) ){
+				
+				var 
+					item = options.item,
+					view = (options.view = list.up('saleorderview')),
+					iel = (options.iel = Ext.get(item)),
+					tapedCls = tapedEl.dom.classList[0]
+				;
+				
+				Ext.defer (function() {
+					Ext.dispatch(Ext.apply(options, {
+						action: 'toggleParticleFilter',
+						filterField: rec.get(tapedCls) ? tapedCls : 'name'
+					}));
+				}, 100);
+				
+				return;
+			}
 			
-			return;
 		}
 		
 		if (listEl.hasCls('x-product-category-list')) {
