@@ -89,6 +89,7 @@ Ext.regModel('Column', {
 		{name: 'init', type: 'string'},
 		{name: 'compute', type: 'string'},
 		{name: 'template', type: 'string'},
+		{name: 'templateConfig', type: 'string'},
 		{name: 'serverPhantom', type: 'boolean'},
 		{name: 'importFields', type: 'string'},
 		{name: 'optional', type: 'boolean'},

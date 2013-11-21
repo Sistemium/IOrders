@@ -215,6 +215,8 @@ var getItemTplCompute = function(modelName, config) {
 			modelForDeps = keyColumns.getAt(0).get('parent');
 		}
 	}
+	
+	var tplConfig = {};
 
 	if(!onlyKey) {
 
@@ -233,9 +235,15 @@ var getItemTplCompute = function(modelName, config) {
 	
 			otherColumns.each(function(col) {
 				
-				var label = undefined, name = undefined;
-	
-				var colName = col.get('name');
+				var label = undefined,
+					name = undefined,
+					colName = col.get('name')
+				;
+				
+				if (col.tplConfig) {
+					Ext.apply (tplConfig, col.tplConfig);
+				}
+				
 				switch(col.get('type')) {
 	 				case 'boolean' : {
 						name = '{[values.' + colName + ' == true ? "' + col.get('label') + '" : ""]}';
@@ -276,6 +284,10 @@ var getItemTplCompute = function(modelName, config) {
 		itemTpl: new Ext.XTemplate(templateString).apply(templateData),
 		modelForDeps: modelForDeps
 	};
+	
+	if (tplConfig) {
+		res.itemTpl = new Ext.XTemplate(res.itemTpl,tplConfig);
+	}
 	
 	return res;
 };

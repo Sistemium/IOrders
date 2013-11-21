@@ -12,7 +12,24 @@ var createModels = function(tablesStore) {
 				},
 				validations: validations
 			},
-			inits = []
+			inits = [],
+			applyTpl = function (target, source) {
+				Ext.apply (target, {
+						tpl: source.get('template'),
+						tplConfig: source.get('templateConfig')
+					}
+				);
+				
+				try {
+					if (target.tplConfig && target.tplConfig.length)
+						target.tplConfig = JSON.parse (target.tplConfig)
+					;
+				} catch (e) {
+					console.log (e);
+					console.log (target.tplConfig);
+					target.tplConfig = undefined;
+				}
+			}
 		;
 		
 		table.columns().each(function(column) {
@@ -59,6 +76,8 @@ var createModels = function(tablesStore) {
 				});
 			}
 			
+			applyTpl (column, column);
+			
 			fields.push(fieldConfig);
 			
 		});
@@ -73,20 +92,7 @@ var createModels = function(tablesStore) {
 		
 		var model = Ext.regModel(tableName, config);
 		
-		Ext.apply (model, {
-				tpl: table.get('template'),
-				tplConfig: table.get('templateConfig')
-			}
-		);
-		
-		try {
-			if (model.tplConfig && model.tplConfig.length)
-				model.tplConfig = JSON.parse (model.tplConfig)
-			;
-		} catch (e) {
-			model.tplConfig = undefined;
-			//console.log (e);
-		}
+		applyTpl (model, table);
 		
 		regStore(tableName);
 	});
