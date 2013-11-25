@@ -1041,16 +1041,27 @@ var createNavigatorView = function(rec, oldCard, isSetView, editing, config) {
 };
 
 var getGroupConfig = function(model) {
+	
+	var sorterProperty, grouperFunction;
+
 	switch(model) {
 		case 'EncashmentRequest':
 		case 'Shipment':
 		case 'SaleOrder' : {
 			
-			var sorterProperty = 'date',
+			if (tableHasColumn (model, 'date')) {
+				sorterProperty = 'date';
 				grouperFunction = function(rec) {
 					return Ext.util.Format.date(rec.get(sorterProperty));
 				}
-			;
+			}
+			
+			if (tableHasColumn (model, 'shipDate')) {
+				sorterProperty = 'shipDate';
+				grouperFunction = function(rec) {
+					return rec.get('ShipDate_name');
+				}
+			}
 			
 			if (tableHasColumn (model, 'customerDeliveryOption')) {
 				sorterProperty = 'customerDeliveryOption';
