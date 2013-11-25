@@ -344,13 +344,33 @@ Ext.regController('Main', {
 
 	onDbRebuildButtonTap: function(options) {
 		
-		Ext.Msg.confirm('Внимание', 'Действительно нужно безвозвратно стереть данные из всех таблиц ?', function(yn){
-			if (yn == 'yes'){
-				Ext.dispatch (Ext.apply(options, {
-					action: 'dbRebuild'
-				}));
+		var p = new Ext.data.SQLiteProxy({
+				engine: IOrders.dbeng,
+				model: 'ToUpload'
+			})
+		;
+		
+		p.count(new Ext.data.Operation({filters:[{property:'visibleCnt', value: 1}]}), function(o) {
+			
+			if (o.wasSuccessful()) {
+				
+				if (o.result) Ext.Msg.alert(
+					'Несохраненные данные',
+					'Для пересоздания БД требуется удалить их или передать на сервер'
+				);
+				
+				else Ext.Msg.confirm(
+					'Внимание',
+					'Действительно нужно все стереть и загрузить обновленное с сервера ?',
+					function(yn) { if (yn == 'yes') Ext.dispatch (Ext.apply(
+						options,
+						{action: 'dbRebuild'}
+					))}
+				);
+			
 			}
-		}, this);
+		});
+		
 	},
 	
 	dbRebuild: function () {
