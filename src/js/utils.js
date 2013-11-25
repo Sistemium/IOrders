@@ -254,6 +254,11 @@ var getItemTplCompute = function(modelName, config) {
 						name = '<tpl if="' + colName + '">' + label + ' : {[Ext.util.Format.date(values.' + colName + ')]}</tpl>';
 						break;
 					}
+					case 'float' : {
+						label = col.get('label');
+						name = '<tpl if="' + colName + '">' + label + ' : {[values.' + colName + '.toDisplayString()]}</tpl>';
+						break;
+					}
 					default : {
 						label = col.get('label');
 						name = col.get('parent')
@@ -319,9 +324,25 @@ var getItemTplMeta = function (modelName, config) {
 	
 }
 
-Number.prototype.toDecimal = function (d) {
-	return parseFloat(this.toFixed(d))
-}
+Ext.apply(Number.prototype, {
+	toDecimal: function (d) {
+		return parseFloat(this.toFixed(d))
+	},
+	toDisplayString: function() {
+		return this.toDecimal(2).addCommas();
+	},
+	addCommas:  function(){
+		var nStr  = this.toString() + '';
+		x = nStr.split('.');
+		x1 = x[0];
+		x2 = x.length > 1 ? '.' + x[1] : '';
+		var rgx = /(\d+)(\d{3})/;
+		while (rgx.test(x1)) {
+			x1 = x1.replace(rgx, '$1' + ',' + '$2');
+		}
+		return x1 + x2;
+	}
+});
 
 Ext.apply(String.prototype, {
 	
@@ -928,7 +949,7 @@ var loadDepData = function(depRec, depTable, view, config, force) {
 			
 			if (aggCols) {
 				var aggDepResult = '';
-				var aggDepTpl = new Ext.XTemplate('<tpl if="value"><tpl if="name">{name} : </tpl>{[values.value.toFixed(2)]} </tpl>');
+				var aggDepTpl = new Ext.XTemplate('<tpl if="value"><tpl if="name">{name} : </tpl>{[values.value.toDisplayString()]} </tpl>');
 				var aggResults = operation.resultSet.records[0].data;
 				
 				aggCols.each(function(aggCol) {
