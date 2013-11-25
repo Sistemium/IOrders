@@ -1341,6 +1341,44 @@ Ext.regController('Navigator', {
 			]
 		}));
 		
-	}
+	},
+	
+	searcherFilterOn: function (options) {
+		
+		var view = options.view,
+			setViewStore = view.setViewStore
+		;
+		
+		if (!setViewStore.savedFilters)
+			setViewStore.savedFilters = setViewStore.filters.items || []
+		;
+		
+		setViewStore.filters.clear();
+		
+		setViewStore.currentPage = 1;
+		
+		setViewStore.filter (setViewStore.savedFilters.concat(new Ext.util.Filter({
+			property: 'name',
+			value: options.searchFor,
+			useLike: true
+		})));
+		
+		view.items.getAt(0).scroller.scrollTo ({y:0});
+		
+	},
 
+	searcherFilterOff: function (options) {
+		
+		var view = options.view,
+			setViewStore = view.setViewStore
+		;
+		
+		setViewStore.currentPage = 1;
+		view.items.getAt(0).scroller.scrollTo ({y:0});
+		
+		setViewStore.filters.clear();
+		setViewStore.filter (setViewStore.savedFilters);
+		
+	}
+	
 });

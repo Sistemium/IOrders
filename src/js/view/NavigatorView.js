@@ -121,11 +121,58 @@ var NavigatorView = Ext.extend(AbstractView, {
 			
 			formItems.push(this.theSetListConfig());
 			
-			var table = tablesStore.getById(this.tableRecord);
+			var applySearch = function(field, event) {
+				if (field.getValue() == '') {
+					console.log ('Searcher cleared');
+					Ext.dispatch({
+						controller: 'Navigator',
+						action: 'searcherFilterOff',
+						view: me
+					});
+				} else {
+					console.log ('Searcher value: ' + field.getValue());
+					Ext.dispatch({
+						controller: 'Navigator',
+						action: 'searcherFilterOn',
+						view: me,
+						searchFor: field.getValue()
+					});
+				}
+			};
+			
+			var table = tablesStore.getById(this.tableRecord),
+				searcher = {
+					xtype: 'searchfield',
+					name: 'searcher',
+					itemId: 'Searcher',
+					placeHolder: 'Поиск',
+					listeners:{
+						change: applySearch,
+						action: function(f,e) {
+							console.log ('Searcher action');
+						},
+						focus: function (f,e) {
+							setTimeout (function() {
+								e.target.setSelectionRange (0, 9999);
+							}, 1);
+						}
+					}
+				}
+			;
+			
+			var tbItems = this.dockedItems[0].items;
+			
+			tbItems.push({xtype: 'spacer'});
+			
+			tableHasColumn(table.getId(), 'name')
+				&& tbItems.push (searcher)
+			;
 			
 			table.get('extendable') && !table.get('belongs')
-				&& this.dockedItems[0].items.push({xtype: 'spacer'}, {
-					ui: 'plain', iconMask: true, name: 'Add', iconCls: 'add', scope: this
+				&& tbItems.push({
+					ui: 'plain', iconMask: true,
+					name: 'Add', iconCls: 'add',
+					scope: this
 				}
 			);
 		}
