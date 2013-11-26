@@ -1151,7 +1151,9 @@ var getGroupConfig = function(model) {
 					}
 				}
 				
-			} else if (tableHasColumn (model, 'date')) {
+			}
+			
+			if (!sorterProperty && tableHasColumn (model, 'date')) {
 				sorterProperty = 'date';
 				direction = 'DESC';
 				grouperFunction = function(rec) {
