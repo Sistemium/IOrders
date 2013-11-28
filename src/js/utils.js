@@ -941,7 +941,7 @@ var loadDepData = function(depRec, depTable, view, config, force) {
 	}
 
 	if(!depRec.get('count') || depRec.get('filtered') || depRec.get('expandable') || force || true) {
-
+		
 		var aggCols = depTable.getAggregates();
 		var aggOperation = new Ext.data.Operation({depRec: depRec, filters: filters});
 			
@@ -949,11 +949,19 @@ var loadDepData = function(depRec, depTable, view, config, force) {
 			
 			if (aggCols) {
 				var aggDepResult = '';
-				var aggDepTpl = new Ext.XTemplate('<tpl if="value"><tpl if="name">{name} : </tpl>{[values.value.toDisplayString()]} </tpl>');
+				var aggDepTpl = new Ext.XTemplate(
+					'<tpl if="value"><tpl if="name">{name} : </tpl>{[values.value.toDisplayString()]} </tpl>'
+				);
 				var aggResults = operation.resultSet.records[0].data;
 				
-				aggCols.each(function(aggCol) {
-					aggDepResult += aggDepTpl.apply({name: aggCol.get('label') != depTable.get('nameSet') ? aggCol.get('label') : '', value: aggResults[aggCol.get('name')]});
+				(!view || !view.objectRecord || (view.objectRecord.modelName != 'MainMenu')) && aggCols.each(function(aggCol) {
+					aggDepResult +=
+						aggDepTpl.apply({
+							name: aggCol.get('label') != depTable.get('nameSet')
+								? aggCol.get('label')
+								: '', value: aggResults[aggCol.get('name')]
+						})
+					;
 				});
 				
 				operation.depRec.set('aggregates', aggDepResult);
