@@ -329,7 +329,7 @@ Ext.apply(Number.prototype, {
 		return parseFloat(this.toFixed(d))
 	},
 	toDisplayString: function() {
-		return this.toDecimal(2).addCommas();
+		return this.toDecimal(2).addCommas().replace(/\,/g,'&nbsp;').replace(/\./g,',');
 	},
 	addCommas:  function(){
 		var nStr  = this.toString() + '';
