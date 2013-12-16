@@ -1067,7 +1067,7 @@ var getGroupConfig = function(model) {
 			if (tableHasColumn (model, 'shipDate')) {
 				sorterProperty = 'shipDate';
 				grouperFunction = function(rec) {
-					return rec.get('ShipDate_name');
+					return rec.get('ShipDate_name') || rec.get('shipDate');
 				}
 			}
 			
