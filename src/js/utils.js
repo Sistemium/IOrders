@@ -715,8 +715,8 @@ var createFieldSet = function(columnsStore, modelName, view) {
 					fieldConfig = {
 						xtype: 'datepickerfield',
 						picker: {
-							yearFrom: 2012,
-							yearTo  : 2013,
+							yearFrom: (new Date).getFullYear(),
+							yearTo  : (new Date).add('d',14).getFullYear(),
 							slotOrder: ['day', 'month', 'year']
 						}
 					};
