@@ -998,7 +998,9 @@ Ext.regController('SaleOrder', {
 		var data = {
 				action: 'setVolume',
 				sign: sign,
-				rec: rec
+				rec: rec,
+				factor: factor,
+				packageRel: rec.get('packageRel') || 1
 			},
 			fnamesTo = [],
 			fnames = [
