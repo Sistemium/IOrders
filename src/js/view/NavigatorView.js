@@ -391,11 +391,14 @@ var NavigatorView = Ext.extend(AbstractView, {
 			{text: 'Черновик', itemId: 'draft', name: 'draft', canEnable: function(s) { return s == 'upload'; },
 				desc: 'Заказ-черновик не отправится на склад пока вы не измените его статус на "В работу"'},
 			{text: 'В работу', itemId: 'upload', name: 'upload', canEnable: function(s) { return s == 'draft'; },
-				desc: 'При первой же синхронизации с сервером заказ отправится на склад (если в заказе есть товары)'},
-			{text: 'Проверка', itemId: 'processing', name: 'processing',
-				desc: 'Заказ обрабатывается на сервере. Изменить его через iOrders уже нельзя.'},
-			{text: 'На складе', itemId: 'done', name: 'done',
-				desc: 'Заказ успешно принят на склад.'}
+				desc: 'При первой же синхронизации с сервером заказ отправится в обработку.'},
+			{text: 'Передача', itemId: 'processing', name: 'processing',
+				desc: 'Заказ обрабатывается на сервере. Изменить его уже нельзя.'},
+			{text: 'Задержан', itemId: 'onhold', name: 'onhold',
+				hideIfNot: true,
+				desc: 'Заказ задержан на сервере. Для разблокировки обратитесь к координатору.'},
+			{text: 'Передан', itemId: 'done', name: 'done',
+				desc: 'Заказ успешно передан в обработку.'}
 		];
 
 		var btnPressed = undefined;
@@ -415,6 +418,8 @@ var NavigatorView = Ext.extend(AbstractView, {
 			b.disabled = true;
 			
 			if (b.canEnable) b.disabled = !b.canEnable(state);
+			
+			if (b.hideIfNot) b.hidden = !b.pressed;
 			
 			if (b.pressed) {
 				b.disabled = false;
@@ -437,7 +442,7 @@ var NavigatorView = Ext.extend(AbstractView, {
 						pressed && segBtn.up('panel').getComponent('statusDesc').update(btn);
 					},
 					afterLayout: function (me) {
-						me.fireEvent ('toggle', me, me.getComponent(btnPressed.name), true);
+						me.fireEvent ('toggle', me, btnPressed && me.getComponent(btnPressed.name), true);
 					}
 				}
 			}]},{

@@ -316,6 +316,11 @@
 	color: blue;
 }
 
+.processing.is-onhold {
+	color: red;
+	font-weight: 400;
+}
+
 .processing.is-processing {
 	color: green;
 }
@@ -426,6 +431,10 @@
 
 .make-draft.x-button-pressed .x-button-label,  .x-panel.statusDesc .draft{
 	color: blue;
+}
+
+.make-onhold.x-button-pressed .x-button-label,  .x-panel.statusDesc .onhold{
+	color: red;
 }
 
 .title {
