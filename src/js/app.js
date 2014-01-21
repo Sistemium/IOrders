@@ -38,6 +38,12 @@ Ext.regApplication({
 	
 	init: function() {
 		
+		var cfg = IOrders.config;
+		
+		if (cfg) {
+			cfg.title && (document.title = cfg.title);
+		}
+		
 		IOrders.newDesign = IOrders.getItemPersistant('newDesign') == 'true' ? true : false;
 		
 		var store = Ext.getStore('tables');
