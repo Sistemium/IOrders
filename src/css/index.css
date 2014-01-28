@@ -347,6 +347,11 @@
 	background-color: red;
 }
 
+.onRed {
+	background-color: red;
+	padding: 2px 6px;
+}
+
 .hbox.dep {
 	margin-bottom: 6px;
 }
