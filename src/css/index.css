@@ -352,6 +352,11 @@
 	padding: 2px 6px;
 }
 
+.onBlue{
+	background-color: blue;
+	padding: 2px 6px;
+}
+
 .hbox.dep {
 	margin-bottom: 6px;
 }
