@@ -127,7 +127,7 @@ var offerProductListConfig = function (options) {
 							options: {item: item, list: list, rec: rec}
 						});
 						
-						keyboard.showBy(iel, false, false);
+						keyboard.showBy(iel, false, true);
 						keyboard.setValue(value);
 					}
 					
