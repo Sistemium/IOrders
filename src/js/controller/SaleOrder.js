@@ -743,6 +743,12 @@ Ext.regController('SaleOrder', {
 				}
 			}),
 			
+			hasActionFilter: new Ext.util.Filter({
+				filterFn: function(item) {
+					return item.get('hasAction') > 0;
+				}
+			}),
+			
 			isFocusedFilter: new Ext.util.Filter({
 				filterFn: function(item) {
 					if (!view.bonusofferProductStore) return false;
@@ -1492,15 +1498,21 @@ Ext.regController('SaleOrder', {
 		
 		doms = view.productList.getEl().query('.x-list-group');
 		
-		if (doms.length ==1) {
+		if (doms.length == 1 && !view.modeActive) {
 			Ext.get(doms[0]).down('.x-list-group-items').addCls('expanded');
 		}
 	},
 
 	toggleActiveOn: function( options ) {
-		var view = options.view;
+		var view = options.view,
+			criteria = options.criteria || view.modeActive || '.active'
+		;
+		
+		if (view.modeActive && view.modeActive != criteria)
+			Ext.dispatch(Ext.applyIf({action: 'toggleActiveOff', criteria: view.modeActive},options))
+		;
 
-		view.modeActive = true;
+		view.modeActive = criteria;
 
 		var addActiveCls = function(dom) {
 			var el = Ext.get(dom);
@@ -1509,12 +1521,12 @@ Ext.regController('SaleOrder', {
 		}; 
 
 		//productList
-		Ext.each (view.productList.getEl().query('.x-list-item .active'), addActiveCls);
+		Ext.each (view.productList.getEl().query('.x-list-item ' + criteria), addActiveCls);
 
 		//categoryList
 		view.productCategoryList.lockScrollOnExpand
 			&& view.productCategoryList.scroller.enable();
-		Ext.each(view.productCategoryList.getEl().query('.x-list-item .active'), addActiveCls);
+		Ext.each(view.productCategoryList.getEl().query('.x-list-item ' + criteria), addActiveCls);
 	},
 	
 	toggleActiveOff: function( options ) {
@@ -1778,6 +1790,14 @@ Ext.regController('SaleOrder', {
 		var btn = options.btn,
 			pressed = options.pressed
 		;
+		
+		if (pressed) {
+			Ext.each (options.segBtn.getPressed(), function (b) {
+				if (b.itemId != btn.itemId) {
+					options.segBtn.setPressed(b.itemId,false,false);
+				}
+			});
+		}
 
 		changeBtnText(btn);
 
@@ -1860,6 +1880,15 @@ Ext.regController('SaleOrder', {
 	},
 	
 	toggleBonusOn: function(options) {
+		if(!options.atStart) 
+			Ext.dispatch(Ext.apply(options, {
+				action: 'toggleActiveOn',
+				criteria: '.hasAction'
+			}))
+		;
+	},
+	
+	toggleBonusOn_old: function(options) {
 
 		var view = options.view,
 			productRec = options.productRec,
@@ -1945,12 +1974,18 @@ Ext.regController('SaleOrder', {
 
 	toggleBonusOff: function(options) {
 
-		var view = options.view,
-			segBtn = view.getDockedComponent('top').getComponent('ModeChanger'),
-			bonusBtn = segBtn.getComponent('Bonus')
-		;
+//		var view = options.view,
+//			segBtn = view.getDockedComponent('top').getComponent('ModeChanger'),
+//			bonusBtn = segBtn.getComponent('Bonus')
+//		;
 
-		segBtn.setPressed(bonusBtn, true);
+//		segBtn.setPressed(bonusBtn, true);
+		
+		Ext.dispatch(Ext.apply(options, {
+			action: 'toggleActiveOff',
+			criteria: '.hasActive'
+		}));
+
 	},
 
 	onGroupLastnameButtonTap: function(options) {

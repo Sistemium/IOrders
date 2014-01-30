@@ -438,7 +438,10 @@ var getItemTplStatic = function (modelName) {
 		
 		case 'OfferCategory': {
 			return '<div>'
-					+ '<span class="data <tpl if="lastActive || minLastActive">active</tpl>">{name}</span>'
+					+ '<span class="data'
+						+'<tpl if="lastActive || minLastActive"> active</tpl>'
+						+'<tpl if="hasAction"> hasAction</tpl>'
+					+ '">{name}</span>'
 				    + '<tpl if="minLastActive"><span class="minLastActive"> ({maxLastActive})</span></tpl>'
 //				    + '<tpl if="maxLastActive && maxLastActive != minLastActive"><small class="green">[{maxLastActive}]</small></tpl>'
 				+ '</div>'
