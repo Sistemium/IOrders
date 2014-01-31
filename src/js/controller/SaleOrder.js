@@ -9,10 +9,34 @@ Ext.regController('SaleOrder', {
 		view.ownerViewConfig.saleOrderStatus = view.saleOrderStatus;
 		view.ownerViewConfig.objectRecord = view.saleOrder;
 		
-		IOrders.viewport.setActiveItem(
-			Ext.create(view.ownerViewConfig)
-			, IOrders.viewport.anims.back
-		);
+		var finish = function () {
+			IOrders.viewport.setActiveItem(
+				Ext.create(view.ownerViewConfig)
+				, IOrders.viewport.anims.back
+			);
+		}
+		
+		if (view.incomplete
+			&& (view.saleOrder.get('processing') != 'draft'
+				|| view.ownerViewConfig.saleOrderStatus != 'draft'
+			)
+		) {
+			
+			Ext.Msg.alert (
+				'Внимание',
+				view.incomplete + ' ' + 'Заказ переведен в "Черновик"',
+				function() {
+					view.saleOrder.set('processing', view.ownerViewConfig.saleOrderStatus = 'draft');
+					view.ownerViewConfig.saleOrderStatus = 'draft';
+					view.saleOrder.save ({
+						callback: finish
+					});
+				}
+			);
+			
+		} else
+			finish()
+		;
 		
 	},
 
@@ -510,6 +534,10 @@ Ext.regController('SaleOrder', {
 			
 			chargeBtn && chargeBtn.mon (ocs, 'load', function (store, records, success) {
 				chargeBtn.setBadge (records.length || null);
+				if (records.length)
+					newCard.incomplete = 'Не выполнено требование по нагрузке.';
+				else
+					newCard.incomplete = false;
 			});
 			
 			ocs.load({

@@ -77,24 +77,71 @@ Ext.regController('Navigator', {
 			bar = btn.up('segmentedbutton'),
 			view = bar.up('navigatorview'),
 			rec = view.form.getRecord(),
-			field = view.form.getFields(bar.name)
+			field = view.form.getFields(bar.name),
+			incomplete = false
 		;
-
-		rec.set(bar.name, btn.name);
 		
-		if(!view.isNew) {
-			rec.save({callback: function() {
-                var tableRec = Ext.getStore('tables').getById(rec.modelName);
-                loadDepData(tableRec, tableRec, undefined, undefined, true);
-				view.fireEvent ('saved', rec);
-            }});
+		if (btn.name!='draft') {
+			
+			var ocs = Ext.getStore('OfferCharge');
+			
+			if (ocs) {
+				
+				ocs.filters.clear();
+				ocs.filters.add(new Ext.util.Filter({
+					property: 'saleOrder',
+					value: rec.get('id'),
+					exactMatch: true
+				}));
+				
+				ocs.load({
+					limit:0,
+					callback: function (records, operation, success) {
+						if (records && records.length) {
+							
+							var incomplete = 'Не выполнено требование по нагрузке.'
+								+ 'Заказ переведен в "Черновик"'
+							;
+							
+							Ext.Msg.alert (
+								'Внимание',
+								incomplete,
+								function () {
+									bar.setPressed(btn.itemId, false, false);
+									bar.setPressed('draft', true, false);
+								}
+							);
+							
+						} else {
+							finish();
+						}
+					}
+				})
+			} else
+				finish()
+			;
+		} else
+			finish()
+		;
+		
+		var finish = function () {
+			rec.set(bar.name, btn.name);
+			
+			if(!view.isNew) {
+				rec.save({callback: function() {
+					var tableRec = Ext.getStore('tables').getById(rec.modelName);
+					loadDepData(tableRec, tableRec, undefined, undefined, true);
+					view.fireEvent ('saved', rec);
+				}});
+			}
+			
+			rec.fields.getByKey('processing') &&
+				this.controlButtonsVisibilities(
+					view,
+					!view.editing && rec.get('processing') != 'draft' && !rec.get('serverPhantom')
+				);
 		}
-
-		rec.fields.getByKey('processing') &&
-			this.controlButtonsVisibilities(
-				view,
-				!view.editing && rec.get('processing') != 'draft' && !rec.get('serverPhantom')
-			);
+		
 	},
 
     onBeforeUpload: function(store) {
