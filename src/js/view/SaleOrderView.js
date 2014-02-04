@@ -167,7 +167,7 @@ var SaleOrderView = Ext.extend(AbstractView, {
 				items: [
 					{
 						itemId: 'Active',
-						text: 'Показать актив', altText: 'Скрыть актив',
+						text: 'Актив', altText: 'Актив',
 						handler: Ext.emptyFn
 					},
 					{
@@ -177,10 +177,18 @@ var SaleOrderView = Ext.extend(AbstractView, {
 						hidden: metastore.getById('Charge') ? false : true
 					},
 					{
+						itemId: 'MML',
+						text: 'MML',
+						criteria: '.isMML',
+						handler: Ext.emptyFn,
+						hidden: tableHasColumn('Offer','isMML') ? false : true
+					},
+					{
 						itemId: 'Bonus',
 						text: 'Акции',
+						criteria: '.hasAction',
 						handler: Ext.emptyFn,
-						hidden: metastore.getById('BonusProgram') ? false : true
+						hidden: tableHasColumn('Offer','hasAction') ? false : true
 					},
 					{
 						itemId: 'ShowSaleOrder',

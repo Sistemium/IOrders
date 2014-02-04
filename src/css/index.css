@@ -350,11 +350,13 @@
 .onRed {
 	background-color: red;
 	padding: 2px 6px;
+	border-radius: 3px;
 }
 
 .onBlue{
 	background-color: blue;
 	padding: 2px 6px;
+	border-radius: 3px;
 }
 
 .hbox.dep {

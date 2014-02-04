@@ -340,7 +340,8 @@ Ext.regController('SaleOrder', {
 		var list = options.list,
 			listEl = list.getEl(),
 			rec = list.getRecord(options.item),
-			tapedEl = Ext.get(options.event.target)
+			tapedEl = Ext.get(options.event.target),
+			view = (options.view = list.up('saleorderview'))
 		;
 		
 		if (rec && tapedEl) {
@@ -374,8 +375,11 @@ Ext.regController('SaleOrder', {
 				rec.editing = false;
 				rec.commit();
 				
-				options.list && rec.get('lastActive') && (function (el) {
-					el.addCls('active');
+				options.list && view.modeActive && (function (el) {
+					Ext.each (
+						el.query(view.modeActive),
+						function (dom) {Ext.get(dom).up('.x-list-item').addCls('active')}
+					);
 				}) (Ext.get(options.list.getNode(rec)));
 				
 				Ext.defer(function() {
@@ -387,7 +391,6 @@ Ext.regController('SaleOrder', {
 				
 				var 
 					item = options.item,
-					view = (options.view = list.up('saleorderview')),
 					iel = (options.iel = Ext.get(item)),
 					tapedCls = tapedEl.dom.classList[0]
 				;
@@ -1238,8 +1241,11 @@ Ext.regController('SaleOrder', {
 		
 		rec.commit();
 		
-		options.list && rec.get('lastActive') && (function (el) {
-			el.addCls('active');
+		options.list && view.modeActive && (function (el) {
+			Ext.each (
+				el.query(view.modeActive),
+				function (dom) {Ext.get(dom).up('.x-list-item').addCls('active')}
+			);
 		}) (Ext.get(options.list.getNode(rec)));
 		
 	},
@@ -1582,6 +1588,7 @@ Ext.regController('SaleOrder', {
 			var el = Ext.get(dom);
 
 			el.removeCls('hasActive');
+			Ext.each(el.query('.x-list-item'), function (dom) {Ext.get(dom).removeCls('active')});
 		};
 
 		Ext.each(view.productList.getEl().query('.x-list-group-items'), removeActiveCls);
@@ -1830,7 +1837,7 @@ Ext.regController('SaleOrder', {
 	},
 
 	onModeButtonTap: function(options) {
-
+		
 		var btn = options.btn,
 			pressed = options.pressed
 		;
@@ -1842,12 +1849,26 @@ Ext.regController('SaleOrder', {
 				}
 			});
 		}
-
+		
 		changeBtnText(btn);
-
-		Ext.dispatch(Ext.apply(options, {
-			action: 'toggle' + btn.itemId + (pressed ? 'On' : 'Off')
-		}));
+		
+		var action = 'toggle' + btn.itemId + (pressed ? 'On' : 'Off');
+		
+		if (this[action]) {
+			
+			Ext.dispatch(Ext.apply(options, {
+				action: action
+			}));
+			
+		} else if (btn.criteria) {
+			
+			Ext.dispatch(Ext.apply(options, {
+				action: 'toggleActive' + (pressed ? 'On' : 'Off'),
+				criteria: btn.criteria
+			}));
+			
+		}
+		
 	},
 
 	toggleFilterPanelOn: function(options) {
