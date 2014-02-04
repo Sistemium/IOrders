@@ -124,7 +124,7 @@ Ext.regController('Navigator', {
 			finish()
 		;
 		
-		var finish = function () {
+		var me = this, finish = function () {
 			rec.set(bar.name, btn.name);
 			
 			if(!view.isNew) {
@@ -136,7 +136,7 @@ Ext.regController('Navigator', {
 			}
 			
 			rec.fields.getByKey('processing') &&
-				this.controlButtonsVisibilities(
+				me.controlButtonsVisibilities(
 					view,
 					!view.editing && rec.get('processing') != 'draft' && !rec.get('serverPhantom')
 				);
