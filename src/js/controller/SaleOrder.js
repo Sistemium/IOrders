@@ -1165,9 +1165,25 @@ Ext.regController('SaleOrder', {
 			}
 		});
 		
+		var totalVol = 0;
+		
 		Ext.each (['0', '1'], function (fname) {
 			
-			data['volume'+fname] = Math.round(data['volume'+fname]);
+			totalVol += (
+				data['volume'+fname] = Math.round(data['volume'+fname])
+			);
+			
+		});
+		
+		var factor = rec.get('factor');
+		var totalVolDelta = totalVol % factor;
+		
+		if (totalVolDelta) {
+			var greaterVol = data.volume0 >= data.volume1 ? '0' : '1';
+			data['volume'+greaterVol] += factor - totalVolDelta;
+		}
+		
+		Ext.each (['0', '1'], function (fname) {
 			
 			var discountMin = dMin,
 				discountMax = dMax
