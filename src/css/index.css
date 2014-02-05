@@ -364,6 +364,12 @@
 	color: black !important;
 }
 
+.framedSilver {
+	padding: 2px 6px;
+	border-radius: 3px;
+	border: solid 1px silver;
+}
+
 .onBlue{
 	background-color: blue;
 	padding: 2px 6px;
