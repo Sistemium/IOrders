@@ -37,6 +37,8 @@ var SaleOrderView = Ext.extend(AbstractView, {
 						if(!max || max < lastActive) category.set('maxLastActive', lastActive);
 					}
 				}, this);
+				
+				this.didInitLastActive = true;
 			}
 		}, getGroupConfig('OfferCategory')));
 		
@@ -113,20 +115,48 @@ var SaleOrderView = Ext.extend(AbstractView, {
 			}
 		};
 		
+		var saleOrderToggleFn = function(segBtn, btn, pressed) {
+			Ext.dispatch({
+				controller: 'SaleOrder',
+				action: 'onModeButtonTap',
+				view: segBtn.up('saleorderview'),
+				segBtn: segBtn,
+				btn: btn,
+				pressed: pressed
+			});
+		};
+		
 		var bb = {
 			id: 'bottomToolbar', xtype: 'toolbar', dock: 'bottom',
 			items: [
-				{xtype: 'spacer'}, {xtype: 'segmentedbutton', itemId: 'GroupChanger',
+				{xtype: 'spacer'},
+				{xtype: 'segmentedbutton', itemId: 'StockModes',
+					allowDepress: true,
+					items: [{
+						text: 'Только остатки',
+						altText: 'Только остатки',
+						itemId: 'StockMode',
+						name: 'StockMode',
+						pressed: true,
+						scope: this,
+					}],
+					listeners: {
+						toggle: saleOrderToggleFn
+					}
+				},
+				{xtype: 'spacer'},
+				{xtype: 'segmentedbutton', itemId: 'GroupChanger',
 					items: [{
 							name: 'GroupLastname', itemId: 'GroupLastname', text: 'По производителю', scope: this
 						},{
 							name: 'GroupFirstname', itemId: 'GroupFirstname', text: 'По наименованию', scope: this, pressed: true
 					}]
-				}, {
+				}, {xtype: 'spacer'}, {
 					text: this.indexBarMode ? 'Скрыть индекс' : 'Показать индекс',
 					altText: !this.indexBarMode ? 'Скрыть индекс' : 'Показать индекс',
 					itemId: 'ShowIndexBar',
 					name: 'ShowIndexBar',
+					hidden: this.indexBarMode == undefined,
 					scope: this
 				}, {
 					text: summTpl.apply({totalCost: 0}),
@@ -198,18 +228,10 @@ var SaleOrderView = Ext.extend(AbstractView, {
 					}
 				],
 				listeners: {
-					toggle: function(segBtn, btn, pressed) {
-						Ext.dispatch({
-							controller: 'SaleOrder',
-							action: 'onModeButtonTap',
-							view: segBtn.up('saleorderview'),
-							segBtn: segBtn,
-							btn: btn,
-							pressed: pressed
-						});
-					}
+					toggle: saleOrderToggleFn
 				}
 			},
+			{xtype: 'spacer'},
 			{ui: 'save', name: 'Save', text: 'Завершить', scope: this},
 			{ui: 'plain', iconMask: true, name: 'Add', iconCls: 'add', scope: this}
 		);
@@ -230,7 +252,7 @@ var SaleOrderView = Ext.extend(AbstractView, {
 	
 	initComponent: function() {
 
-		this.indexBarMode = IOrders.getItemPersistant('indexBarMode') == 'true';
+		//this.indexBarMode = IOrders.getItemPersistant('indexBarMode') == 'true';
 
 		SaleOrderView.superclass.initComponent.apply(this, arguments);
 	}

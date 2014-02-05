@@ -443,6 +443,7 @@ Ext.regController('SaleOrder', {
 			saleOrder: options.saleOrder,
 			saleOrderStatus: options.saleOrderStatus,
 			isNew: options.isNew,
+			stockThreshold: 1,
 			
 			ownerViewConfig: {
 				
@@ -493,6 +494,10 @@ Ext.regController('SaleOrder', {
 				result.push({
 					property: 'saleOrder',
 					value: saleOrder.get('id')
+				},{
+					property: 'stockLevel',
+					value: newCard.stockThreshold,
+					gte: true
 				})
 			};
 			
@@ -683,7 +688,9 @@ Ext.regController('SaleOrder', {
 				
 				load: function (store, records) {
 					
-					view.offerCategoryStore.initLastActive.apply(view.offerCategoryStore,arguments);
+					!view.offerCategoryStore.didInitLastActive
+						&& view.offerCategoryStore.initLastActive.apply(view.offerCategoryStore,arguments)
+					;
 					
 					var sname = '',
 						needle
@@ -1250,6 +1257,63 @@ Ext.regController('SaleOrder', {
 		
 	},
 	
+	toggleStockModeOn: function (options) {
+		
+		console.log ('toggleStockModeOn');
+		
+		options.view.stockThreshold = 1;
+		
+		Ext.dispatch(Ext.apply(options, {
+			action: 'reloadProductList'
+		}));
+		
+	},
+	
+	toggleStockModeOff: function (options) {
+		
+		console.log ('toggleStockModeOff');
+		
+		options.view.stockThreshold = 0;
+		
+		Ext.dispatch(Ext.apply(options, {
+			action: 'reloadProductList'
+		}));
+		
+	},
+
+	reloadProductList: function (options) {
+		
+		var view = options.view,
+			filters = view.startFilters(view.saleOrder)
+		;
+		
+		view.offerProductStore.remoteFilter = true;
+		
+		var filtersSnapshot = view.offerProductStore.filters.items;
+		
+		view.offerProductStore.clearFilter(true);
+		
+		view.offerProductStore.load({
+			limit: 0,
+			filters: filters,
+			callback: function(r, o, s) {
+				
+				if (s) {
+					
+					view.offerProductStore.remoteFilter = false;
+					
+					view.offerProductStore.filter (
+						filtersSnapshot
+					);
+					
+				} else {
+					console.log ('toggleStockModeOn failure loading offerProductStore');
+				}
+				
+			}
+		});
+		
+	},
 
 	onProductCategoryListItemTap: function(options) {
 		
