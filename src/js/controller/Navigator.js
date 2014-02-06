@@ -81,6 +81,24 @@ Ext.regController('Navigator', {
 			incomplete = false
 		;
 		
+		var me = this, finish = function () {
+			rec.set(bar.name, btn.name);
+			
+			if(!view.isNew) {
+				rec.save({callback: function() {
+					var tableRec = Ext.getStore('tables').getById(rec.modelName);
+					loadDepData(tableRec, tableRec, undefined, undefined, true);
+					view.fireEvent ('saved', rec);
+				}});
+			}
+			
+			rec.fields.getByKey('processing') &&
+				me.controlButtonsVisibilities(
+					view,
+					!view.editing && rec.get('processing') != 'draft' && !rec.get('serverPhantom')
+				);
+		}
+		
 		if (btn.name!='draft') {
 			
 			var ocs = Ext.getStore('OfferCharge');
@@ -123,24 +141,6 @@ Ext.regController('Navigator', {
 		} else
 			finish()
 		;
-		
-		var me = this, finish = function () {
-			rec.set(bar.name, btn.name);
-			
-			if(!view.isNew) {
-				rec.save({callback: function() {
-					var tableRec = Ext.getStore('tables').getById(rec.modelName);
-					loadDepData(tableRec, tableRec, undefined, undefined, true);
-					view.fireEvent ('saved', rec);
-				}});
-			}
-			
-			rec.fields.getByKey('processing') &&
-				me.controlButtonsVisibilities(
-					view,
-					!view.editing && rec.get('processing') != 'draft' && !rec.get('serverPhantom')
-				);
-		}
 		
 	},
 
