@@ -502,6 +502,10 @@
 	-webkit-box-pack: start;
 }
 
+.alignStart {
+	-webkit-box-align: start;
+}
+
 .packCenter {
 	-webkit-box-pack: center;
 }
@@ -512,6 +516,10 @@
 
 .hbox > * {
 	margin-right: 0.8em;
+}
+
+.hbox :last-child  {
+	margin-right: 0px;
 }
 
 .vbox .swipable, .vbox .scheme0, .vbox .scheme1 {
@@ -529,6 +537,10 @@
 	margin-left: auto;
 	margin-right: auto;
 	text-align: center;
+}
+
+.em4 {
+	min-width: 4.25em;
 }
 
 
@@ -590,6 +602,16 @@
 	-webkit-border-radius: 6px;
 }
 
+.plusminus {
+	font-weight: 400;
+	-font-size: x-large !important;
+	display: inline-block;
+	border: solid 1px gray;
+	width: 1em;
+	text-align: center;
+	-webkit-border-radius: 6px;
+}
+
 .pricesComboWrap {
 	height:0
 }
@@ -619,4 +641,17 @@
 
 .просрочено .x-list-header {
 	background-color: red;
+}
+
+.f-button {
+	padding: .3em .6em;
+	font-weight: bold;
+	color: gray;
+	background-color: #EEEEEE;
+	border-radius: 3px;
+	text-align: center;
+}
+
+.vmargin {
+	margin-bottom: 5px;
 }
