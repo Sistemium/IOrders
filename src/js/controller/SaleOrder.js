@@ -346,7 +346,14 @@ Ext.regController('SaleOrder', {
 		
 		if (rec && tapedEl) {
 			
-			if ( tapedEl.is('.chargeBase, .chargeBase *') ){
+			if ( tapedEl.is('.plus, .plus *, .minus, .minus *') ){
+				
+				Ext.dispatch(Ext.apply(options, {
+					action: 'onPlusMinusTap',
+					rec: rec
+				}));
+				
+			} else if ( tapedEl.is('.chargeBase, .chargeBase *') ){
 				
 				Ext.dispatch(Ext.apply(options, {
 					action: 'onChargeBaseTap',
@@ -1077,6 +1084,65 @@ Ext.regController('SaleOrder', {
 			var v = parseInt (rec.get(fname) || '0');
 			
 			if (fname == 'volumeCombo' || fname == 'packageRel') {
+				fname = 'volumeCombo';
+				v = rec.get('volume1') + rec.get('volume0');
+			}
+			
+			data[fname] = v + sign * factor;
+			
+		});
+		
+		if (fnamesTo.length) {
+			
+			volumeFn && Ext.apply(data, volumeFn (data));
+			Ext.dispatch( Ext.apply( options, data ));
+			
+		}
+	},
+	
+	onPlusMinusTap: function(options) {
+		
+		var listEl = Ext.get(options.event.target),
+			rec = options.rec,
+			sign = listEl.is('.plus, .plus *') ? 1 : -1,
+			factor = rec.get('factor'),
+			defaultVolume = options.list.defaultVolume,
+			volumeFn = options.list.volumeFn
+		;
+		
+		var data = {
+				action: 'setVolume',
+				sign: sign,
+				rec: rec,
+				factor: factor,
+				packageRel: rec.get('packageRel') || 1
+			},
+			fnamesTo = [],
+			fnames = [
+				'pkg', 'sht'
+			]
+		;
+		
+		Ext.each (fnames, function (f) {
+			
+			if (listEl.hasCls(f) || listEl.is('.'+f+' *'))
+				fnamesTo.push (f);
+			
+		});
+		
+		Ext.each(fnamesTo, function(fname) {
+			
+			if (fname == 'pkg') {
+				factor = data.packageRel;
+			}
+			
+			if (defaultVolume) {
+				fname = defaultVolume
+			}
+			
+			var v = parseInt (rec.get(fname) || '0');
+			
+			if (fname == 'sht' || fname == 'pkg') {
 				fname = 'volumeCombo';
 				v = rec.get('volume1') + rec.get('volume0');
 			}
