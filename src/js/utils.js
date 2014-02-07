@@ -341,6 +341,9 @@ Ext.apply(Number.prototype, {
 			x1 = x1.replace(rgx, '$1' + ',' + '$2');
 		}
 		return x1 + x2;
+	},
+	toStringNot0: function(suffix) {
+		return this != 0 ? this.toString() + (suffix ? suffix.toString() : '') : '';
 	}
 });
 
