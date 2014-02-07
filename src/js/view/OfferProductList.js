@@ -6,6 +6,7 @@ var offerProductListConfig = function (options) {
 		cls: 'x-product-list',
 		itemTpl: getItemTpl('Offer'),
 		selectedItemCls: 'x-product-selected',
+		disableSelection: true,
 		
 		listeners: {
 			
@@ -157,7 +158,7 @@ var offerProductListConfig = function (options) {
 			
 		},
 		
-		onRender: function() {
+		/*onRender: function() {
 			
 			ExpandableGroupedList.prototype.onRender.apply(this, arguments);
 			
@@ -172,7 +173,8 @@ var offerProductListConfig = function (options) {
 					list: list, idx: idx, item: item, event: event
 				});
 			}, this, {delegate: '.x-list-item'});
-		}
+			
+		}*/
 		
 	});
 
