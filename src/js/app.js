@@ -76,9 +76,9 @@ Ext.regApplication({
 		
 		if (iOS >= 7) IOrders.viewport.on('orientationchange', fix7orientation);
 		
-		fix7orientation.call (IOrders.viewport, {
-			orientation: Ext.getOrientation()
-		})
+		//fix7orientation.call (IOrders.viewport, {
+		//	orientation: Ext.getOrientation()
+		//})
 		
 		this.viewport.getActiveItem().loadData();
 	},
