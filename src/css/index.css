@@ -591,13 +591,13 @@
 
 .ctrl {
 	position: relative;
-	left: -1.25em;
+	left: -1.6em;
 	top: 0.2em;
 	font-weight: 400;
 	font-size: large !important;
 	display: inline-block;
 	border: solid 1px gray;
-	width: 1em;
+	width: 1.3em;
 	text-align: center;
 	-webkit-border-radius: 6px;
 }
@@ -607,7 +607,7 @@
 	font-size: large !important;
 	display: inline-block;
 	border: solid 1px gray;
-	width: 1em;
+	width: 1.3em;
 	text-align: center;
 	-webkit-border-radius: 6px;
 }
