@@ -41,7 +41,7 @@ var offerProductListConfig = function (options) {
 						fieldGroups = [
 							{
 								title: 'Количество',
-								fields: ['volume0', 'volume1', 'volumeBonus']
+								fields: ['volume0', 'volume1', 'volumeBonus', 'volume']
 							},
 							{
 								title: 'Цена',
@@ -103,8 +103,18 @@ var offerProductListConfig = function (options) {
 								
 								if (button == 'ok') {
 									
+									var volumeFn = list.volumeFn,
+										defaultVolume = list.defaultVolume
+									;
+									
 									Ext.each (this.valueFields, function(valueField) {
-										this.options [valueField] = value || 0
+										
+										if (valueField == 'volume') {
+											valueField = defaultVolume || 'volumeCombo';
+										}
+										this.options [valueField] = value || 0;
+										volumeFn && Ext.apply(this.options, volumeFn (this.options));
+										
 									}, this);
 									
 									Ext.dispatch (Ext.apply({
