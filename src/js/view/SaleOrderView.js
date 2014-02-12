@@ -58,7 +58,7 @@ var SaleOrderView = Ext.extend(AbstractView, {
 			layout: {type: 'vbox', pack: 'justify', align: 'stretch'},
 			flex: 3
 		});
-
+		
 		this.items = [this.productCategoryList, this.productPanel];
 		
 		var summTpl = '<p>'
@@ -126,10 +126,30 @@ var SaleOrderView = Ext.extend(AbstractView, {
 			});
 		};
 		
+		var volumeDistinctMode = (IOrders.getItemPersistant('volumeDistinctMode') != 'false');
+		
+		this.productPanel.addCls(
+			volumeDistinctMode ? 'modeDistinct' : 'modeCombo'
+		);
+		
 		var bb = {
 			id: 'bottomToolbar', xtype: 'toolbar', dock: 'bottom',
 			items: [
 				{xtype: 'spacer'},
+				{xtype: 'segmentedbutton', itemId: 'VolumeModes',
+					allowDepress: true,
+					items: [{
+						text: 'К/Шт',
+						altText: 'К/Шт',
+						itemId: 'VolumeDistinctMode',
+						name: 'VolumeDistinctMode',
+						pressed: volumeDistinctMode,
+						scope: this,
+					}],
+					listeners: {
+						toggle: saleOrderToggleFn
+					}
+				},
 				{xtype: 'segmentedbutton', itemId: 'StockModes',
 					allowDepress: true,
 					items: [{

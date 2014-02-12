@@ -1709,6 +1709,18 @@ Ext.regController('SaleOrder', {
 		Ext.each(view.productCategoryList.getEl().query('.x-list-item ' + criteria), addActiveCls);
 	},
 	
+	toggleVolumeDistinctModeOn: function (options) {
+		var view = options.view;
+		view.productPanel.addCls('modeDistinct').removeCls('modeCombo');
+		IOrders.setItemPersistant('volumeDistinctMode', 'true');
+	},
+	
+	toggleVolumeDistinctModeOff: function (options) {
+		var view = options.view;
+		view.productPanel.addCls('modeCombo').removeCls('modeDistinct');
+		IOrders.setItemPersistant('volumeDistinctMode', 'false');
+	},
+	
 	toggleActiveOff: function( options ) {
 		var view = options.view;
 

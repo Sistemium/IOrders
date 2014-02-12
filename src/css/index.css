@@ -107,7 +107,7 @@
 
 .x-list-item small {
 	display: block;
-	padding-top: 0.5em;
+	padding-top-: 0.5em;
 }
 
 .x-list-item small p {
@@ -653,5 +653,13 @@
 }
 
 .vmargin {
-	margin-bottom: 5px;
+	margin-bottom: 6px;
+}
+
+.modeDistinct .ifCombo {
+	display: none;
+}
+
+.modeCombo .ifDistinct {
+	display: none;
 }
