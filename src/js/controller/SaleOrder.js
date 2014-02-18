@@ -1350,27 +1350,30 @@ Ext.regController('SaleOrder', {
 	reloadProductList: function (options) {
 		
 		var view = options.view,
-			filters = view.startFilters(view.saleOrder)
+			filters = view.startFilters(view.saleOrder),
+			store = view.offerProductStore
 		;
 		
-		view.offerProductStore.remoteFilter = true;
+		store.remoteFilter = true;
 		
-		var filtersSnapshot = view.offerProductStore.filters.items;
+		var filtersSnapshot = store.filters.clone().items;
 		
-		view.offerProductStore.clearFilter(true);
+		store.clearFilter(true);
 		
-		view.offerProductStore.load({
+		view.productList.blockRefresh = true;
+		
+		store.load({
 			limit: 0,
 			filters: filters,
 			callback: function(r, o, s) {
 				
 				if (s) {
 					
-					view.offerProductStore.remoteFilter = false;
-					
-					view.offerProductStore.filter (
-						filtersSnapshot
-					);
+					store.remoteFilter = false;
+					view.productList.blockRefresh = false;
+					store.filter (filtersSnapshot);
+					store.fireEvent('datachanged', store);
+					Ext.dispatch(Ext.apply(options, {action: 'expandFocusedProduct'}));
 					
 				} else {
 					console.log ('toggleStockModeOn failure loading offerProductStore');
@@ -1856,7 +1859,7 @@ Ext.regController('SaleOrder', {
 		
 		var ops = view.offerProductStore;
 		
-		ops.saleOrderModeFiltersSnapshot = view.offerProductStore.filters.items;
+		ops.saleOrderModeFiltersSnapshot = view.offerProductStore.filters.clone().items;
 		ops.clearFilter(true);
 		ops.filter(view.offerProductStore.volumeFilter);
 		
@@ -1864,7 +1867,7 @@ Ext.regController('SaleOrder', {
 			
 			view.productList.unGroup();
 			
-			ops.sorters && (ops.sortersBeforeShowSaleOrder = ops.sorters);
+			ops.sorters && (ops.sortersBeforeShowSaleOrder = ops.sorters.clone());
 			ops.sort ({ property: 'SaleOrderPosition_deviceCts', direction: 'desc'});
 			
 		}
