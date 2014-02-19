@@ -1770,7 +1770,8 @@ Ext.regController('SaleOrder', {
 	toggleProductNameFilterOn: function(options) {
 		
 		var view = options.view
-			currentProductFilters = view.offerProductStore.filters.items
+			currentProductFilters = view.offerProductStore.filters.clone().items,
+			re = new RegExp(options.searchFor.replace(/[ ]/g,'.*'),'ig')
 		;
 		
 		view.setLoading(true);
@@ -1778,10 +1779,12 @@ Ext.regController('SaleOrder', {
 		view.offerProductStore.clearFilter(true);
 		view.offerProductStore.suspendEvents();
 		view.offerProductStore.filter( view.productSearchFilter = {
-			property: 'name',
-			value: options.searchFor,
-			anyMatch: true,
-			caseSensitive: false
+			filterFn: function(item) {
+				return item.get('name').match(re)
+					|| item.get('firstName').match(re)
+					|| item.get('extraLabel').match(re)
+				;
+			}
 		});
 		
 		var foundCnt = view.offerProductStore.getCount();
@@ -2268,7 +2271,9 @@ Ext.regController('SaleOrder', {
 				}
 			});
 			
-			view.bonusMode || (view.offerProductStore.filtersSnapshot = view.offerProductStore.filters.items);
+			view.bonusMode || (
+				view.offerProductStore.filtersSnapshot = view.offerProductStore.filters.clone().items
+			);
 			view.offerProductStore.clearFilter(true);
 			view.offerProductStore.filter(view.offerProductStore.bonusFilter);
 			
