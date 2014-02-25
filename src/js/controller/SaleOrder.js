@@ -1325,7 +1325,7 @@ Ext.regController('SaleOrder', {
 	
 	toggleStockModeOn: function (options) {
 		
-		console.log ('toggleStockModeOn');
+		IOrders.setItemPersistant('SaleOrder.stockMode', 'true');
 		
 		options.view.stockThreshold = 1;
 		
@@ -1337,7 +1337,7 @@ Ext.regController('SaleOrder', {
 	
 	toggleStockModeOff: function (options) {
 		
-		console.log ('toggleStockModeOff');
+		IOrders.setItemPersistant('SaleOrder.stockMode', 'false');
 		
 		options.view.stockThreshold = 0;
 		

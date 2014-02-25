@@ -132,6 +132,10 @@ var SaleOrderView = Ext.extend(AbstractView, {
 			volumeDistinctMode ? 'modeDistinct' : 'modeCombo'
 		);
 		
+		var stockMode = (IOrders.getItemPersistant('SaleOrder.stockMode') != 'false')
+		
+		this.stockThreshold = stockMode ? 1 : 0;
+		
 		var bb = {
 			id: 'bottomToolbar', xtype: 'toolbar', dock: 'bottom',
 			items: [
@@ -157,7 +161,7 @@ var SaleOrderView = Ext.extend(AbstractView, {
 						altText: 'Только остатки',
 						itemId: 'StockMode',
 						name: 'StockMode',
-						pressed: true,
+						pressed: stockMode,
 						scope: this,
 					}],
 					listeners: {
