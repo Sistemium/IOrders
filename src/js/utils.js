@@ -1153,16 +1153,26 @@ var getGroupConfig = function(model) {
 			if (meta) {
 				
 				var gc = meta.get('grouperColumn'),
-					sc = meta.get('sorterColumn')
+					sc = meta.get('sorterColumn'),
+					gcc
 				;
 				
-				sorterProperty = sc || gc;
+				if (gc)
+					gcc = tableHasColumn(model,gc)
+				;
+				
+				sorterProperty = sc || gcc;
 				direction = 'ASC';
 				
-				if (gc) {
-					grouperFunction = function(rec) {
-						return rec.get(gc);
-					}
+				if (gcc) {					
+					grouperFunction =  (gcc.get('type') == 'date')
+						? function(rec) {
+							return Ext.util.Format.date(rec.get(gc));
+						}
+						: grouperFunction = function(rec) {
+							return rec.get(gc);
+						}
+					;
 				}
 				
 			}
