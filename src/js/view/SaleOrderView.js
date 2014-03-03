@@ -28,13 +28,18 @@ var SaleOrderView = Ext.extend(AbstractView, {
 								'category',
 								product.get('category'),
 								undefined, undefined, true, true
-							),
-							min = category.get('minLastActive'),
-							max = category.get('maxLastActive')
+							)
 						;
 						
-						if(!min || min < lastActive) category.set('minLastActive', lastActive);
-						if(!max || max < lastActive) category.set('maxLastActive', lastActive);
+						if (category){
+							var min = category.get('minLastActive'),
+								max = category.get('maxLastActive')
+							;
+							
+							if(!min || min < lastActive) category.set('minLastActive', lastActive);
+							if(!max || max < lastActive) category.set('maxLastActive', lastActive);
+						}
+						
 					}
 				}, this);
 				
