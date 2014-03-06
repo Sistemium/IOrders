@@ -206,6 +206,8 @@ var NavigatorView = Ext.extend(AbstractView, {
 		this.form.recordLoaded = true;
 		this.isObjectView && this.setFieldsDisabled(!this.editing);
 		
+		//this.form.getComponent('statusToolbar').serverMessage = this.objectRecord.get('serverMessage');
+		
 	},
 	
 	setFieldsDisabled: function(disable) {
@@ -428,28 +430,45 @@ var NavigatorView = Ext.extend(AbstractView, {
 		});
 		
 		return Array({
+			
 			xtype: 'toolbar',
 			itemId: 'statusToolbar',
 			dock: 'top',
 			ui: 'none',
+			
 			items:[{
+				
 				xtype: 'segmentedbutton',
 				itemId: cName,
 				items: statusButtons,
-				name: cName, cls: 'statuses',
+				name: cName,
+				cls: 'statuses',
+				serverMessage: me.objectRecord.get(cName+'Message'),
+				
 				listeners: {
 					toggle: function (segBtn, btn, pressed) {
-						pressed && segBtn.up('panel').getComponent('statusDesc').update(btn);
+						if(pressed) {
+							segBtn.up('panel').getComponent('statusDesc').update(
+								Ext.applyIf(Ext.apply({},btn),segBtn)
+							);
+							segBtn.serverMessage = undefined;
+						}
 					},
 					afterLayout: function (me) {
 						me.fireEvent ('toggle', me, btnPressed && me.getComponent(btnPressed.name), true);
 					}
 				}
-			}]},{
+				
+			}]}, {
+				
 				xtype: 'panel',
 				itemId: 'statusDesc',
 				cls: 'statusDesc',
-				tpl: '<div class="{name}">{desc}</div>'
+				
+				tpl: [
+					'<tpl if="serverMessage"><div class="red">{serverMessage}</div><br></tpl>',
+					'<div class="{name}">{desc}</div>'
+				]
 			}
 		);
 		

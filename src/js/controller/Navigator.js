@@ -83,6 +83,7 @@ Ext.regController('Navigator', {
 		
 		var me = this, finish = function () {
 			rec.set(bar.name, btn.name);
+			rec.set(bar.name+'Message', null);
 			
 			if(!view.isNew) {
 				rec.save({callback: function() {
@@ -184,7 +185,10 @@ Ext.regController('Navigator', {
 						;
 						
 						segBtn.getComponent(state).enable();
+						segBtn.serverMessage = record.get(segBtn.name+'Message');
+						
 						segBtn.setPressed(state, true, false);
+						
 						segBtn.items.each(function(b) {
 							b.disable();
 							b.canEnable && b[b.canEnable(state) ? 'enable' : 'disable']();
@@ -193,8 +197,13 @@ Ext.regController('Navigator', {
 						});
 						
 					}
-
-					record.fields.getByKey('processing') && this.controlButtonsVisibilities(view, record.get('processing') != 'draft' && !record.get('serverPhantom'));
+					
+					record.fields.getByKey('processing')
+						&& this.controlButtonsVisibilities(
+							view,
+							record.get('processing') != 'draft' && !record.get('serverPhantom')
+						)
+					;
 				}
 				
 			} else if(view.isSetView) {
