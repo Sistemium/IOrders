@@ -74,7 +74,7 @@ Ext.regApplication({
 			this.container.setTop(fixY);
 		}
 		
-		if (iOS >= 7) IOrders.viewport.on('orientationchange', fix7orientation);
+		if (iOS >= 7 && iOS < 7.1) IOrders.viewport.on('orientationchange', fix7orientation);
 		
 		//fix7orientation.call (IOrders.viewport, {
 		//	orientation: Ext.getOrientation()
