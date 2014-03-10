@@ -1275,9 +1275,10 @@ Ext.regController('SaleOrder', {
 			
 			var price1Min = rec.get('price1Min');
 			
-			if (p1 < price1Min)
-				data['price1'+fname] = price1Min
-			;
+			if (p1 < price1Min){
+				data['price1'+fname] = price1Min;
+				data['discount1'+fname] = null;
+			}
 			
 			data['cost'+fname] += (rel
 				* parseFloat (data ['volume' + fname])
