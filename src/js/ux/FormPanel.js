@@ -6,7 +6,7 @@ Ext.override(Ext.form.FormPanel, {
             
             this.record = instance;
 			
-			Ext.each(this.fields.items, function(f) {
+			this.fields && Ext.each(this.fields.items, function(f) {
 				if (f.xtype=='templatefield')
 					f.setData (instance.data)
 			});
