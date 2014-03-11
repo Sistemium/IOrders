@@ -681,7 +681,7 @@ var getItemTplStatic = function (modelName) {
 	
 };
 
-var createFieldSet = function(columnsStore, modelName, view) {
+var createFieldSet = function(columnsStore, modelName, view, fieldItitConfig) {
 
 	var fsItems = [];
 
@@ -689,12 +689,12 @@ var createFieldSet = function(columnsStore, modelName, view) {
 		
 		if (column.get('label') && column.get('name') !== 'processing') {
 			
-			var field = {
+			var field = Ext.apply({
 				name: column.get('name'),
 				itemId: column.get('name'),
 				label: column.get('label'),
 				disabled: !column.get('editable')
-			};
+			},fieldItitConfig);
 			
 			var fieldConfig;
 			
@@ -749,7 +749,7 @@ var createFieldSet = function(columnsStore, modelName, view) {
 			
 			if (tpl) {
 				field.template = new Ext.XTemplate(tpl);
-				fieldConfig = {xtype: 'templatefield'};
+				fieldConfig = {xtype: 'templatefield', cls: 'x-field-readonly'};
 			}
 			
 			if (view.isNew && !column.get('editable'))
