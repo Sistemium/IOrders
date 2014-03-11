@@ -119,11 +119,59 @@ Ext.regController('SaleOrder', {
 	
 	onShowCustomerButtonTap: function(options) {
 		
-		var customer = options.view.customerRecord;
+		var view = options.view,
+			store = Ext.getStore('OfferTotal'),
+			tablesStore = Ext.getStore('tables'),
+		    table = tablesStore.getById('OfferTotal')
+		;
 		
-		Ext.Msg.alert('', 'Клиент: ' + customer.get('name').replace(/"/g, '')
-			+ '<br/>' +'Адрес: ' + customer.get('address')
-		);
+		if (!table) {
+			return;
+		}
+		
+		var formPanel = new Ext.form.FormPanel ({
+			xtype: 'formpanel',
+			disabled: true,
+			items: [
+				createFieldSet (table.columns(), 'OfferTotal', {}, {disabledCls: 'x-field-readonly'})
+			]
+		});
+		
+		var sheet = new Ext.Sheet({
+			//height  : 200,
+			stretchX: true,
+			stretchY: true,
+			enter: 'bottom',
+			hideOnMaskTap: true,
+			autoDestroy:true,
+			
+			layout: {
+				type: 'vbox',
+				align: 'stretch'
+			},
+			
+			items: [ formPanel ],
+			
+			listeners: {
+				hide: function () {
+					Ext.defer(function() {sheet.destroy()}, 200);
+				},
+				show: function () {
+					store.load({
+						limit:0,
+						callback: function(records, operation, success) {
+							if (success) {
+								formPanel.loadRecord(records[0]);
+							}
+						}
+					});
+				}
+			}
+			
+		});
+		
+		sheet.show();
+		
 	},
 
 	onSaveButtonTap: function(options) {
@@ -264,6 +312,14 @@ Ext.regController('SaleOrder', {
 		
 		if (ocs) {
 			ocs.load({
+				limit:0
+			})
+		}
+		
+		var ots = Ext.getStore('OfferTotal');
+		
+		if (ots) {
+			ots.load({
 				limit:0
 			})
 		}
@@ -560,6 +616,31 @@ Ext.regController('SaleOrder', {
 			})
 		};
 		
+		var ots = Ext.getStore('OfferTotal');
+		
+		if (ots) {
+			
+			ots.filters.clear();
+			ots.filters.add(new Ext.util.Filter({
+				property: 'saleOrder',
+				value: options.saleOrder.get('id'),
+				exactMatch: true
+			}));
+			
+			var totalsBtn = newCard.getComponent('bottomToolbar').getComponent('ShowCustomer');
+			
+			totalsBtn && totalsBtn.mon (ots, 'load', function (store, records, success) {
+				var badgeValue = null;
+				if (records.length && records[0].get('isWarning')) {
+					badgeValue = 1;
+				}
+				totalsBtn.setBadge (badgeValue);
+			});
+			
+			ots.load({
+				limit:0
+			})
+		};
 	},
 	
 	onOfferCategoryStoreLoad: function(options){
