@@ -328,8 +328,8 @@ Ext.apply(Number.prototype, {
 	toDecimal: function (d) {
 		return parseFloat(this.toFixed(d))
 	},
-	toDisplayString: function() {
-		return this.toDecimal(2).addCommas().replace(/\,/g,'&nbsp;').replace(/\./g,',');
+	toDisplayString: function(d) {
+		return this.toDecimal(d>=0?d:2).addCommas().replace(/\,/g,'&nbsp;').replace(/\./g,',');
 	},
 	addCommas:  function(){
 		var nStr  = this.toString() + '';
