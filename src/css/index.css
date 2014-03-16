@@ -663,3 +663,16 @@
 .modeCombo .ifDistinct {
 	display: none;
 }
+
+.span3 {
+	width: 6em;
+}
+
+.number {
+	text-align: right;
+}
+
+.vmid {
+	display: inline-block;
+	vertical-align: middle;
+}
