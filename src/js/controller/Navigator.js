@@ -738,7 +738,7 @@ Ext.regController('Navigator', {
 				depStore = table.deps()
 			;
 
-			if(depStore.getCount() !== 1 || table.hasExtendableDep()) {
+			if(depStore.getCount() > 1 || table.hasExtendableDep()) {
 				Ext.defer ( function() {
 
 					Ext.dispatch(Ext.apply(options, {
@@ -749,16 +749,21 @@ Ext.regController('Navigator', {
 					}));
 				}, 150);
 			} else if(depStore.getCount() === 1 && !table.hasExtendableDep()) {
-
+				
+				var dep = depStore.getAt(0),
+					filterBy = dep.get('name')
+				;
+				
+				if (filterBy == '') filterBy = undefined;
+				
 				if(list.modelForDeps && !Ext.getStore('tables').getById(tappedRec.modelName).hasIdColumn()) {
 					Ext.ModelMgr.getModel(list.modelForDeps).load(tappedRec.get(lowercaseFirstLetter(list.modelForDeps), {
 						success: function(record) {
-	
 							Ext.dispatch(Ext.apply(options, {
 								controller: 'Navigator',
 								action: 'createAndActivateView',
 								record: record,
-								tableRecord: depStore.getAt(0).get('table_id'),
+								tableRecord: dep.get('table_id'),
 								isSetView: true,
 								editing: false
 							}));
@@ -769,9 +774,10 @@ Ext.regController('Navigator', {
 						controller: 'Navigator',
 						action: 'createAndActivateView',
 						record: tappedRec,
-						tableRecord: depStore.getAt(0).get('table_id'),
+						tableRecord: dep.get('table_id'),
 						isSetView: true,
-						editing: false
+						editing: false,
+						filterBy: dep.get('name')
 					}));
 				}
 			}
@@ -1010,7 +1016,8 @@ Ext.regController('Navigator', {
 		    newCard = options.newCard,
 		    store = newCard.setViewStore,
 		    storeLimit = newCard.storeLimit,
-		    storePage = newCard.storePage
+		    storePage = newCard.storePage,
+			filterBy = options.filterBy || lowercaseFirstLetter(newCard.objectRecord.modelName)
 		;
 		
 		oldCard.setLoading(true);
@@ -1019,24 +1026,29 @@ Ext.regController('Navigator', {
 		store.clearFilter(true);
 		
 		var storeLoadCallback = function() {
+			
 			storePage && (store.currentPage = storePage);
 			oldCard.setLoading(false);
 			IOrders.viewport.setActiveItem(newCard, options.anim);
+			
 			newCard.lastSelectedRecord && Ext.dispatch(Ext.apply(options, {
 				action: 'scrollToLastSelectedRecord',
 				view: newCard,
 				lastSelectedRecord: newCard.lastSelectedRecord,
 				scrollOffset: newCard.scrollOffset
 			}));
+			
 		};
 		
-		if (newCard.objectRecord.modelName != 'MainMenu') {
-			if (newCard.objectRecord.modelName)
-				store.filters.add({
-					property: lowercaseFirstLetter(newCard.objectRecord.modelName),
-					value: newCard.objectRecord.getId()
-				})
-			;
+		if (newCard.objectRecord.modelName != 'MainMenu' && filterBy) {
+			
+			newCard.filterBy = filterBy;
+			
+			store.filters.add({
+				property: filterBy,
+				value: newCard.objectRecord.getId()
+			})
+			
 		}
 		
 		store.load({
@@ -1116,7 +1128,7 @@ Ext.regController('Navigator', {
 		
 		var filters = [];
 		options.filter && filters.push({
-			property: lowercaseFirstLetter(filterRecord.modelName),
+			property: view.filterBy || lowercaseFirstLetter(filterRecord.modelName),
 			value: field.getValue()
 		});
 		
