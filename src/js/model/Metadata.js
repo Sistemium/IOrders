@@ -23,7 +23,8 @@ Ext.regModel('Table', {
 		{name: 'template', type: 'string'},
 		{name: 'templateConfig', type: 'string'},
 		{name: 'grouperColumn', type: 'string'},
-		{name: 'sorterColumn', type: 'string'}
+		{name: 'sorterColumn', type: 'string'},
+		{name: 'primaryTable', type: 'string'}
 	],
  	associations: [
 		{type: 'hasMany', model: 'Column', name: 'columns'},
@@ -94,6 +95,7 @@ Ext.regModel('Column', {
 		{name: 'importFields', type: 'string'},
 		{name: 'optional', type: 'boolean'},
 		{name: 'predicate-for', type: 'string'},
+		{name: 'primaryTable', type: 'string'}
 	],
 	associations: [
 		{type: 'belongsTo', model: 'Table'},

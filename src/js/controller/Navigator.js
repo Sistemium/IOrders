@@ -39,27 +39,34 @@ Ext.regController('Navigator', {
             tableStore.getById(t).set('loading', false);
             
             if(view.isSetView && view.tableRecord === t) {
+				
                 view.setViewStore.currentPage = 1;
                 view.setViewStore.load();
-
+				
                 var list = view.form.getComponent('list'),
                     pullPlugin = list.pullPlugin
                 ;
+				
                 pullPlugin.isLoading && pullPlugin.onLoadComplete.call(pullPlugin);
-
                 list.setLoading(false);
                 view.form.scroller.scrollTo({y: 0});
+				
             } else if(view.isObjectView) {
+				
                 var depStore = view.depStore,
-                    depRec = depStore.findRecord('id', t, undefined, undefined, true, true),
-                    depTable = tableStore.getById(t),
-                    objectTable = tableStore.getById(view.objectRecord.modelName)
-                ;
-                
-                if(depRec) {
+                    depRecs = depStore.queryBy(function(rec){
+						return rec.get('id') == t || rec.get('primaryTable') == t
+					})
+				;
+				
+                depRecs.each(function (depRec) {
+					
+					var depTable = tableStore.getById(depRec.get('id'));
+					
                     depRec.set('loading', false);
                     loadDepData(depRec, depTable, view, undefined, true);
-                }
+					
+                });
             }
             
             var tableRec = Ext.getStore('tables').getById(t);
