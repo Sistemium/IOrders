@@ -668,6 +668,10 @@
 	width: 5em;
 }
 
+.span2 {
+	width: 3em;
+}
+
 .number {
 	text-align: right;
 }
