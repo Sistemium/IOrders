@@ -24,6 +24,7 @@ Ext.regModel('Table', {
 		{name: 'templateConfig', type: 'string'},
 		{name: 'grouperColumn', type: 'string'},
 		{name: 'sorterColumn', type: 'string'},
+		{name: 'sorterDir', type: 'string'},
 		{name: 'primaryTable', type: 'string'}
 	],
  	associations: [

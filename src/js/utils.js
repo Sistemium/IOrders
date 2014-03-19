@@ -1154,6 +1154,7 @@ var getGroupConfig = function(model) {
 				
 				var gc = meta.get('grouperColumn'),
 					sc = meta.get('sorterColumn'),
+					scd = meta.get('sorterDir'),
 					gcc
 				;
 				
@@ -1162,7 +1163,7 @@ var getGroupConfig = function(model) {
 				;
 				
 				sorterProperty = sc || gcc;
-				direction = 'ASC';
+				direction = scd || 'ASC';
 				
 				if (gcc) {					
 					grouperFunction =  (gcc.get('type') == 'date')
@@ -1194,6 +1195,13 @@ var getGroupConfig = function(model) {
 					field: sorterProperty,
 					getGroupString: grouperFunction
 				}
+			} else if (sorterProperty) {
+				result = {
+					sorters: [{
+						property: sorterProperty,
+						direction: direction
+					}]
+				}
 			}
 			
 			return result;
@@ -1216,7 +1224,7 @@ var getSortersConfig = function(model, storeConfig) {
 		
 		var sc = meta.get('sorterColumn');
 		
-		var direction = 'ASC';
+		var direction = meta.get('sorterDir') || 'ASC';
 		
 		if (sc) {
 			sortConfig.sorters.push ({ property: sc, direction: direction });
