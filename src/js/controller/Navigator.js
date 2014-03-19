@@ -5,7 +5,10 @@ Ext.regController('Navigator', {
 		this.mon(IOrders.xi, 'uploadrecord', this.onUploadRecord, this);
 		this.mon(IOrders.xi, 'tableload', this.onTableLoad, this);
         
-        this.mon(IOrders.xi, 'pullrefresh', function(modelName) {
+        this.mon(IOrders.xi, 'pullrefresh', function(name) {
+			
+			var modelName = Ext.getStore('tables').getById(name).get('primaryTable') || name;
+			
 			if(IOrders.xi.fireEvent ('beforetableload', modelName) !== false) {
                 IOrders.xi.request ({
                     command: 'download',
@@ -34,11 +37,12 @@ Ext.regController('Navigator', {
 			}
             
             var view = IOrders.viewport.getActiveItem(),
-                tableStore = Ext.getStore('tables')
+                tableStore = Ext.getStore('tables'),
+				table = tableStore.getById(t)
             ;
-            tableStore.getById(t).set('loading', false);
+            table.set('loading', false);
             
-            if(view.isSetView && view.tableRecord === t) {
+            if(view.isSetView && (view.tableRecord === t || tableStore.getById(view.tableRecord).get('primaryTable') === t)) {
 				
                 view.setViewStore.currentPage = 1;
                 view.setViewStore.load();
