@@ -900,6 +900,7 @@ var getDepsData = function(depsStore, tablesStore, view, config) {
 			depRec = depTable.copy();
 			depRec.set('contains', dep.get('contains'));
 			depRec.set('editing', view ? view.editing : false);
+			depRec.set('filterBy', dep.get('name'));
 			
 			loadDepData(depRec, depTable, view, config ? Ext.apply(config, {data: data}) : undefined);
 			
@@ -924,7 +925,7 @@ var loadDepData = function(depRec, depTable, view, config, force) {
 
 	if(view && view.objectRecord.modelName != 'MainMenu') {
 		filters.push({
-			property: lowercaseFirstLetter(view.objectRecord.modelName),
+			property: depRec.get('filterBy'),
 			value: view.objectRecord.getId()
 		});
 		depRec.set('filtered', true);

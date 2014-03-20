@@ -599,9 +599,11 @@ Ext.regController('Navigator', {
 		    isTableList = list.getEl().hasCls('x-table-list') ? true : false,
 		    tappedRec = list.getRecord(item)
 		;
-
+		
+		if (options.event.getTarget(".x-list-disclosure")) return;
+		
 		view.lastSelectedRecord = tappedRec;
-
+		
 		if (target.hasCls('x-button') && !target.hasCls('label-parent')) {
 			
 			if (target.hasCls('extend')) {
@@ -706,7 +708,8 @@ Ext.regController('Navigator', {
 		} else if (options.isSetView) {
 			
 			tappedRec.get('count') && !view.editing && Ext.dispatch(Ext.apply(options, {
-				action: 'createAndActivateView'
+				action: 'createAndActivateView',
+				filterBy: tappedRec.get('filterBy')
 			}));
 			
 		} else if (isTableList && target.up('.dep')) {
@@ -998,8 +1001,11 @@ Ext.regController('Navigator', {
 	createAndActivateView: function(options) {
 		
 		var objectRecord = options.record || options.list.getRecord(options.item),
-		    config = options.config || {}
+		    config = options.config || {},
+			filterBy = options.filterBy || objectRecord.modelName && lowercaseFirstLetter(objectRecord.modelName)
 		;
+		
+		config.filterBy = filterBy;
 		
 		options.tableRecord && Ext.apply(config, {
 			tableRecord: options.tableRecord,
@@ -1027,8 +1033,7 @@ Ext.regController('Navigator', {
 		    newCard = options.newCard,
 		    store = newCard.setViewStore,
 		    storeLimit = newCard.storeLimit,
-		    storePage = newCard.storePage,
-			filterBy = options.filterBy || lowercaseFirstLetter(newCard.objectRecord.modelName)
+		    storePage = newCard.storePage
 		;
 		
 		oldCard.setLoading(true);
@@ -1051,12 +1056,10 @@ Ext.regController('Navigator', {
 			
 		};
 		
-		if (newCard.objectRecord.modelName != 'MainMenu' && filterBy) {
-			
-			newCard.filterBy = filterBy;
+		if (newCard.objectRecord.modelName != 'MainMenu' && newCard.filterBy) {
 			
 			store.filters.add({
-				property: filterBy,
+				property: newCard.filterBy,
 				value: newCard.objectRecord.getId()
 			})
 			
