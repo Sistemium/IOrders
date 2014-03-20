@@ -357,7 +357,7 @@
 	border-radius: 3px;
 }
 
-.onSilver {
+.onSilver, .x-list-item .whom span {
 	background-color: silver;
 	padding: 2px 6px;
 	border-radius: 3px;
