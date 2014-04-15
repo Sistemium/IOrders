@@ -833,7 +833,7 @@ var createFilterField = function(objectRecord, onLoadCallback) {
 			;
 			
 			if (typeof onLoadCallback == 'function') {
-				onLoadCallback(this.arguments)
+				onLoadCallback(records, operation, success)
 			}
 		}
 		
@@ -1048,7 +1048,8 @@ var createNavigatorView = function(rec, oldCard, isSetView, editing, config) {
 				storeLimit: oldCard.isSetView ? oldCard.setViewStore.currentPage * oldCard.setViewStore.pageSize : undefined,
 				storePage: oldCard.isSetView && oldCard.setViewStore.currentPage,
 				lastSelectedRecord: oldCard.lastSelectedRecord,
-				scrollOffset: oldCard.form.scroller && oldCard.form.scroller.getOffset()
+				scrollOffset: oldCard.form.scroller && oldCard.form.scroller.getOffset(),
+				filterBy: oldCard.filterBy
 			}
 		}, config);
 		
