@@ -172,7 +172,8 @@ Ext.regController('Main', {
 				controller: 'Navigator',
 				action: 'createAndActivateView',
 				isSetView: listEl.hasCls('x-deps-list'),
-				editable: false
+				editable: false,
+				filterBy: table.get('id')
 			}));
 		}
 	},

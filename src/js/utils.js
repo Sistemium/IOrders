@@ -897,10 +897,14 @@ var getDepsData = function(depsStore, tablesStore, view, config) {
 				|| (isSetView ? config.record.modelName == 'SaleOrder' : view.objectRecord.modelName == 'SaleOrder'))
 		   && (isSetView ? config.record.modelName !== depTable.get('id') : true)) {
 			
+			var filterBy = dep.get('name') || lowercaseFirstLetter(dep.get('parent'));
+			
+			if (filterBy == 'mainMenu') filterBy = undefined;
+			
 			depRec = depTable.copy();
 			depRec.set('contains', dep.get('contains'));
 			depRec.set('editing', view ? view.editing : false);
-			depRec.set('filterBy', dep.get('name'));
+			depRec.set('filterBy', filterBy);
 			
 			loadDepData(depRec, depTable, view, config ? Ext.apply(config, {data: data}) : undefined);
 			
