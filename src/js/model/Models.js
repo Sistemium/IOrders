@@ -183,11 +183,11 @@ function afterCreateModels() {
 			
 			if (result.volumeCombo>=0) {
 				if (ratio0) {
-					result.volume0 = result.volumeCombo ? ratio0 : 0;
+					result.volume0 = result.volumeCombo >= ratio0 ? ratio0 : result.volumeCombo || 0;
 					result.volume1 = result.volumeCombo - result.volume0;
 				}
 				if (ratio1) {
-					result.volume1 = result.volumeCombo ? ratio1 : 0;
+					result.volume1 = result.volumeCombo >= ratio1 ? ratio1 : result.volumeCombo || 0;
 					result.volume0 = result.volumeCombo - result.volume1;
 				}
 			}
