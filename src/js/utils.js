@@ -329,13 +329,14 @@ Ext.apply(Number.prototype, {
 		return parseFloat(this.toFixed(d))
 	},
 	toDisplayString: function(d) {
-		return this.toDecimal(d>=0?d:2).addCommas().replace(/\,/g,'&nbsp;').replace(/\./g,',');
+		d = (d>=0?d:2);
+		return this.toDecimal(d).addCommas(d).replace(/\,/g,'&nbsp;').replace(/\./g,',');
 	},
-	addCommas:  function(){
+	addCommas:  function(d){
 		var nStr  = this.toString() + '';
 		x = nStr.split('.');
 		x1 = x[0];
-		x2 = x.length > 1 ? '.' + x[1] : '.00';
+		x2 = x.length > 1 ? '.' + x[1] : (d ? ('.' + Array(d+1).join(0)) : '');
 		var rgx = /(\d+)(\d{3})/;
 		while (rgx.test(x1)) {
 			x1 = x1.replace(rgx, '$1' + ',' + '$2');
