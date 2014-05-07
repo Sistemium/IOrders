@@ -89,3 +89,10 @@ Ext.MessageBox.YESNO[0].text = 'Нет';
 Ext.Picker.prototype.doneButton = 'OK';
 Ext.Picker.prototype.cancelButton = 'Отмена';
 
+Ext.override(Ext.form.Text, {
+	
+	afterBlur: function () {
+		document.body.scrollTop=0;
+	}
+	
+});
