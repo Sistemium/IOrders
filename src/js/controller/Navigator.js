@@ -1223,10 +1223,10 @@ Ext.regController('Navigator', {
 					
 					{ text: 'Сервер-логин', name: 'XiLogin'},
 					{ text: 'Сервер-логоф', name: 'XiLogoff'},
-					{ xtype: 'segmentedbutton', items: [
+					/*;{ xtype: 'segmentedbutton', items: [
 						{text: 'Localdata', name: 'XiNoServer', pressed: IOrders.xi.noServer},
 						{text: 'System', name: 'XiYesServer', pressed: !IOrders.xi.noServer},
-					]},
+					]},*/
 					{ xtype: 'segmentedbutton', layout: {align: 'none'}, items: [
 						{text: 'Enable logging', name: 'EnableLog', pressed: DEBUG},
 						{text: 'Disable logging', name: 'DisableLog', pressed: !DEBUG},
