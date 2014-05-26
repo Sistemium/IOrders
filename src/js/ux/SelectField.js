@@ -10,6 +10,26 @@ Ext.override(Ext.form.Select, {
 			;
 			
 		}
+		
+		this.mon(this.store,'load', function () {
+			
+			var value = this.value,
+				idx = -1,
+				record
+			;
+			
+			if (value) {
+				idx = this.store.findExact(this.valueField, value)
+			}
+			
+			record = this.store.getAt(idx);
+			
+			if (record && this.rendered) {
+				this.fieldEl.dom.value = record.get(this.displayField);
+			}
+			
+		}, this);
+		
 	},
 	
     showComponent: function() {
