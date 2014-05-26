@@ -35,6 +35,9 @@ Ext.override(Ext.form.Select, {
 				else
 					selectionModel.deselectAll()
 				;
+				if (listPanel.items.getAt(0).getHeight() > listPanel.getHeight())
+					listPanel.doComponentLayout()
+				;
 			}
         }
     },
