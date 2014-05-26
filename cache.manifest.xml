@@ -29,6 +29,7 @@
         <file>src/js/ux/SegmentedButton.js</file>
         <file>src/js/ux/SelectField.js</file>
         <file>src/js/ux/Stateful.js</file>
+        <file>src/js/ux/Store.js</file>
         <file>src/js/ux/TemplateField.js</file>
         
         <file>src/js/view/AbstractView.js</file>
