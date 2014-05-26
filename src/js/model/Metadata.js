@@ -135,6 +135,7 @@ var addMainMenu = function(store, tables) {
 	Ext.each(tables, function(table) {
 		if((table.deps().getCount() > 0
 			&& table.get('nameSet')
+			&& !table.get('hidden')
 			&& (function(table){
 				var cnt = 0;
 				Ext.each(table.raw.columns, function(column) {
