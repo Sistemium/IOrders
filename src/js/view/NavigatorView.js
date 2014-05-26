@@ -581,11 +581,12 @@ var NavigatorView = Ext.extend(AbstractView, {
 			}
 		});
 		
-		var filterFn = function (store, property, value) {
+		var filterFn = function (store, property, value, callback) {
 			store.clearFilter(true);
 			store.filter({
 				property: property,
-				value: value
+				value: value,
+				callback: callback
 			});
 		};
 		
@@ -599,9 +600,13 @@ var NavigatorView = Ext.extend(AbstractView, {
 						console.log('Select value changed: ' + value);
 						useForSelectFilters.each(function (c) {
 							if (c.name == field.name) {
-								filterFn (c.store, c.property, value);
-								var f = field.ownerCt.items.getByKey(c.field);
-								f && f.reset();
+								filterFn (c.store, c.property, value, function() {
+									var f = field.ownerCt.items.getByKey(c.field);
+									(f && c.store.getById(f.value))
+										? f.setValue(f.value)
+										: f.reset()
+									;
+								});
 							}
 						});
 					}
