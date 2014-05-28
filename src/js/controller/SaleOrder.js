@@ -629,12 +629,26 @@ Ext.regController('SaleOrder', {
 			
 			var totalsBtn = newCard.getComponent('bottomToolbar').getComponent('ShowCustomer');
 			
+			totalsBtn.messagesShown = {};
+			
 			totalsBtn && totalsBtn.mon (ots, 'load', function (store, records, success) {
 				var badgeValue = null;
 				if (records.length && records[0].get('isWarning')) {
 					badgeValue = 1;
 				}
 				totalsBtn.setBadge (badgeValue);
+				
+				var messageId;
+				
+				if (records.length && (messageId = records[0].get('messageId'))) {
+					
+					if (!totalsBtn.messagesShown[messageId]) {
+						
+						Ext.Msg.alert ('Внимание', records[0].get('messageText'), function(v) {
+							totalsBtn.messagesShown[messageId] = v || true;
+						});
+					}
+				}
 			});
 			
 			ots.load({
