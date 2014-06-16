@@ -1303,7 +1303,7 @@ Ext.regController('SaleOrder', {
 			v == undefined && (v = data[fname]);
 			v == undefined && (v = parseFloat (rec.get(fname) || '0'));
 			
-			v = parseFloat(v);
+			v = parseFloat(v) || 0;
 			
 			v < vMin && (v = vMin);
 			v > vMax && (v = vMax);
