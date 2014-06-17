@@ -396,6 +396,10 @@ Ext.apply(String.prototype, {
 			/(\$[a-z]*(?=\>|\<|\"|\}))/g, replacer
 		);
 		
+	},
+	
+	dateFormat: function(fmt) {
+		return this;
 	}
 	
 });
