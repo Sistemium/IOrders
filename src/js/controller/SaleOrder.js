@@ -398,8 +398,12 @@ Ext.regController('SaleOrder', {
 			listStore = options.list.store
 			rec = listStore.getAt(options.idx),
 			fs = view.bonusProductStore,
-			fieldName = options.fieldName || 'product'
+			fieldName = options.fieldName || 'product',
+			segBtn = view.getDockedComponent('top').getComponent('ModeChanger'),
+			btnBonus = segBtn.getComponent('Bonus')
 		;
+		
+		segBtn.setPressed(btnBonus,false);
 		
 		fs.clearFilter(true);
 		
@@ -408,7 +412,7 @@ Ext.regController('SaleOrder', {
 			value: rec.getId()
 		})
 		
-		ops.filtersSnapshot = ops.filters.items;
+		ops.filters.items && (ops.filtersSnapshot = ops.filters.items);
 		ops.clearFilter(true);
 		
 		ops.filterBy (function(item) {
@@ -2067,9 +2071,12 @@ Ext.regController('SaleOrder', {
 		var ops = view.offerProductStore;
 		
 		ops.clearFilter(true);
-		ops.saleOrderModeFiltersSnapshot
-			&& ops.filter(ops.saleOrderModeFiltersSnapshot)
-		;
+		
+		if (ops.saleOrderModeFiltersSnapshot && ops.saleOrderModeFiltersSnapshot.length){
+			ops.filter(ops.saleOrderModeFiltersSnapshot);
+		} else {
+			ops.filterBy(function(){return false});
+		}
 		
 		view.offerCategoryStore.clearFilter(true);
 		
@@ -2256,12 +2263,13 @@ Ext.regController('SaleOrder', {
 	},
 	
 	toggleBonusOn: function(options) {
-		if(!options.atStart) 
-			Ext.dispatch(Ext.apply(options, {
-				action: 'toggleActiveOn',
-				criteria: '.hasAction'
-			}))
-		;
+		Ext.dispatch(Ext.apply(options, {
+			action: 'toggleBonusPanelOn'
+		}));
+	},
+	
+	toggleBonusOff: function(options) {
+		console.log('toggleBonusOff');
 	},
 	
 	toggleBonusPanelOn: function(options) {
@@ -2310,7 +2318,16 @@ Ext.regController('SaleOrder', {
 		
 	},
 
-	toggleBonusOff: function(options) {
+	toggleBonusActiveOn: function(options) {
+		if(!options.atStart) 
+			Ext.dispatch(Ext.apply(options, {
+				action: 'toggleActiveOn',
+				criteria: '.hasAction'
+			}))
+		;
+	},
+	
+	toggleBonusActiveOff: function(options) {
 
 //		var view = options.view,
 //			segBtn = view.getDockedComponent('top').getComponent('ModeChanger'),
@@ -2458,7 +2475,7 @@ Ext.regController('SaleOrder', {
 		
 		view.productSearchFilter = undefined;
 		
-		if (view.offerProductStore.filtersSnapshot) {
+		if (view.offerProductStore.filtersSnapshot && view.offerProductStore.filtersSnapshot.length) {
 			view.offerProductStore.clearFilter(true);
 			view.offerProductStore.filter(view.offerProductStore.filtersSnapshot);
 		}

@@ -245,6 +245,12 @@ var SaleOrderView = Ext.extend(AbstractView, {
 					{
 						itemId: 'Bonus',
 						text: 'Акции',
+						handler: Ext.emptyFn,
+						hidden: tableHasColumn('Offer','actionsCount') ? false : true
+					},
+					{
+						itemId: 'BonusActive',
+						text: 'Акции',
 						criteria: '.hasAction',
 						handler: Ext.emptyFn,
 						hidden: tableHasColumn('Offer','hasAction') ? false : true
