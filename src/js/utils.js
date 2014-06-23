@@ -1157,17 +1157,19 @@ var getGroupConfig = function(model) {
 		}
 		default : {
 			
-			var grouperFunction, sorterProperty, direction, result = {};
+			var grouperFunction, sorterProperty, direction, result = {}, gc;
 			
 			var meta=Ext.getStore('tables').getById(model);
 			
 			if (meta) {
 				
-				var gc = meta.get('grouperColumn'),
+				var 
 					sc = meta.get('sorterColumn'),
 					scd = meta.get('sorterDir'),
 					gcc
 				;
+				
+				gc = meta.get('grouperColumn');
 				
 				if (gc)
 					gcc = tableHasColumn(model,gc)
@@ -1192,18 +1194,19 @@ var getGroupConfig = function(model) {
 			if (!sorterProperty && tableHasColumn (model, 'date')) {
 				sorterProperty = 'date';
 				direction = 'DESC';
+				gc = 'date';
 				grouperFunction = function(rec) {
-					return Ext.util.Format.date(rec.get(sorterProperty));
+					return Ext.util.Format.date(rec.get(gc));
 				};
 			}
 			
 			if (sorterProperty && grouperFunction) {
 				result = {
 					sorters: [{
-						property: sorterProperty,
+						property: gc,
 						direction: direction
 					}],
-					field: sorterProperty,
+					field: gc,
 					getGroupString: grouperFunction
 				}
 			} else if (sorterProperty) {

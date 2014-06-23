@@ -502,6 +502,10 @@
 	-webkit-box-pack: start;
 }
 
+.packEnd {
+	-webkit-box-pack: end;
+}
+
 .alignStart {
 	-webkit-box-align: start;
 }
@@ -514,7 +518,7 @@
 	text-align: right;
 }
 
-.hbox > * {
+.hbox > *, .hbox > .marginRight:last-child {
 	margin-right: 0.8em;
 }
 
@@ -668,9 +672,22 @@
 	width: 5em;
 }
 
+small .span3 {
+	width: 24%;
+}
+
+.key > .span2, small .span2 {
+	width: 16%;
+}
+
+.key > .span1, small .span1 {
+	width: 8%;
+}
+
 .span2 {
 	width: 2.5em;
 }
+
 
 .number {
 	text-align: right;
