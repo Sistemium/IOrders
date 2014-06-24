@@ -71,6 +71,7 @@ Ext.override(Ext.form.Select, {
 				data: 'this.listPanel.hidden',
 				force: true
 			});
+			this.listPanel.doHide();
 			return;
 		}
 		
