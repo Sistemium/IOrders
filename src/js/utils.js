@@ -1175,7 +1175,7 @@ var getGroupConfig = function(model) {
 					gcc = tableHasColumn(model,gc)
 				;
 				
-				sorterProperty = sc || gcc;
+				sorterProperty = sc || gc;
 				direction = scd || 'ASC';
 				
 				if (gcc) {					
@@ -1203,10 +1203,10 @@ var getGroupConfig = function(model) {
 			if (sorterProperty && grouperFunction) {
 				result = {
 					sorters: [{
-						property: gc,
+						property: sorterProperty,
 						direction: direction
 					}],
-					field: gc,
+					field: sorterProperty,
 					getGroupString: grouperFunction
 				}
 			} else if (sorterProperty) {
