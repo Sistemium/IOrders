@@ -826,8 +826,11 @@ var createFieldSet = function(columnsStore, modelName, view, fieldItitConfig) {
 
 var createFilterField = function(objectRecord, onLoadCallback) {
 
-	var modelName = objectRecord.modelName;	
-	var selectStore = createStore(modelName, getSortersConfig(modelName, {}));
+	var modelName = objectRecord.modelName,
+		listGroupedConfig = getGroupConfig(modelName),
+		sortersConfig = getSortersConfig(modelName, listGroupedConfig),
+	    selectStore = createStore(modelName, Ext.apply(listGroupedConfig, sortersConfig))
+	;
 	
 	selectStore.load(function(records, operation, success) {
 		
@@ -1207,7 +1210,8 @@ var getGroupConfig = function(model) {
 						direction: direction
 					}],
 					field: sorterProperty,
-					getGroupString: grouperFunction
+					getGroupString: grouperFunction,
+					groupField: gc
 				}
 			} else if (sorterProperty) {
 				result = {
