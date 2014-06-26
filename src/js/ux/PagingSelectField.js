@@ -5,7 +5,7 @@ var PagingSelectField = Ext.extend(Ext.form.Select, {
 			list = panel.getComponent('list')
 		;
 
-		this.setItemTplWithTitle();
+		//this.setItemTplWithTitle();
 		list.initPlugin(new Ext.plugins.ListPagingPlugin({autoPaging: true}));
 
 		return panel;
