@@ -35,11 +35,12 @@ var createModels = function(tablesStore) {
 		table.columns().each(function(column) {
 			
 			var cName = column.get('name'),
+				initValue = column.get('init'),
 				fieldConfig = {
 					name: cName,
 					type: column.get('type'),
 					useNull: true,
-					defaultValue: column.get('init'),
+					defaultValue: initValue,
 					template: column.get('template'),
 					compute: column.get('compute'),
 				}
@@ -63,6 +64,19 @@ var createModels = function(tablesStore) {
 					}
 				})
 			;
+			
+			if (initValue == 'new Date()'){
+				
+				fieldConfig.defaultValue = undefined;
+				
+				inits.push({
+					name: cName,
+					fn: function () {
+						return this.data[cName] || new Date();
+					}
+				});
+				
+			}
 			
 			var compute = column.get('compute');
 			
