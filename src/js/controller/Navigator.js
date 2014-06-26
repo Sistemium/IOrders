@@ -354,7 +354,7 @@ Ext.regController('Navigator', {
 			var msg = '';
 			
 			errors.each(function(err) {
-				msg += 'Поле ' + err.field + ' ' + err.message;
+				msg += err.message + '<br/><br/>';
 			});
 			
 			Ext.Msg.alert('Ошибка валидации', msg, Ext.emptyFn);
