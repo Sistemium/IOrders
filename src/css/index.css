@@ -547,6 +547,10 @@
 	min-width: 4.25em;
 }
 
+.em8 {
+	min-width: 8.5em;
+}
+
 
 .x-list-item .folded .tapme {
 	display: none;
