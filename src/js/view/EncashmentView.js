@@ -86,7 +86,7 @@ var EncashmentView = Ext.extend(AbstractView, {
 						var e = this.keyboard.iel.down ('.encashSumm');
 						
 						if (!e) e = this.keyboard.iel;
-						this.keyboard.showBy(e, false, false);
+						this.keyboard.showBy(e, false, true);
 						this.keyboard.setValue(encashSumm);
 						this.keyboard.options = {item: item, list: list, rec: rec};
 					}
