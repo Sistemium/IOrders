@@ -153,9 +153,11 @@ var getItemTplCompute = function(modelName, config) {
 	};
 	
 	var idColExist = columnStore.findExact('name', 'id') === -1 ? false : true;
-	var queryValue = idColExist ? 'parent' : 'key';
+	var queryValue = idColExist ? 'parent' : 'key',
+		nameColumnIdx = columnStore.findExact('name', 'name')
+	;
 	
-	if(columnStore.findExact('name', 'name') != -1) {
+	if(nameColumnIdx != -1 && columnStore.getAt(nameColumnIdx).get('label')) {
 		
 		templateData.hasName = true;
 		queryValue = 'key';
