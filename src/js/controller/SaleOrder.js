@@ -415,9 +415,12 @@ Ext.regController('SaleOrder', {
 		ops.filters.items && (ops.filtersSnapshot = ops.filters.items);
 		ops.clearFilter(true);
 		
-		ops.filterBy (function(item) {
+		ops.bonusFilter = new Ext.util.Filter({
+			filterFn: function(item) {
 			return fs.findExact(fieldName, item.get(fieldName)) !== -1;
-		});
+		}});
+		
+		ops.filter (ops.bonusFilter);
 		
 		Ext.dispatch(Ext.apply(options, {
 			action: 'beforeFilterofferProductStore'
@@ -2479,6 +2482,8 @@ Ext.regController('SaleOrder', {
 			view.offerProductStore.clearFilter(true);
 			view.offerProductStore.filter(view.offerProductStore.filtersSnapshot);
 		}
+		
+		view.offerProductStore.bonusFilter = false;
 		
 		view.offerCategoryStore.clearFilter();
 		
