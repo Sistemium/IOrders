@@ -1411,10 +1411,12 @@ Ext.regController('SaleOrder', {
 			
 		});
 		
-		var factor = rec.get('factor');
-		var totalVolDelta = totalVol % factor;
+		var factor = rec.get('factor'),
+			packageRel = rec.get('packageRel'),
+			totalVolDelta = totalVol % factor
+		;
 		
-		if (totalVolDelta) {
+		if (totalVolDelta && totalVol % packageRel) {
 			var greaterVol = data.volume0 >= data.volume1 ? '0' : '1';
 			data['volume'+greaterVol] += factor - totalVolDelta;
 		}
