@@ -389,7 +389,20 @@ var NavigatorView = Ext.extend(AbstractView, {
 			}
 		;
 		
-		var statusButtons =  [
+		var statusButtons =  [];
+		var cfg = c.tplConfig && c.tplConfig.workflow;
+		
+		if (cfg) {Ext.iterate(cfg, function (name,config) {
+			statusButtons.push ({
+				text: config.label,
+				itemId: name,
+				name: name,
+				desc: config.desc,
+				hideIfNot: config.hidden,
+				canEnable: function (s) {return config.from && (config.from.indexOf(s) >= 0)}
+			});
+		})} else {
+			statusButtons = [
 			{text: 'Черновик', itemId: 'draft', name: 'draft', canEnable: function(s) { return s == 'upload'; },
 				desc: 'Заказ-черновик не отправится на склад пока вы не измените его статус на "В работу"'},
 			{text: 'В работу', itemId: 'upload', name: 'upload', canEnable: function(s) { return s == 'draft'; },
@@ -401,8 +414,8 @@ var NavigatorView = Ext.extend(AbstractView, {
 				desc: 'Заказ задержан на сервере. Для разблокировки обратитесь к координатору.'},
 			{text: 'Передан', itemId: 'done', name: 'done',
 				desc: 'Заказ успешно передан в обработку.'}
-		];
-
+		]};
+		
 		var btnPressed = undefined;
 		
 		statusButtons.forEach( function(b) { if (b.name) b.cls = 'make-'+b.name } );
@@ -421,7 +434,7 @@ var NavigatorView = Ext.extend(AbstractView, {
 			
 			if (b.canEnable) b.disabled = !b.canEnable(state);
 			
-			if (b.hideIfNot) b.hidden = !b.pressed;
+			if (b.hideIfNot && b.disabled) b.hidden = !b.pressed;
 			
 			if (b.pressed) {
 				b.disabled = false;
@@ -579,6 +592,7 @@ var NavigatorView = Ext.extend(AbstractView, {
 				});
 				
 			}
+			
 		});
 		
 		var filterFn = function (store, property, value, callback) {

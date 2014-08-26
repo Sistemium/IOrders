@@ -204,7 +204,7 @@ Ext.regController('Navigator', {
 							b.disable();
 							b.canEnable && b[b.canEnable(state) ? 'enable' : 'disable']();
 							b.pressed && b.enable();
-							if (b.hideIfNot) b[b.pressed ? 'show' : 'hide']();
+							if (b.hideIfNot) b[(b.pressed || !b.disabled) ? 'show' : 'hide']();
 						});
 						
 					}
