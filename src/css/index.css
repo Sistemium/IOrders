@@ -308,6 +308,10 @@
 	color: silver !important;
 }
 
+.orange {
+	color: orange !important;
+}
+
 .negative, .isBlockedPlong, .isOverdue, .red, .caution, .isDisabled{
 	color: red !important;
 }
