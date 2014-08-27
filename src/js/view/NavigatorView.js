@@ -399,7 +399,9 @@ var NavigatorView = Ext.extend(AbstractView, {
 				name: name,
 				desc: config.desc,
 				hideIfNot: config.hidden,
-				canEnable: function (s) {return config.from && (config.from.indexOf(s) >= 0)}
+				canEnable: function (s) {return config.from && (config.from.indexOf(s) >= 0)},
+				statusCls: config.cls,
+				messageCls: config.messageCls || 'red'
 			});
 		})} else {
 			statusButtons = [
@@ -418,7 +420,9 @@ var NavigatorView = Ext.extend(AbstractView, {
 		
 		var btnPressed = undefined;
 		
-		statusButtons.forEach( function(b) { if (b.name) b.cls = 'make-'+b.name } );
+		statusButtons.forEach( function(b) {
+			if (b.name) b.cls = 'make-' + b.name;
+		});
 		
 		if(me.objectRecord.phantom || me.isNew) {
 			state = me.saleOrderStatus || c.get('init');
@@ -465,6 +469,9 @@ var NavigatorView = Ext.extend(AbstractView, {
 								Ext.applyIf(Ext.apply({},btn),segBtn)
 							);
 							segBtn.serverMessage = undefined;
+							btn.el.addCls(btn.statusCls);
+						} else {
+							btn.el.removeCls(btn.statusCls);
 						}
 					},
 					afterLayout: function (me) {
@@ -479,8 +486,10 @@ var NavigatorView = Ext.extend(AbstractView, {
 				cls: 'statusDesc',
 				
 				tpl: [
-					'<tpl if="serverMessage"><div class="red">{serverMessage}</div><br></tpl>',
-					'<div class="{name}">{desc}</div>'
+					'<tpl if="serverMessage">',
+					'<div class="{messageCls}">{serverMessage}</div>',
+					'<br></tpl>',
+					'<div class="{name} {statusCls}">{desc}</div>'
 				]
 			}
 		);
