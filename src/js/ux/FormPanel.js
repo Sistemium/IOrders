@@ -14,6 +14,8 @@ Ext.override(Ext.form.FormPanel, {
 					f.setData (instance.data)
 			});
         }
+		
+		this.record.get('serverPhantom') || this.fireEvent ('update', this.record);
         
         return this;
     },

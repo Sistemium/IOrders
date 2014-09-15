@@ -2,6 +2,8 @@ Ext.regController('Navigator', {
 
 	afterAppLaunch: function(options) {
 		
+		var navigator = this;
+		
 		this.mon(IOrders.xi, 'uploadrecord', this.onUploadRecord, this);
 		this.mon(IOrders.xi, 'tableload', this.onTableLoad, this);
         
@@ -42,20 +44,34 @@ Ext.regController('Navigator', {
             ;
             table.set('loading', false);
             
+			var list = view.form.getComponent('list'),
+				pullPlugin = (list && list.pullPlugin) || view.form.pullPlugin
+			;
+			
+			pullPlugin && pullPlugin.isLoading && pullPlugin.onLoadComplete.call(pullPlugin);
+			
             if(view.isSetView && (view.tableRecord === t || tableStore.getById(view.tableRecord).get('primaryTable') === t)) {
 				
                 view.setViewStore.currentPage = 1;
                 view.setViewStore.load();
 				
-                var list = view.form.getComponent('list'),
-                    pullPlugin = list.pullPlugin
-                ;
-				
-                pullPlugin.isLoading && pullPlugin.onLoadComplete.call(pullPlugin);
                 list.setLoading(false);
                 view.form.scroller.scrollTo({y: 0});
 				
             } else if(view.isObjectView) {
+				
+				var record = view.objectRecord;
+				
+				record.getProxy().read(
+					new Ext.data.Operation({id: record.getId(), action: 'read'}),
+					function (t,s) {
+						
+						if (s) {
+							t.resultSet && t.resultSet.records.length
+								&& navigator.onUploadRecord(t.resultSet.records[0]);
+						}
+					}
+				)
 				
                 var depStore = view.depStore,
                     depRecs = depStore.queryBy(function(rec){

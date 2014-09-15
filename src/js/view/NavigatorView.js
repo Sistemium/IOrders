@@ -42,6 +42,32 @@ var NavigatorView = Ext.extend(AbstractView, {
 			
 			this.cls = 'objectView';
 			
+			if (this.objectRecord.modelName != 'MainMenu') {
+				formConfig.plugins = [
+					new Ext.plugins.PullRefreshPlugin({
+						
+						isLoading: table.get('loading'),
+						
+						render: function() {
+							Ext.plugins.PullRefreshPlugin.prototype.render.apply(this, arguments);
+							
+							if(this.isLoading)
+								this.setViewState('loading');
+						},
+						
+						refreshFn: function(onCompleteCallback, pullPlugin) {
+							this.list.pullPlugin = pullPlugin;
+							IOrders.xi.fireEvent(
+								'pullrefresh',
+								modelName,
+								onCompleteCallback
+							);
+						}
+						
+					})
+				];
+			}
+			
 			formItems.push(this.fieldSetConfig(this, table, modelName));
 			
 			var spacerExist = false,
@@ -183,7 +209,30 @@ var NavigatorView = Ext.extend(AbstractView, {
 				flex: 2,
 				cls: 'x-navigator-form ' + this.cls,
 				scroll: true,
-				items: formItems
+				items: formItems,
+				afterComponentLayout : function() {
+					var scrollEl = this.scrollEl,
+						scroller = this.scroller,
+						parentEl;
+			
+					if (scrollEl) {
+						parentEl = scrollEl.parent();
+			
+						if (scroller.horizontal) {
+							scrollEl.setStyle('min-width', parentEl.getWidth(true) + 'px');
+							scrollEl.setHeight(parentEl.getHeight(true) || null);
+						}
+						if (scroller.vertical) {
+							scrollEl.setStyle('min-height', parentEl.getHeight(false) + 'px');
+							scrollEl.setWidth(parentEl.getWidth(true) || null);
+						}
+						scroller.updateBoundary(true);
+					}
+			
+					if (this.fullscreen && Ext.is.iPad) {
+						Ext.repaint();
+					}
+				}
 			}, formConfig))
 		);
 	},
