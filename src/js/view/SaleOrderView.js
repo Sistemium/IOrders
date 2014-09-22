@@ -216,7 +216,7 @@ var SaleOrderView = Ext.extend(AbstractView, {
 					focus: function (f,e) {
 						setTimeout (function() {
 							e.target.setSelectionRange (0, 9999);
-						}, 1);
+						}, 10);
 					}
 				}
 			},
