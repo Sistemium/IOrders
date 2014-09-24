@@ -172,6 +172,7 @@ var NavigatorView = Ext.extend(AbstractView, {
 					name: 'searcher',
 					itemId: 'Searcher',
 					placeHolder: 'Поиск',
+					useMask: false,
 					listeners:{
 						change: applySearch,
 						action: function(f,e) {

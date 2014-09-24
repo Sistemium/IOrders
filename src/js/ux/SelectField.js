@@ -93,6 +93,24 @@ Ext.override(Ext.form.Select, {
         	filter: true
         });
     },
+	
+	onPickerChange: function(picker, value) {
+		
+        var currentValue = this.getValue(),
+            newValue = value[this.name]
+		;
+        
+		if (newValue != currentValue) {
+            this.setValue(newValue);
+            this.fireEvent('change', this, newValue);
+        }
+		
+        Ext.dispatch({
+        	action: 'onSelectFieldValueChange',
+        	field: this,
+        	filter: true
+        });
+    },
 
 	onRender: function(){
         Ext.form.Select.superclass.onRender.apply(this, arguments);

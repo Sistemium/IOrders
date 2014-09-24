@@ -208,6 +208,7 @@ var SaleOrderView = Ext.extend(AbstractView, {
 				name: 'productSearch',
 				itemId: 'ProductSearcher',
 				placeHolder: 'Поиск по названию',
+				useMask: false,
 				listeners:{
 					change: applySearch,
 					action: function(f,e) {
