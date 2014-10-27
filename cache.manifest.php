@@ -5,7 +5,9 @@
     
     @$config=simplexml_load_file('cache.manifest.xml');
     
-    if (!isset($config->cache)) respond404();
+    $noCache = !isset($config->cache) || (strpos($_SERVER['HTTP_USER_AGENT'], 'Chrome') !== false);
+    
+    if ($noCache) respond404();
 
     $result="CACHE MANIFEST\n";
     $lastModified=0;
