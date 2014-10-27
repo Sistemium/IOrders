@@ -352,6 +352,14 @@ Ext.apply(Number.prototype, {
 
 Ext.apply(String.prototype, {
 	
+	divify: function(delimiter) {
+		var r = '';
+		Ext.each(this.split(delimiter),function (s) {
+			r += '<div>'+s+'</div>'
+		});
+		return r;
+	},
+	
 	toSpan: function (cls) {
 		return ('<span class="'+cls+'">'+this+'</span>')
 			.replace(/ class=("undefined"|"")/,'')
