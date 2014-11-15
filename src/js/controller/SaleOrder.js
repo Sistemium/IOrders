@@ -864,6 +864,8 @@ Ext.regController('SaleOrder', {
 						needle
 					;
 					
+					this.filters.clear(true);
+					
 					Ext.each (records, function(rec) {
 						
 						sname = rec.data['name'];
@@ -986,7 +988,7 @@ Ext.regController('SaleOrder', {
 						action: 'onSaleOrderPositionLoad',
 						records: records,
 						callback: callback
-					}))
+					}));
 					
 				} else {
 					failureCb('товаров')
