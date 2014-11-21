@@ -15,7 +15,7 @@ Ext.override(Ext.form.FormPanel, {
 			});
         }
 		
-		this.record.get('serverPhantom') || this.fireEvent ('update', this.record);
+		this.record && this.record.get('serverPhantom') || this.fireEvent ('update', this.record);
         
         return this;
     },
