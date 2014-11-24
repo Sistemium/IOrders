@@ -90,3 +90,10 @@ Ext.override(Ext.form.Text, {
 	}
 	
 });
+
+if (typeof WebKitPoint == 'undefined') {
+	Ext.Element.prototype.getXY = function () {
+		var rect = this.dom.getBoundingClientRect();
+		return [rect.left, rect.top];
+	}
+}
