@@ -70,7 +70,7 @@ var ExpandableGroupedList = Ext.extend(Ext.List, {
 		var el = headerEl.next();
 		
 		if (headerEl.hasCls('x-list-header-swap')) {
-			return el.down('.x-group-' + headerEl.dom.innerText.toLowerCase() + ' .x-list-group-items');
+			return el.down('.x-group-' + this.getGroupIdFromName(headerEl.dom.innerText) + ' .x-list-group-items');
 		} else {
 			return el;
 		}

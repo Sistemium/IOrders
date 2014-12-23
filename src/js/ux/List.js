@@ -31,6 +31,14 @@ Ext.override(Ext.List, {
         }
         return closest;
     },
+	
+	getGroupId : function(group) {
+        return this.getGroupIdFromName(group.name);
+    },
+
+	getGroupIdFromName : function(name) {
+        return name.toLowerCase().replace(/[^a-я0-9]/ig, '-');
+    },
 
 	listeners: {
 		/*selectionchange: function(selModel, selections) {
