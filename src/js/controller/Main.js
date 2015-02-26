@@ -381,6 +381,7 @@ Ext.regController('Main', {
 		IOrders.xi.request({
 			
 			command: 'metadata',
+			noRetry: true,
 			
 			success: function(response) {
 				var m = response.responseXML;
