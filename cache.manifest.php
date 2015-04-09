@@ -1,12 +1,12 @@
 <?php
     date_default_timezone_set('Europe/Moscow');
-    
+
     require_once ('../XML/functions.php');
-    
+
     @$config=simplexml_load_file('cache.manifest.xml');
-    
+
     $noCache = !isset($config->cache) || (strpos($_SERVER['HTTP_USER_AGENT'], 'Chrome') !== false);
-    
+
     if ($noCache) respond404();
 
     $result="CACHE MANIFEST\n";
@@ -27,19 +27,19 @@
             } else {
                 $result .= "\n# not found file:";
             }
-            
+
             $result .= "\n" . str_replace(' ', '%20', $filename);
         }
     }
-    
+
     $result .="\n\nNETWORK:\n*\n";
-    
+
     $eTag=md5($result);
-    
+
     header('ETag: '.$eTag."\n");
-    
+
     $headers = apache_request_headers();
-            
+
     $modified=true;
 
     foreach ($headers as $header => $value) switch($header){
@@ -54,10 +54,10 @@
             //if (!$modified) $result .= "\n#!Modified";
             break;
     }
-    
+
     header('Content-Type: text/cache-manifest');
     header('Last-Modified: '. date("r", $lastModified ) );
-    
+
     //if (!$modified) $result .= "\n#!Modified";
 
     //file_put_contents ('response.txt', $result);
@@ -81,5 +81,5 @@
 </body></html>
 ');
     }
-    
+
 ?>
