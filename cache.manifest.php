@@ -71,7 +71,7 @@
 
     function respond404(){
         header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
-        header('Content-Type:text/html; charset=iso-8859-1',replace,404);
+        header('Content-Type:text/html; charset=iso-8859-1', true, 404);
         die('<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <html><head>
 <title>404 Not Found</title>
