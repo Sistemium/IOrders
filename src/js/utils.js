@@ -485,7 +485,13 @@ var createFieldSet = function(columnsStore, modelName, view, fieldItitConfig) {
 				label: column.get('label'),
 				disabled: !column.get('editable')
 			},fieldItitConfig);
-			
+
+			var fieldCls = column.get('cls');
+
+			if (fieldCls) {
+				field.cls = fieldCls;
+			}
+
 			var fieldConfig;
 			
 			switch(column.get('type')) {

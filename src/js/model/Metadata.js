@@ -96,7 +96,8 @@ Ext.regModel('Column', {
 		{name: 'importFields', type: 'string'},
 		{name: 'optional', type: 'boolean'},
 		{name: 'predicate-for', type: 'string'},
-		{name: 'primaryTable', type: 'string'}
+		{name: 'primaryTable', type: 'string'},
+		{name: 'cls', type: 'string'}
 	],
 	associations: [
 		{type: 'belongsTo', model: 'Table'},
