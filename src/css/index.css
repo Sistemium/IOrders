@@ -705,3 +705,8 @@ small .span3 {
 	display: inline-block;
 	vertical-align: middle;
 }
+
+.x-field-toggle.important .x-toggle-off {
+	background-color: #FFFF00;
+	background-image: none;
+}
