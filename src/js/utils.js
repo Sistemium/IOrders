@@ -3,11 +3,11 @@ Date.monthNames = ['Январь', 'Февраль', 'Март', 'Апрель',
 
 var accessTokenFromLocation = function () {
 	var test = location.search.match(/access-token=([^&]*)/);
-	
+
 	if (test) return test[1];
-	
+
 	return false;
-	
+
 }
 
 
@@ -24,13 +24,13 @@ var tableProperty = function (tbl, property) {
 }
 
 var lowercaseFirstLetter = function (string) {
-	
+
     return string.charAt(0).toLowerCase() + string.slice(1);
 
 };
 
 var uppercaseFirstLetter = function (string) {
-	
+
     return string.charAt(0).toUpperCase() + string.slice(1);
 
 };
@@ -58,9 +58,9 @@ var getItemTplCompute = function(modelName, config) {
 		useDeps = config.useDeps !== false ? true : false,
 		onlyKey = config.onlyKey === true ? true : false
 	;
-	
+
 	var modelForDeps = undefined;
-	
+
 	var templateString = '<div class="hbox {cls}">'
 		+		'<div class="data">'
 		+			'<tpl if="hasName">'
@@ -114,7 +114,7 @@ var getItemTplCompute = function(modelName, config) {
 		+		'{buttons}'
 		+	'</div>'
 	;
-	
+
 	var renderTpl = function(name_br,name,label) {
 		return '<tpl if="'+name+'"><div>'
 			+ '<span class="label-parent x-button">'
@@ -124,9 +124,9 @@ var getItemTplCompute = function(modelName, config) {
 			+ ': {'+name_br+'}'
 		+ '</div></tpl>'
 	}
-	
-	var buttons = 
-		'<div class="buttons">' 
+
+	var buttons =
+		'<div class="buttons">'
 			+ '<tpl for="deps">'
 				+ '<tpl if="count &gt; 0 || extendable">'
 				+	'<div class="hbox dep">'
@@ -140,7 +140,7 @@ var getItemTplCompute = function(modelName, config) {
 				+ '</tpl>'
  			+ '</tpl>'
  		+ '</div>';
-	
+
 	var templateData = {
 		hasName: false,
 		keyColumnsLength: 0,
@@ -151,44 +151,44 @@ var getItemTplCompute = function(modelName, config) {
 		cls: '<tpl if="needUpload">needUpload</tpl>',
 		clsColumn: tableRecord.get('clsColumn')
 	};
-	
+
 	var idColExist = columnStore.findExact('name', 'id') === -1 ? false : true;
 	var queryValue = idColExist ? 'parent' : 'key',
 		nameColumnIdx = columnStore.findExact('name', 'name')
 	;
-	
+
 	if(nameColumnIdx != -1 && columnStore.getAt(nameColumnIdx).get('label')) {
-		
+
 		templateData.hasName = true;
 		queryValue = 'key';
-		
+
 	} else {
-		
+
 		var keyColumns = columnStore.queryBy(function(rec) {
 			return rec.get(queryValue)
 				&& ( !filterObject || lowercaseFirstLetter(filterObject.modelName) != lowercaseFirstLetter(rec.get('name')))
 				&& (groupField !== rec.get('name') ? true : false)
 				&& !rec.get('optional');
 		});
-		
-		templateData.keyColumnsLength = keyColumns.getCount(); 
-		
+
+		templateData.keyColumnsLength = keyColumns.getCount();
+
 		if(keyColumns.getCount() > 0) {
-			
+
 			var length = keyColumns.getCount();
-			
+
 			keyColumns.each(function(col) {
-				
+
 				var parentName = col.get('name')[0].toUpperCase() + col.get('name').substring(1),
 					titleCols = undefined,
 					parentInfo = false && keyColumns.getCount() === 1 && !tableRecord.hasIdColumn()
 				;
-				
-				if(col.get('parent')) {	
+
+				if(col.get('parent')) {
 					titleCols = tableStore.getById(parentName).getTitleColumns();
 					length += titleCols.getCount();
 				}
-				
+
 				templateData.keyColumns.push({
 					parent: col.get('parent') ? true: false,
 					name: col.get('name'),
@@ -207,17 +207,17 @@ var getItemTplCompute = function(modelName, config) {
 						name: tCol.get('name'),
 						name_br: parentName + '_' + tCol.get('name'),
 						parentInfo: false,
-						end: titleCols.indexOf(tCol) + keyColumns.indexOf(col) + 2 >= length 
+						end: titleCols.indexOf(tCol) + keyColumns.indexOf(col) + 2 >= length
 					});
 				});
 			});
 		}
-		
+
 		if(keyColumns.getCount() == 1 && !tableRecord.hasIdColumn()) {
 			modelForDeps = keyColumns.getAt(0).get('parent');
 		}
 	}
-	
+
 	var tplConfig = {};
 
 	if(!onlyKey) {
@@ -231,21 +231,21 @@ var getItemTplCompute = function(modelName, config) {
 				&& ( !filterObject || lowercaseFirstLetter(filterObject.modelName) != lowercaseFirstLetter(rec.get('name')))
 				&& colName !== 'id' && colName !== 'name' && rec.get('label') ? true : false;
 		});
-		
-		templateData.otherColumnsLength = otherColumns.getCount(); 
+
+		templateData.otherColumnsLength = otherColumns.getCount();
 		if(otherColumns.getCount() > 0) {
-	
+
 			otherColumns.each(function(col) {
-				
+
 				var label = undefined,
 					name = undefined,
 					colName = col.get('name')
 				;
-				
+
 				if (col.tplConfig) {
 					Ext.apply (tplConfig, col.tplConfig);
 				}
-				
+
 				switch(col.get('type')) {
 	 				case 'boolean' : {
 						name = '{[values.' + colName + ' == true ? "' + col.get('label') + '" : ""]}';
@@ -283,47 +283,47 @@ var getItemTplCompute = function(modelName, config) {
 
 				templateData.cls += (colName === 'processing' ? ' is-{' + colName + '}' : '');
 
-			}); 
+			});
 		}
 	}
-	
+
 	var res = {
 		itemTpl: new Ext.XTemplate(templateString).apply(templateData),
 		modelForDeps: modelForDeps
 	};
-	
+
 	if (tplConfig) {
 		res.itemTpl = new Ext.XTemplate(res.itemTpl,tplConfig);
 	}
-	
+
 	return res;
 };
 
 var getItemTpl = function (modelName) {
 
 	var res = getItemTplStatic (modelName);
-	
+
 	!res && (
 		res = getItemTplCompute (modelName, {useDeps:false}).itemTpl
 	);
-	
+
 	return res;
-	
+
 };
 
 
 var getItemTplMeta = function (modelName, config) {
 
 	var tpl = getItemTplStatic (modelName);
-	
+
 	if (tpl) {
 		return Ext.apply ({
 			itemTpl: tpl
 		}, config)
 	}
-	
+
 	return getItemTplCompute (modelName, config);
-	
+
 }
 
 Ext.apply(Number.prototype, {
@@ -351,7 +351,7 @@ Ext.apply(Number.prototype, {
 });
 
 Ext.apply(String.prototype, {
-	
+
 	divify: function(delimiter) {
 		var r = '';
 		Ext.each(this.split(delimiter),function (s) {
@@ -359,69 +359,69 @@ Ext.apply(String.prototype, {
 		});
 		return r;
 	},
-	
+
 	toSpan: function (cls) {
 		return ('<span class="'+cls+'">'+this+'</span>')
 			.replace(/ class=("undefined"|"")/,'')
 	},
-	
+
 	else: function(fv) {
 		return this.length ? this.concat() : fv
 	},
-	
+
 	if: function(c) {
 		return c ? this.concat() : ''
 	},
-	
+
 	tpl01: function (arr, divider) {
-		
+
 		var res = this,
 			me = this
 		;
-		
+
 		typeof arr != 'array'
 			&& (arr = [arr || ['1']])
 		;
-		
+
 		Ext.each (arr, function (a) {
 			res += (divider||'') + me.replace(/0/g,a)
 		});
-		
+
 		return res;
 	},
-	
+
 	tplIf: function (o) {
-		
+
 		typeof o == 'string' && (
 			o = { elem: o }
 		);
-		
+
 		var me = this,
 			replacer = function (p) {
 				return o[p.replace('$','')] || me.toString()
 			}
 		;
-		
+
 		return '<tpl if="$cond"><$elem>{$vname}</$elem></tpl>'.replace(
 			/(\$[a-z]*(?=\>|\<|\"|\}))/g, replacer
 		);
-		
+
 	},
-	
+
 	dateFormat: function(fmt) {
 		return this;
 	}
-	
+
 });
 
 var getItemTplStatic = function (modelName) {
 
 	var model = Ext.ModelMgr.getModel(modelName);
-	
+
 	if (model && model.tpl)
 		return new Ext.XTemplate(model.tpl, model.tplConfig)
 	;
-	
+
 	switch(modelName) {
 		case 'BonusProgramByCustomer':
 			return '<div class="hbox"><div class="data">'
@@ -453,7 +453,7 @@ var getItemTplStatic = function (modelName) {
 					+ '<div class="encashSumm"><tpl if="encashSumm &gt; 0">{[parseFloat(values.encashSumm).toFixed(2)]}</tpl></div>'
 				 + '</div>'
 		;
-		
+
 		case 'ShipmentProduct':
 			return '<div class="data">'
 				+		'<div class="date">Дата: {[Ext.util.Format.date(values.date)]}</div>'
@@ -464,11 +464,11 @@ var getItemTplStatic = function (modelName) {
 				+		'</small>'
 				+	'</div>';
 		;
-		
+
 	}
-	
+
 	return false;
-	
+
 };
 
 var createFieldSet = function(columnsStore, modelName, view, fieldItitConfig) {
@@ -476,9 +476,9 @@ var createFieldSet = function(columnsStore, modelName, view, fieldItitConfig) {
 	var fsItems = [];
 
 	columnsStore.each(function(column) {
-		
+
 		if (column.get('label') && column.get('name') !== 'processing') {
-			
+
 			var field = Ext.apply({
 				name: column.get('name'),
 				itemId: column.get('name'),
@@ -493,9 +493,9 @@ var createFieldSet = function(columnsStore, modelName, view, fieldItitConfig) {
 			}
 
 			var fieldConfig;
-			
+
 			switch(column.get('type')) {
-				
+
 				case 'boolean':
 					fieldConfig = {
 						xtype: 'togglefield',
@@ -512,7 +512,7 @@ var createFieldSet = function(columnsStore, modelName, view, fieldItitConfig) {
 						}
 					};
 				break;
-				
+
 				case 'date':
 					fieldConfig = {
 						xtype: 'datepickerfield',
@@ -523,7 +523,7 @@ var createFieldSet = function(columnsStore, modelName, view, fieldItitConfig) {
 						}
 					};
 				break;
-				
+
 				default :
 					if(column.get('name') == 'name' && !IOrders.newDesign) {
 						var selectStore = createStore(modelName, getSortersConfig(modelName, {}));
@@ -540,42 +540,42 @@ var createFieldSet = function(columnsStore, modelName, view, fieldItitConfig) {
 					}
 				break;
 			}
-			
+
 			var tpl = column.get('template');
-			
+
 			if (tpl) {
 				field.template = new Ext.XTemplate(tpl);
 				fieldConfig = {xtype: 'templatefield', cls: 'x-field-readonly'};
 			}
-			
+
 			if (view.isNew && !column.get('editable'))
 				fieldConfig = undefined
 			;
-			
+
 			var parentName = column.get('parent'),
 				parentStore = Ext.getStore(parentName)
 			;
-			
+
 			if (parentStore) {
-				
+
 				predicateFilters = [];
-				
+
 				column.predicates().each(function(predicate) {
-					
+
 					predicateFilters.push ({
 						property: predicate.get('name'),
 						value: predicate.get('init'),
 						exactMatch: true
 					})
-					
+
 				});
-				
+
 				parentStore.clearFilter(true);
-				
+
 				if (predicateFilters.length) {
 					parentStore.filter(predicateFilters);
 				}
-				
+
 				fieldConfig = {
 					xtype: 'selectfield',
 					store: parentStore,
@@ -590,9 +590,9 @@ var createFieldSet = function(columnsStore, modelName, view, fieldItitConfig) {
 						return this.listPanel;
 					}
 				}
-				
+
 				var importFields = column.get('importFields');
-				
+
 				if (importFields) {
 					fieldConfig.importFields = [];
 					Ext.each(importFields.split(' '), function(fieldToImport) {
@@ -602,16 +602,16 @@ var createFieldSet = function(columnsStore, modelName, view, fieldItitConfig) {
 						});
 					})
 				}
-				
+
 			}
-			
+
 			fieldConfig
 				&& fsItems.push(Ext.apply(field,fieldConfig))
 			;
-			
+
 		}
 	});
-	
+
 	return { xtype: 'fieldset', items: fsItems , itemId: 'formFields'};
 };
 
@@ -622,22 +622,22 @@ var createFilterField = function(objectRecord, onLoadCallback) {
 		sortersConfig = getSortersConfig(modelName, listGroupedConfig),
 	    selectStore = createStore(modelName, Ext.apply(listGroupedConfig, sortersConfig))
 	;
-	
+
 	selectStore.load(function(records, operation, success) {
-		
+
 	    if (success) {
-			
+
 			if (! this.data.findBy(function(o) { return o.get('id') == objectRecord.getId() }))
 				selectStore.add(objectRecord)
 			;
-			
+
 			if (typeof onLoadCallback == 'function') {
 				onLoadCallback(records, operation, success)
 			}
 		}
-		
+
 	});
-	
+
 	return {
 		xtype: 'fieldset',
 		items: {
@@ -687,26 +687,26 @@ var getDepsData = function(depsStore, tablesStore, view, config) {
 	var data = [];
 
 	depsStore.each(function(dep) {
-		
+
 		var depTable = tablesStore.getById(dep.get('table_id')),
 			isSetView = view === undefined && config
 		;
-		
+
 		if((depTable.get('nameSet') && depTable.get('id') != 'SaleOrderPosition'
 				|| (isSetView ? config.record.modelName == 'SaleOrder' : view.objectRecord.modelName == 'SaleOrder'))
 		   && (isSetView ? config.record.modelName !== depTable.get('id') : true)) {
-			
+
 			var filterBy = dep.get('name') || lowercaseFirstLetter(dep.get('parent'));
-			
+
 			if (filterBy == 'mainMenu') filterBy = undefined;
-			
+
 			depRec = depTable.copy();
 			depRec.set('contains', dep.get('contains'));
 			depRec.set('editing', view ? view.editing : false);
 			depRec.set('filterBy', filterBy);
-			
+
 			loadDepData(depRec, depTable, view, config ? Ext.apply(config, {data: data}) : undefined);
-			
+
 			if(isSetView) {
 				data.push(depRec.data);
 			} else {
@@ -714,7 +714,7 @@ var getDepsData = function(depsStore, tablesStore, view, config) {
 			}
 		}
 	});
-	
+
 	return data;
 };
 
@@ -733,14 +733,14 @@ var loadDepData = function(depRec, depTable, view, config, force) {
 		});
 		depRec.set('filtered', true);
 	} else if (isSetView) {
-		recordForDeps = config.list.modelForDeps && !config.hasIdColumn 
+		recordForDeps = config.list.modelForDeps && !config.hasIdColumn
 			? Ext.getStore(config.list.modelForDeps).getById(
 				config.record.get(
 					lowercaseFirstLetter(config.list.modelForDeps[0]) + config.list.modelForDeps.substring(1)
 				)
-			) 
+			)
 			: config.record;
-		
+
 		if(recordForDeps.modelName != 'MainMenu') {
 			filters.push({
 				property: lowercaseFirstLetter(recordForDeps.modelName),
@@ -751,19 +751,19 @@ var loadDepData = function(depRec, depTable, view, config, force) {
 	}
 
 	if(!depRec.get('count') || depRec.get('filtered') || depRec.get('expandable') || force || true) {
-		
+
 		var aggCols = depTable.getAggregates();
 		var aggOperation = new Ext.data.Operation({depRec: depRec, filters: filters});
-			
+
 		modelProxy.aggregate(aggOperation, function(operation) {
-			
+
 			if (aggCols) {
 				var aggDepResult = '';
 				var aggDepTpl = new Ext.XTemplate(
 					'<tpl if="value"><tpl if="name">{name} : </tpl>{[values.value.toDisplayString()]} </tpl>'
 				);
 				var aggResults = operation.resultSet.records[0].data;
-				
+
 				(!view || !view.objectRecord || (view.objectRecord.modelName != 'MainMenu')) && aggCols.each(function(aggCol) {
 					aggDepResult +=
 						aggDepTpl.apply({
@@ -773,44 +773,44 @@ var loadDepData = function(depRec, depTable, view, config, force) {
 						})
 					;
 				});
-				
+
 				operation.depRec.set('aggregates', aggDepResult);
 			}
-			
+
 			operation.depRec.set('count', aggResults.cnt);
-			
+
 			if(isSetView) {
-				
+
 				config.record.data.deps = config.data;
 				config.list.store && config.list.refreshNode(config.list.indexOf(config.record));
-				
+
 				config.list.doComponentLayout();
 			}
 		});
-		
+
 		var t = depTable;
-		
+
 		if(t && t.columns && t.columns().findBy(function(c){return c.get('name')=='processing';}) > 0) {
-			
+
 			filters.push({property: 'processing', value: 'draft'});
-			
+
 			var countOperation = new Ext.data.Operation({depRec: depRec, filters: filters});
 			modelProxy.aggregate(countOperation, function(operation) {
-				
+
 				var aggResults = operation.resultSet.records[0].data;
 				operation.depRec.set('stats', aggResults.cnt);
-				
+
 				if(isSetView) {
-					
+
 					config.record.data.deps = config.data;
 					config.list.store && config.list.refreshNode(config.list.indexOf(config.record));
-					
+
 					config.list.doComponentLayout();
 				}
 			});
 		}
 	}
-	
+
 	if(filters.length == 0) {
 		depRec.set('filtered', false);
 	}
@@ -819,7 +819,7 @@ var loadDepData = function(depRec, depTable, view, config, force) {
 var createTitlePanel = function(t) {
 
 	var htmlTpl = new Ext.XTemplate('<div>{title}</div>');
-	
+
 	return {
 			xtype: 'panel',
 			cls: 'x-title-panel',
@@ -855,40 +855,40 @@ var createNavigatorView = function(rec, oldCard, isSetView, editing, config) {
 				filterBy: oldCard.filterBy
 			}
 		}, config);
-		
+
 	return view;
 };
 
 var getGroupConfig = function(model) {
-	
+
 	var sorterProperty, grouperFunction;
 
 	switch(model) {
 		case 'EncashmentRequest':
 		case 'Shipment':
 		case 'SaleOrder' : {
-			
+
 			if (tableHasColumn (model, 'date')) {
 				sorterProperty = 'date';
 				grouperFunction = function(rec) {
 					return Ext.util.Format.date(rec.get(sorterProperty));
 				}
 			}
-			
+
 			if (tableHasColumn (model, 'shipDate')) {
 				sorterProperty = 'shipDate';
 				grouperFunction = function(rec) {
 					return rec.get('ShipDate_name') || rec.get('shipDate');
 				}
 			}
-			
+
 			if (tableHasColumn (model, 'customerDeliveryOption')) {
 				sorterProperty = 'customerDeliveryOption';
 				grouperFunction = function(rec) {
 					return rec.get('CustomerDeliveryOption_name');
 				}
 			}
-			
+
 			return {
 				getGroupString: grouperFunction,
 				sorters: [{property: sorterProperty, direction: 'DESC'}],
@@ -936,43 +936,43 @@ var getGroupConfig = function(model) {
 				],
 				field: 'ShopDepartment_name'
 			};
-			
+
 			var sorters = [];
-			
+
 			Ext.each (result.sorters, function(s, i) {
 				if (tableHasColumn(model,s.property))
 					sorters.push(s);
 			});
-			
+
 			if (sorters.length) result.sorters = sorters;
 			else delete result.sorters;
-			
+
 			return result;
 		}
 		default : {
-			
+
 			var grouperFunction, sorterProperty, direction, result = {}, gc;
-			
+
 			var meta=Ext.getStore('tables').getById(model);
-			
+
 			if (meta) {
-				
-				var 
+
+				var
 					sc = meta.get('sorterColumn'),
 					scd = meta.get('sorterDir'),
 					gcc
 				;
-				
+
 				gc = meta.get('grouperColumn');
-				
+
 				if (gc)
 					gcc = tableHasColumn(model,gc)
 				;
-				
+
 				sorterProperty = sc || gc;
 				direction = scd || 'ASC';
-				
-				if (gcc) {					
+
+				if (gcc) {
 					grouperFunction =  (gcc.get('type') == 'date')
 						? function(rec) {
 							return Ext.util.Format.date(rec.get(gc));
@@ -982,9 +982,9 @@ var getGroupConfig = function(model) {
 						}
 					;
 				}
-				
+
 			}
-			
+
 			if (!sorterProperty && tableHasColumn (model, 'date')) {
 				sorterProperty = 'date';
 				direction = 'DESC';
@@ -993,7 +993,7 @@ var getGroupConfig = function(model) {
 					return Ext.util.Format.date(rec.get(gc));
 				};
 			}
-			
+
 			if (sorterProperty && grouperFunction) {
 				result = {
 					sorters: [{
@@ -1012,7 +1012,7 @@ var getGroupConfig = function(model) {
 					}]
 				}
 			}
-			
+
 			return result;
 		}
 	}
@@ -1024,24 +1024,24 @@ var getSortersConfig = function(model, storeConfig) {
 		sortConfig = {sorters: storeConfig.sorters ? storeConfig.sorters : []},
 		columns = table.columns()
 	;
-	
+
 	var parentSort = true;
-	
+
 	var meta=Ext.getStore('tables').getById(model);
-	
+
 	if (meta) {
-		
+
 		var sc = meta.get('sorterColumn');
-		
+
 		var direction = meta.get('sorterDir') || 'ASC';
-		
+
 		if (sc) {
 			sortConfig.sorters.push ({ property: sc, direction: direction });
 			return sortConfig;
 		}
-		
+
 	}
-	
+
 	if (columns.getById(table.getId() + 'datetime')) {
 		sortConfig.sorters.push ({ property: 'datetime', direction: 'DESC' });
 		parentSort = false;
@@ -1051,27 +1051,27 @@ var getSortersConfig = function(model, storeConfig) {
 		sortConfig.sorters.push ({ property: 'ord' });
 		parentSort = false;
 	}
-	
+
 	var column = columns.getById(table.getId() + 'name');
-	
+
 	if (column && !(column.compute || column.template)) {
 		sortConfig.sorters.push ({ property: 'name' });
 		parentSort = false;
 	}
-	
+
 	if (parentSort) {
-		
+
 		var parentColumns = columns.queryBy(function(rec) {
 			return rec.get('parent') ? true : false;
 		});
-		
+
 		parentColumns.each (function(col) {
 			columns.findExact('name', col.get('parent') + '_name') != -1
 				&& sortConfig.sorters.push({property: col.get('name') + '_name'});
 		});
-		
+
 	}
-	
+
 	return sortConfig;
 };
 
@@ -1129,17 +1129,17 @@ var unavailBtnFuncMessage = function(btn, view) {
 			}
 		}
 		case 'saleorderview' : {
-			
+
 		}
 	}
-	
+
 	return undefined;
-	
+
 };
 
 var checkRecordInUpload = function(xid) {
 
 	var store = Ext.getStore('ToUpload');
-	
+
 	return store && store.findExact('id', xid) !== -1;
 };

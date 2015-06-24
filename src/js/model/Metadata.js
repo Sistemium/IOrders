@@ -41,11 +41,11 @@ Ext.regModel('Table', {
 	hasIdColumn: function() {
 		return this.columns().findExact('name', 'id') !== -1 ? true : false;
 	},
-	
+
 	hasNameColumn: function() {
 		return this.columns().findExact('name', 'name') !== -1 ? true : false;
 	},
-	
+
 	hasAggregates: function() {
 		return this.getAggregates().getCount() > 0 ? true : false;
 	},
@@ -107,7 +107,7 @@ Ext.regModel('Column', {
 
 Ext.regModel('Dep', {
 	fields: [
-		
+
 	]
 });
 
@@ -132,7 +132,7 @@ var addMainMenu = function(store, tables) {
 	)
 
 	var mmDeps = mainMenu.deps();
-	
+
 	Ext.each(tables, function(table) {
 		if((table.deps().getCount() > 0
 			&& table.get('nameSet')
@@ -151,6 +151,6 @@ var addMainMenu = function(store, tables) {
 			});
 		}
 	});
-	
+
 	store.add(mainMenu);
 };
