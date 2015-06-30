@@ -710,3 +710,10 @@ small .span3 {
 	background-color: #FFFF00;
 	background-image: none;
 }
+
+.x-toolbar .x-input-search {
+	height: 1.8em;
+}
+.x-slider {
+	margin: 0.3em;
+}
