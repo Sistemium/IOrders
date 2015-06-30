@@ -30,11 +30,18 @@ applicationCache.addEventListener('updateready', function(a) {
 });
 
 
-Ext.regApplication({
-	name: 'IOrders',
+Ext.setup({
+    //tabletStartupScreen: 'resources/img/tablet_startup.png',
+    //phoneStartupScreen: 'resources/img/phone_startup.png',
     icon: 'src/css/apple-touch-icon.png',
+    glossOnIcon: false,
 
-//    phoneStartupScreen: 'phone_startup.png',
+    onReady: function() {
+        IOrders.launch();
+    }
+});
+
+var IOrders = {
 
 	init: function() {
 
@@ -438,4 +445,4 @@ Ext.regApplication({
 	}
 
 
-});
+};
