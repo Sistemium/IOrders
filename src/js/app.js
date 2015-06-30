@@ -13,9 +13,9 @@ if (!DEBUG) {
 };
 
 applicationCache.addEventListener('updateready', function(a) {
-	
+
 	window.applicationCache.update();
-	
+
 	Ext.Msg.confirm(
 		'Обновление программы',
 		'<p>Получена новая версия, необходимо перезапустить программу.</p>' +
@@ -26,7 +26,7 @@ applicationCache.addEventListener('updateready', function(a) {
 			}
 		}
 	);
-	
+
 });
 
 
@@ -35,91 +35,91 @@ Ext.regApplication({
     icon: 'src/css/apple-touch-icon.png',
 
 //    phoneStartupScreen: 'phone_startup.png',
-	
+
 	init: function() {
-		
+
 		var cfg = IOrders.config;
-		
+
 		if (cfg) {
 			cfg.title && (document.title = cfg.title);
 		}
-		
+
 		IOrders.newDesign = IOrders.getItemPersistant('newDesign') == 'true' ? true : false;
-		
+
 		var store = Ext.getStore('tables');
-		
+
 		createModels(store);
 		createStores(store, { pageSize: 400 });
-		
+
 		IOrders.mainMenuRecord = Ext.ModelMgr.create({
 			id: IOrders.getItemPersistant('username') || IOrders.getItemPersistant('login')
 		}, 'MainMenu');
-		
+
 		this.viewport.setActiveItem(Ext.create({
 			xtype: 'navigatorview',
 			layout: 'fit',
 			isObjectView: true,
 			objectRecord: IOrders.mainMenuRecord
 		}));
-		
+
 		var iOS = parseFloat(
 			('' + (/CPU.*OS ([0-9_]{1,5})|(CPU like).*AppleWebKit.*Mobile/i.exec(navigator.userAgent) || [0,''])[1])
 			.replace('undefined', '3_2').replace('_', '.').replace('_', '')
 			) || false
 		;
-		
+
 		var fix7orientation = function(e) {
 			var fixY = 0;
 			if (e.orientation == 'landscape') fixY = 20;
 			this.container.setTop(fixY);
 		}
-		
+
 		if (iOS >= 7 && iOS < 7.1) IOrders.viewport.on('orientationchange', fix7orientation);
-		
+
 		//fix7orientation.call (IOrders.viewport, {
 		//	orientation: Ext.getOrientation()
 		//})
-		
+
 		this.viewport.getActiveItem().loadData();
 	},
-	
+
 	launch: function() {
-		
+
 		this.prefix = location.pathname.match(/\/[^\~].*/)[0].split('/')[1] + '.';
-		
+
 		var tStore = Ext.getStore('tables'),
 			metadata = Ext.decode(IOrders.getItemPersistant('metadata')),
 			vp = (this.viewport = Ext.create({xtype: 'viewport'}))
 		;
-		
+
 		this.dbeng = new Ext.data.Engine({
 			listeners: {
 				dbstart: function(db) {
 					console.log('Database started: version=' + db.version);
-					
+
 					var toUploadConfig = {
 						fields: ['table_name', 'id', 'cnt', 'ts', 'pid', 'cs', {name: 'hasPhantom', type: 'boolean'}]
 					}
-					
+
 					if (db.supports.entity)
 						toUploadConfig.fields.push('visibleCnt')
 					;
-					
+
 					Ext.regModel('ToUpload', toUploadConfig);
-					
+
 					tStore.getProxy().data = this.metadata;
 					tStore.load(function() {IOrders.init();});
-					
+
 					if (tStore.getById('Geolocation')) IOrders.geoTrack();
-					
+
 					IOrders.logEvent({
 						module: 'app',
 						action: 'dbstart',
 						data: 'dbversion:'+db.version
 					});
-					
+
 					if (DEBUG) window.onerror = IOrders.onError;
-					
+
 				},
 				fail: function() {
 					//localStorage.clear();
@@ -127,64 +127,64 @@ Ext.regApplication({
 				}
 			}
 		});
-		
+
 		IOrders.xi = new Ext.data.XmlInterface({
 			view: 'iorders',
 			noServer: !location.protocol == 'https:' || IOrders.getItemPersistant('realServer') == 'false'
 		});
-		
+
 		var actk = accessTokenFromLocation();
-		
+
 		if (actk) {
-			
+
 			IOrders.xi.accessToken = actk;
-			
+
 			IOrders.xi.password = undefined;
 			IOrders.xi.username = undefined;
-			
+
 			IOrders.viewport.setLoading('Проверяю авторизацию');
-			
+
 			IOrders.xi.reconnect(IOrders.getMetadata);
-			
+
 		} else {
-			
+
 			if(!(metadata && metadata.tables)) {
-				
+
 				Ext.dispatch(Ext.apply({controller: 'Navigator', action: 'createLoginPage'}, this.config));
-				
+
 			} else {
-				
+
 				Ext.dispatch({controller: 'Navigator', action: 'afterAppLaunch'});
-				
+
 				Ext.apply (this.xi, {
 					username: IOrders.getItemPersistant('login'),
 				});
-				
+
 				var password = IOrders.getItemPersistant('password');
 				var actk = IOrders.getItemPersistant('accessToken');
-				
+
 				if (password) this.xi.password = password;
 				if (actk) this.xi.accessToken = actk;
-				
+
 				var r = function(db) {
 					IOrders.xi.login ({
 						success: function() {
-							
+
 							IOrders.setItemPersistant('login', IOrders.xi.username);
 							IOrders.setItemPersistant('username', IOrders.xi.userLabel);
-							
+
 							var dbKey = IOrders.xi.username + '.db';
-							
+
 							if (!IOrders.getItemPersistant(dbKey)) {
 								IOrders.setItemPersistant (dbKey, IOrders.dbeng.metadata.name)
 							}
-							
+
 							if (db.clean || IOrders.getItemPersistant('needSync') == 'true'){
 								IOrders.removeItemPersistant('needSync');
 								IOrders.xi.download(IOrders.dbeng);
 							} else {
 								p = new Ext.data.SQLiteProxy({engine: IOrders.dbeng, model: 'ToUpload'});
-								
+
 								p.count(new Ext.data.Operation(),
 									function(o) {
 										if (o.result == 0)
@@ -205,7 +205,7 @@ Ext.regApplication({
 					IOrders.xi.reconnect({
 						success: function() {
 							p = new Ext.data.SQLiteProxy({engine: IOrders.dbeng, model: 'ToUpload'});
-							
+
 							Ext.Msg.confirm ('Не удалось обновить БД', 'Проверим метаданные?', function (b) {
 								if (b == 'yes')
 									IOrders.xi.request( {
@@ -222,109 +222,109 @@ Ext.regApplication({
 							});
 						}
 				});};
-				
-				
+
+
 				this.dbeng.on ('dbstart', r);
 				this.dbeng.on ('upgradefail', f);
-				
+
 				this.dbeng.startDatabase(metadata);
 			}
-			
+
 		};
-		
+
 	},
-	
+
 	dbName: function(config) {
-		
+
 		var dbKey = IOrders.xi.username + '.db',
 			dbName = IOrders.getItemPersistant(dbKey)
 		;
-		
+
 		if (!dbName) {
 			dbName = IOrders.prefix + IOrders.xi.username + '.' + config.name
 		}
-		
+
 		return dbName;
 	},
-	
+
 	getMetadata: {
-		
+
 		success: function() {
 			var me=this;
-			
+
 			me.request({
 				command: 'metadata',
 				success: function(response) {
 					var m = response.responseXML;
-					
+
 					IOrders.viewport.setLoading(false);
-					
+
 					console.log(m);
-					
+
 					var metadata = me.xml2obj(m).metadata;
-					
+
 					metadata.name = IOrders.dbName (metadata);
-					
+
 					IOrders.setItemPersistant('metadata', Ext.encode(metadata));
-					
+
 					var actk = accessTokenFromLocation();
-					
+
 					IOrders.setItemPersistant('login', IOrders.xi.username);
 					IOrders.setItemPersistant('username', IOrders.xi.userLabel || IOrders.xi.username);
-					
+
 					if (actk) {
-						
+
 						IOrders.setItemPersistant('accessToken', actk);
 						IOrders.setItemPersistant('needLoad', true);
-						
+
 						Ext.dispatch ({
 							controller: 'Main',
 							action: 'dbRebuild'
 						})
-						
+
 					} else {
-						
+
 						IOrders.dbeng.startDatabase(metadata);
 					}
-					
+
 				}
 			});
 		},
-		
+
 		failure: function(o) {
 			if (o && o.exception) {
 				IOrders.viewport.setLoading(false);
 				Ext.Msg.alert('Ошибка',o.exception);
 			}
 		}
-		
+
 	},
-	
+
 	geoTrack: function() {
 		if (Ext.ModelMgr.getModel('Geolocation')) {
-			
+
 			var count = 0,
 				getLocation = function () {
 					if ( ++count > 6 )
 						IOrders.lastCoords && saveLocation();
 					else navigator.geolocation.getCurrentPosition (
 						function(l) {
-							
+
 							console.log ('Geolocation success at step ' + count + ': acc=' + l.coords.accuracy);
-							
+
 							IOrders.lastCoords = l.coords;
-							
+
 							if(l.coords.accuracy < 10)
 								saveLocation();
 							else
 								getLocation()
 							;
-							
+
 						},
 						function(error) {
-							
+
 							console.log( 'Geolocation error at step ' + count + ': ' + error.message + ', code: ' + error.code );
-							
+
 							if( error.code === 1 )
 								Ext.Msg.alert('Геолокация запрещена',
 									'iOrders нормально работать не будет. <br/><br/>'
@@ -349,66 +349,66 @@ Ext.regApplication({
 					IOrders.geoWatch = window.setTimeout( getLocation, 1000 * 60 * 5 );
 				}
 			;
-			
+
 			Ext.defer( getLocation, 15000 );
-			
+
 		};
 	},
-	
+
 	logEvent: function (eventData){
 		var model = Ext.ModelMgr.getModel('Eventlog');
-		
+
 		if (model && eventData) {
-			
+
 			if (!eventData.force) {
 				if (eventData.action == 'ProductNameFilter') return;
-				
+
 				if (!DEBUG && eventData.action != 'dbstart') return;
 			}
-			
+
 			Ext.ModelMgr.create( eventData, model ).save();
 		}
-		
+
 	},
-	
+
 	onError: function(msg, url, line) {
-		
+
 		console.log ('UnhandledException: ' + msg + ' at line ' + line);
-		
+
 		var part = '/js/',
 			modulePos = url.lastIndexOf(part),
 			module = url,
 			viewTitle
 		;
-		
+
 		if (IOrders.viewport) {
 			var ai = IOrders.viewport.getActiveItem();
-			
+
 			if (ai && ai.dockedItems) {
 				var tb = ai.dockedItems.getAt(0);
 				viewTitle = tb.title;
 			}
 		}
-		
+
 		if (modulePos < 0)
 			modulePos = url.lastIndexOf(part = '/')
 		;
-		
+
 		if (modulePos > 0)
 			module = url.slice(modulePos + part.length)
 		;
-		
+
 		IOrders.logEvent({
 			module: module,
 			action: 'UnhandledException' ,
 			data: 'title: ' + viewTitle + ' '
 				+ msg + ' at line ' + line
 		});
-		
+
 		return false;
-		
+
 	},
-	
+
 	setItemPersistant: function (key, value) {
 		localStorage.setItem ( IOrders.prefix + key, value );
 	},
@@ -417,25 +417,25 @@ Ext.regApplication({
 		var prefixedValue = localStorage.getItem ( IOrders.prefix + key );
 		return  (prefixedValue == undefined) ? localStorage.getItem ( key ) : prefixedValue
 	},
-	
+
 	removeItemPersistant: function(key) {
 		localStorage.removeItem ( IOrders.prefix + key )
 	},
-	
+
 	clearLocalStorage: function() {
-		
+
 		var keysToRemove = [];
-		
+
 		for (var i = 0; i < localStorage.length; i++){
 			var key = localStorage.key(i);
-			if (key.match(IOrders.prefix.replace(/[\.]/g,'\\.'))) 
+			if (key.match(IOrders.prefix.replace(/[\.]/g,'\\.')))
 				keysToRemove.push(key)
 		}
-		
+
 		Ext.each(keysToRemove, function(key) {
 			localStorage.removeItem (key)
 		});
 	}
 
-	
+
 });
