@@ -158,7 +158,12 @@ Ext.override(Ext.form.Select, {
 		titleColumns.each(function(col) {list.itemTpl.push('<div>{' + col.get('name') + '}</div>');});
 		list.itemTpl.push('<span class="x-list-selected"></span>');
 		
-		list.tpl = '<tpl for="."><div class="x-list-item ' + list.itemCls + '"><div class="x-list-item-body">' + list.itemTpl.join('') + '</div>';
+		list.tpl = '<tpl for="."><div class="x-list-item ' +
+            list.itemCls +
+            '"><div class="x-list-item-body">' +
+            list.itemTpl.join('') +
+            '</div>'
+        ;
 		list.tpl += '</div></tpl>';
 		list.tpl = new Ext.XTemplate(list.tpl);
 	},

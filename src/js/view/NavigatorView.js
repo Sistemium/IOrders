@@ -631,20 +631,26 @@ var NavigatorView = Ext.extend(AbstractView, {
 			field.cls = field.name + (field.cls ? ' ' + field.cls : '');
 
 			if (field.xtype == 'selectfield' && field.store) {
-
-				var parentColumns = tablesStore.getById(field.store.model.modelName).columns();
+                
+                var fieldModel = tablesStore.getById(field.store.model.modelName),
+                    filterByModel = columnsStore.getById(modelName+field.name).get('filterByModel'),
+                    filterModel = filterByModel && tablesStore.getById(filterByModel) || fieldModel
+                ;
+                
+				var parentColumns = filterModel.columns();
 
 				parentColumns.each(function(parentColumn) {
 
 					var grandParent = parentColumn.get('name'),
 						id = modelName+grandParent;
 
-					if (parentColumn.get('parent') && columnsStore.getById(id)){
+					if (parentColumn.get('parent') && columnsStore.getById(id) && grandParent != field.name){
 						useForSelectFilters.add(id, {
 							name: grandParent,
 							store: field.store,
 							field: field.name,
-							property: parentColumn.get('name')
+							property: parentColumn.get('name'),
+                            filterByStore: filterByModel && Ext.getStore(filterByModel)
 						});
 					}
 
@@ -654,13 +660,26 @@ var NavigatorView = Ext.extend(AbstractView, {
 
 		});
 
-		var filterFn = function (store, property, value, callback) {
+		var filterFn = function (store, property, value, filterByStore, name, callback) {
 			store.clearFilter(true);
-			store.filter({
-				property: property,
-				value: value,
-				callback: callback
-			});
+            if (filterByStore) {
+                filterByStore.load({
+                    filters:[{property:property,value:value}],
+                    callback: function () {
+                        var me = this;
+                        store.filterBy(function(i){
+                            return me.findExact(name, i.get('id')) >= 0; 
+                        });
+                        if (typeof callback == 'function') callback();
+                    }
+                });
+            } else {
+                store.filter({
+                    property: property,
+                    value: value,
+                    callback: callback
+                });
+            }
 		};
 
 		useForSelectFilters.each(function (c) {
@@ -673,9 +692,9 @@ var NavigatorView = Ext.extend(AbstractView, {
 						console.log('Select value changed: ' + value);
 						useForSelectFilters.each(function (c) {
 							if (c.name == field.name) {
-								filterFn (c.store, c.property, value, function() {
+								filterFn (c.store, c.property, value, c.filterByStore, c.field, function() {
 									var f = field.ownerCt.items.getByKey(c.field);
-									(f && c.store.getById(f.value))
+									(f && c.store.findExact('id',f.value)>=0)
 										? f.setValue(f.value)
 										: f.reset()
 									;
@@ -686,7 +705,7 @@ var NavigatorView = Ext.extend(AbstractView, {
 				}
 			});
 
-			filterFn (c.store, c.property, value);
+			filterFn (c.store, c.property, value, c.filterByStore, c.field);
 
 		});
 
