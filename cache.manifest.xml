@@ -9,6 +9,9 @@
         <file>src/font-awesome/css/font-awesome.css</file>
         <file>src/font-awesome/fonts/fontawesome-webfont.eot</file>
         <file>src/font-awesome/fonts/fontawesome-webfont.woff2</file>
+        <file>src/font-awesome/fonts/fontawesome-webfont.svg</file>
+        <file>src/font-awesome/fonts/fontawesome-webfont.woff</file>
+        <file>src/font-awesome/fonts/fontawesome-webfont.ttf</file>
 
         <file>src/css/index.css</file>
         <file>src/css/loading.gif</file>
