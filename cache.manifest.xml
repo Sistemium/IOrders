@@ -5,7 +5,11 @@
         <!--http>connect.facebook.net/ru_RU/all.js#xfbml=1&amp;appId=175881429178414</http-->
         
         <file>index.html</file>
-        
+
+        <file>src/font-awesome/css/font-awesome.css</file>
+        <file>src/font-awesome/fonts/fontawesome-webfont.eot</file>
+        <file>src/font-awesome/fonts/fontawesome-webfont.woff2</file>
+
         <file>src/css/index.css</file>
         <file>src/css/loading.gif</file>
         <file>src/css/apple-touch-icon.png</file>
