@@ -887,7 +887,7 @@ Ext.regController('SaleOrder', {
 						}
 						
 						sname = sname.replace (
-							/(красн\.|красное|кр\.)/i,
+							/(красн\.|красное|кр\.(?![^\d][\d]+))/i,
 							'<span class="taste red">$1</span>'
 						);
 						
