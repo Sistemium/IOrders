@@ -721,3 +721,17 @@ small .span3 {
 .bold {
 	font-weight: bold;
 }
+
+.checkable {
+	padding: 4px;
+	color: gray;
+	border-radius: 3px;
+	text-align: center;
+	border: solid 1px silver;
+}
+
+.checkable.checked {
+	color: #FFFF00;
+	border-color: blue;
+	background-color: blue;
+}

@@ -536,6 +536,13 @@ Ext.regController('SaleOrder', {
 					rec: rec
 				}));
 				
+			} else if(tapedEl.is('.checkable, .checkable *')) {
+
+				Ext.dispatch(Ext.apply(options, {
+					action: 'toggleCheckableField',
+					rec: rec
+				}));
+
 			}
 			
 		}
@@ -1324,6 +1331,27 @@ Ext.regController('SaleOrder', {
 			Ext.dispatch( Ext.apply( options, data ));
 			
 		}
+	},
+
+	toggleCheckableField: function (options) {
+
+		// console.log (options);
+
+		var rec = options.rec;
+		var isCompDiscount = rec.get('isCompDiscount');
+		var view = options.view || options.list && options.list.up('saleorderview');
+
+		rec.editing = true;
+		rec.set('isCompDiscount',!isCompDiscount);
+		rec.editing = false;
+
+		Ext.dispatch(Ext.apply(options, {
+			action: 'saveOffer',
+			view: view
+		}));
+
+		rec.commit();
+
 	},
 	
 	setVolume: function (options) {
