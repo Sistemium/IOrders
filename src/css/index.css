@@ -727,11 +727,11 @@ small .span3 {
 	color: gray;
 	border-radius: 3px;
 	text-align: center;
-	border: solid 1px silver;
+	border: solid 1px #C0C0C0;
 }
 
 .checkable.checked {
 	color: #FFFF00;
-	border-color: blue;
-	background-color: blue;
+	border-color: #0000FF;
+	background-color: #0000FF;
 }
