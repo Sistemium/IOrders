@@ -597,7 +597,7 @@ Ext.regController('SaleOrder', {
 				else
 					newCard.dohodThreshold = 0;
 			})
-		};
+		}
 		
 		newCard.startFilters = function(saleOrder) {
 			
@@ -615,10 +615,10 @@ Ext.regController('SaleOrder', {
 					value: newCard.stockThreshold,
 					gte: true
 				})
-			};
+			}
 			
 			return result;
-		}
+		};
 		
 		newCard.offerProductStore = createStore( 'Offer',
 			this.configOfferStore ( Ext.apply (options, {
@@ -751,10 +751,10 @@ Ext.regController('SaleOrder', {
 					volumeFn = function (data) {
 						return schemaRecord[volumeFnName+'Volumes']
 							(data, schemaRecord.get('ratio1'), schemaRecord.get('ratio0'));
-					}
+					};
 					
 					defaultSchema = undefined;
-				};
+				}
 				
 			}
 			
@@ -805,8 +805,8 @@ Ext.regController('SaleOrder', {
 								view.bonusProductStore.filterBy(function(bpItem) {
 									return view.bonusProgramStore.findExact(
 										'id',
-										bpItem.get('actionVariant')
-									) !== -1 ? true : false
+										bpItem.get('actionVariant') || bpItem.get('bonusProgram')
+									) !== -1
 								});
 								
 								view.offerProductStore.filter (
@@ -824,6 +824,8 @@ Ext.regController('SaleOrder', {
 							IOrders.viewport.getActiveItem().setLoading(false);
 							
 							IOrders.viewport.setActiveItem (view);
+
+                            Ext.dispatch(Ext.apply(options, {action: 'expandFocusedProduct'}));
 							
 						}
 					}));
@@ -1088,7 +1090,8 @@ Ext.regController('SaleOrder', {
 		;
 		
 		Ext.each ([
-			'OfferAction'
+			'OfferAction',
+			'BonusProgram'
 		], function (name) {
 			if (Ext.ModelMgr.getModel(name)) {
 				bonusModelName = name;
@@ -1098,7 +1101,8 @@ Ext.regController('SaleOrder', {
 		});
 		
 		Ext.each ([
-			'ActionVariantByProduct'
+			'ActionVariantByProduct',
+            'BonusProgramProduct'
 		], function (name) {
 			if (Ext.ModelMgr.getModel(name)) {
 				bonusProductModelName = name;
