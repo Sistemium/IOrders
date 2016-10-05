@@ -735,3 +735,7 @@ small .span3 {
 	border-color: #0000FF;
 	background-color: #0000FF;
 }
+
+.display-none {
+	display: none;
+}

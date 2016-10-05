@@ -1203,10 +1203,11 @@ Ext.regController('SaleOrder', {
 						
 						callback.call(this);
 						
-						//Ext.dispatch (Ext.apply (options, {
-						//	action: 'expandFocusedProduct'
-						//	, view: view
-						//}));
+						Ext.dispatch (Ext.apply (options, {
+							action: 'expandFocusedProduct'
+							, view: view
+							, firstScreen: true
+						}));
 					}
 				});
 			}
@@ -1876,7 +1877,11 @@ Ext.regController('SaleOrder', {
 		
 		Ext.each(doms, function(dom) {
 			var el = Ext.get(dom);
-			el.up('.x-list-item').addCls('active').up('.x-list-group-items').addCls('hasActive');
+			el = el.up('.x-list-item').addCls('active')
+				.up('.x-list-group-items').addCls('hasActive');
+			if (options.firstScreen) {
+				el.prev('.x-list-header').addCls('display-none');
+			}
 		});
 		
 		doms = view.productList.getEl().query('.x-list-group');
