@@ -1877,16 +1877,19 @@ Ext.regController('SaleOrder', {
 		
 		Ext.each(doms, function(dom) {
 			var el = Ext.get(dom);
-			el = el.up('.x-list-item').addCls('active')
-				.up('.x-list-group-items').addCls('hasActive');
-			if (options.firstScreen) {
-				el.prev('.x-list-header').addCls('display-none');
+			el = el && el.up('.x-list-item');
+			el = el && el.addCls('active').up('.x-list-group-items');
+			el = el && el.addCls('hasActive');
+			if (el && options.firstScreen) {
+				el.addCls('expanded')
+					.prev('.x-list-header')
+					.addCls('display-none');
 			}
 		});
 		
 		doms = view.productList.getEl().query('.x-list-group');
 		
-		if (doms.length == 1 && !view.modeActive) {
+		if (doms.length == 1 && !view.modeActive && !options.firstScreen) {
 			Ext.get(doms[0]).down('.x-list-group-items').addCls('expanded');
 		}
 	},
