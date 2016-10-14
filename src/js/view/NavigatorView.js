@@ -209,7 +209,7 @@ var NavigatorView = Ext.extend(AbstractView, {
 		this.items.push(this.form = new Ext.form.FormPanel(Ext.apply({
 				flex: 2,
 				cls: 'x-navigator-form ' + this.cls,
-				scroll: true,
+				scroll: false,
 				items: formItems,
 				afterComponentLayout : function() {
 					var scrollEl = this.scrollEl,

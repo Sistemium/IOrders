@@ -3,7 +3,7 @@ var offerProductListConfig = function (options) {
 	return Ext.apply(options, {
 		
 		xtype: 'expandableGroupedList',
-		cls: 'x-product-list',
+		cls: 'x-product-list scroll-y',
 		itemTpl: getItemTpl('Offer'),
 		selectedItemCls: 'x-product-selected',
 		disableSelection: true,
@@ -150,23 +150,25 @@ var offerProductListConfig = function (options) {
 			}
 			
 		},
+
+		scroll: false,
 		
-		scroll: {
-			
-			direction: 'vertical',
-			threshold: 35 /*,
-			
-			listeners: {
-				scroll:function(s, o) {
-					if (o.y)
-						me.disableSwipe = true;
-				},
-				scrollend: function(s, o){
-					me.disableSwipe = false;
-				}
-			}*/
-			
-		},
+		// scroll: {
+		//
+		// 	direction: 'vertical',
+		// 	threshold: 35 /*,
+		//
+		// 	listeners: {
+		// 		scroll:function(s, o) {
+		// 			if (o.y)
+		// 				me.disableSwipe = true;
+		// 		},
+		// 		scrollend: function(s, o){
+		// 			me.disableSwipe = false;
+		// 		}
+		// 	}*/
+		//
+		// },
 		
 		/*onRender: function() {
 			
