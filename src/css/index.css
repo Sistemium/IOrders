@@ -739,3 +739,8 @@ small .span3 {
 .display-none {
 	display: none;
 }
+
+.x-form.x-navigator-form, .scroll-y {
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+}
