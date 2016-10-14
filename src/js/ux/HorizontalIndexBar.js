@@ -51,6 +51,9 @@ var HorizontalIndexBar = Ext.extend(Ext.DataView, {
 
 			this.refresh();
 
+            if (!this.scroller) {
+                return
+            }
 			this.scroller.updateBoundary();
 			this.scroller.scrollTo({y: 0});
 		}, 50, this);

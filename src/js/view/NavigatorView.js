@@ -400,7 +400,7 @@ var NavigatorView = Ext.extend(AbstractView, {
 
 						var item = Ext.fly(list.getNode(idx));
 
-						item && list.scroller.setOffset({
+						item && list.scroller && list.scroller.setOffset({
 							y: -item.getOffsetsTo(list.scrollEl)[1]
 						});
 					}

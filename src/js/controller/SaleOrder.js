@@ -1916,6 +1916,7 @@ Ext.regController('SaleOrder', {
 
 		//categoryList
 		view.productCategoryList.lockScrollOnExpand
+            && view.productCategoryList.scroller
 			&& view.productCategoryList.scroller.enable();
 		Ext.each(view.productCategoryList.getEl().query('.x-list-item ' + criteria), addActiveCls);
 	},
@@ -1946,8 +1947,9 @@ Ext.regController('SaleOrder', {
 
 		Ext.each(view.productList.getEl().query('.x-list-group-items'), removeActiveCls);
 
-		view.productCategoryList.scroller.scrollTo({y:0});
+        view.productCategoryList.scroller && view.productCategoryList.scroller.scrollTo({y:0});
 		view.productCategoryList.lockScrollOnExpand
+            && view.productCategoryList.scroller
 			&& view.productCategoryList.scroller.disable();
 		Ext.each(view.productCategoryList.getEl().query('.x-list-group-items'), removeActiveCls);
 	},
@@ -2172,7 +2174,7 @@ Ext.regController('SaleOrder', {
 		var view = options.view;
 
 		view.productCategoryList.scroller && view.productCategoryList.scroller.scrollTo({y: 0});
-		view.productList.scroller.scrollTo ({y:0});
+        view.productList.scroller && view.productList.scroller.scrollTo ({y:0});
 		
 		if (options.filterSet) {
 			view.productCategoryList.el.removeCls('expandable');
@@ -2308,8 +2310,8 @@ Ext.regController('SaleOrder', {
 		if(filterStore.getCount() < 1) {
 			//view.bonusPanel.hide();
 		}
-		
-		list.scroller.scrollTo({y: 0});
+
+        list.scroller && list.scroller.scrollTo({y: 0});
 	},
 	
 	toggleBonusOn: function(options) {

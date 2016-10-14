@@ -56,7 +56,9 @@ var SaleOrderView = Ext.extend(AbstractView, {
 		});
 		
 		this.productCategoryList.lockScrollOnExpand
-			&& this.productCategoryList.on('render', function() {this.scroller.disable();});
+			&& this.productCategoryList.on('render', function() {
+			    this.scroller && this.scroller.disable();
+			});
 
 		this.productPanel = Ext.create({
 			xtype: 'panel',

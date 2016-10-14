@@ -10,9 +10,13 @@ Ext.override(Ext.plugins.PullRefreshPlugin, {
             targetEl = list.getTargetEl(),
             scroller = targetEl.getScrollParent()
         ;
-        
+
         if (!this.rendered) {
             this.render();
+        }
+
+        if (!scroller) {
+            return;
         }
         
         scroller.el.insertFirst(this.el);
@@ -28,6 +32,10 @@ Ext.override(Ext.plugins.PullRefreshPlugin, {
             targetEl = list.getTargetEl(),
             scroller = targetEl.getScrollParent()
         ;
+
+        if (!scroller) {
+            return;
+        }
         
         if (!this.pullTpl.isTemplate) {
             this.pullTpl = new Ext.XTemplate(this.pullTpl);
@@ -44,12 +52,13 @@ Ext.override(Ext.plugins.PullRefreshPlugin, {
         this.pullHeight = this.el.getHeight();
         
         this.scroller = scroller;
-        
+
+
         scroller.on('bouncestart', this.onBounceStart, this);
         scroller.on('offsetchange', this.onOffsetChange, this);
         scroller.on('bounceend', this.onBounceEnd, this);
         scroller.on('offsetboundaryupdate', this.onOffsetBoundaryUpdate, this);
-        
+
         this.rendered = true;
     },
     

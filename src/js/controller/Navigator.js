@@ -56,7 +56,7 @@ Ext.regController('Navigator', {
                 view.setViewStore.load();
 				
                 list.setLoading(false);
-                view.form.scroller.scrollTo({y: 0});
+                view.form.scroller && view.form.scroller.scrollTo({y: 0});
 				
             } else if(view.isObjectView) {
 				
@@ -1096,7 +1096,7 @@ Ext.regController('Navigator', {
 			item = Ext.get(list.getNode(list.store.findExact('id', lastSelectedRecord.getId())))
 		;
 		
-		item && view.form.scroller.scrollTo({
+		item && view.form.scroller && view.form.scroller.scrollTo({
 			y: options.scrollOffset.y
 		});
 	},
@@ -1462,7 +1462,8 @@ Ext.regController('Navigator', {
 			useLike: true
 		})));
 		
-		view.items.getAt(0).scroller.scrollTo ({y:0});
+		var scroller = view.items.getAt(0).scroller;
+        scroller && scroller.scrollTo ({y:0});
 		
 	},
 
