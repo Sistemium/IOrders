@@ -1474,7 +1474,8 @@ Ext.regController('Navigator', {
 		;
 		
 		setViewStore.currentPage = 1;
-		view.items.getAt(0).scroller.scrollTo ({y:0});
+        var scroller = view.items.getAt(0).scroller;
+        scroller && scroller.scrollTo ({y:0});
 		
 		setViewStore.filters.clear();
 		setViewStore.filter (setViewStore.savedFilters);

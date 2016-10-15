@@ -1859,7 +1859,7 @@ Ext.regController('SaleOrder', {
 		offerProductStore.filter(filters);
 
 		view.productListIndexBar.loadIndex();
-		view.productList.scroller.scrollTo ({y:0});
+		view.productList.scroller && view.productList.scroller.scrollTo ({y:0});
 		
 		if (view.modeActive)
 			Ext.dispatch (Ext.apply (options, {action: 'toggleActiveOn'}));
