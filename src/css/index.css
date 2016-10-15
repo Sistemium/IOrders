@@ -744,3 +744,7 @@ small .span3 {
 	overflow-y: auto;
 	-webkit-overflow-scrolling: touch;
 }
+
+.x-scroller-parent {
+	-webkit-overflow-scrolling: touch;
+}
