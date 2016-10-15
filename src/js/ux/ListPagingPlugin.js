@@ -9,10 +9,10 @@ Ext.plugins.ListPagingPlugin = Ext.extend(Ext.util.Observable, {
 
 		me.mon(list, 'update', me.onListUpdate, me);
 
-		me.mon(list, 'render', function() {
-				me.mon(list.getTargetEl().getScrollParent()
-				, 'scrollend', me.onScrollEnd, me);
-		},me);
+		// me.mon(list, 'render', function() {
+		// 		me.mon(list.getTargetEl().getScrollParent()
+		// 		, 'scrollend', me.onScrollEnd, me);
+		// },me);
 
 	},
 

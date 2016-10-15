@@ -35,6 +35,8 @@ Ext.regController('Main', {
 		}
 
 		var controller = Ext.ControllerManager.get(redirectTo) || redirectTo;
+
+		// console.info('onButtonTap:', redirectTo, action);
 		if (action && controller && controller[action]) Ext.dispatch(Ext.apply(options, {
 			controller: redirectTo,
 			action: action
@@ -63,7 +65,7 @@ Ext.regController('Main', {
 		
 		queue();
 	},
-	
+
 	onListItemTap: function(options) {
 		
 		var list = options.list,

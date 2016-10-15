@@ -1,3 +1,30 @@
+(function(){
+
+	function pullRefresh(name, callback) {
+
+		var modelName = Ext.getStore('tables').getById(name).get('primaryTable') || name;
+
+		if(IOrders.xi.fireEvent ('beforetableload', modelName) !== false) {
+			IOrders.xi.request ({
+				command: 'download',
+				timeout: 120000,
+				scope: IOrders.dbeng,
+				success: function( r,o ) {
+					IOrders.dbeng.processDowloadData (r,o);
+					var data = Ext.DomQuery.select ( o.params.filter, r.responseXML );
+					if ( !data || data.length == 0 )
+						IOrders.xi.fireEvent ('tableloadfull', o.params.filter);
+					if (callback) {
+						callback();
+					}
+				},
+				xi: IOrders.xi,
+				params: {filter: modelName}
+			});
+		}
+	}
+
+
 Ext.regController('Navigator', {
 
 	afterAppLaunch: function(options) {
@@ -7,26 +34,7 @@ Ext.regController('Navigator', {
 		this.mon(IOrders.xi, 'uploadrecord', this.onUploadRecord, this);
 		this.mon(IOrders.xi, 'tableload', this.onTableLoad, this);
         
-        this.mon(IOrders.xi, 'pullrefresh', function(name) {
-			
-			var modelName = Ext.getStore('tables').getById(name).get('primaryTable') || name;
-			
-			if(IOrders.xi.fireEvent ('beforetableload', modelName) !== false) {
-                IOrders.xi.request ({
-                    command: 'download',
-                    timeout: 120000,
-                    scope: IOrders.dbeng,
-                    success: function( r,o ) {
-                        IOrders.dbeng.processDowloadData (r,o);
-                        var data = Ext.DomQuery.select ( o.params.filter, r.responseXML );
-                        if ( !data || data.length == 0 )
-                            IOrders.xi.fireEvent ('tableloadfull', o.params.filter);
-                    },
-                    xi: IOrders.xi,
-                    params: {filter: modelName}
-                });
-            }
-        }, this);
+        this.mon(IOrders.xi, 'pullrefresh', pullRefresh , this);
 		
 		IOrders.xi.on ('beforetableload', this.beforeTableLoad);
 		
@@ -1196,15 +1204,22 @@ Ext.regController('Navigator', {
 	},
 
 	onSyncButtonTap: function(options) {
+
 		options.btn.disable();
+
+		var cntWas = options.btn.cnt;
+		var controller = this;
 		
 		IOrders.xi.upload ({
 			engine: IOrders.dbeng,
-			/*success: function(s) {
-				Ext.Msg.alert('Загрузка завершена', 'Передано записей: '+s.getCount(),
-				  function() { if (!IOrders.xi.isBusy()) options.btn.enable();}
-				);
-			},*/
+			success: function(s) {
+				if (!cntWas) {
+					controller.onRefreshButtonTap(options);
+				}
+				// Ext.Msg.alert('Загрузка завершена', 'Передано записей: '+s.getCount(),
+				//   function() { if (!IOrders.xi.isBusy()) options.btn.enable();}
+				// );
+			},
 			failure: function(s,e) {
 				Ext.Msg.alert('Загрузка не удалась', e,
 					function() {options.btn.enable();}
@@ -1480,6 +1495,31 @@ Ext.regController('Navigator', {
 		setViewStore.filters.clear();
 		setViewStore.filter (setViewStore.savedFilters);
 		
+	},
+
+
+	onRefreshButtonTap: function(options) {
+
+		var view = options.btn.up('navigatorview');
+		var modelName = view && (view.tableRecord || view.objectRecord.modelName);
+
+		console.info('onRefreshButtonTap view:', view);
+
+		if (modelName && modelName !== 'MainMenu') {
+			view.setLoading({
+				msg: 'Обновляются ' + view.tableTitle
+			});
+			IOrders.xi.fireEvent(
+				'pullrefresh',
+				modelName,
+				function() {
+					view.setLoading(false);
+				}
+			);
+		}
 	}
-	
+
+
 });
+
+})();

@@ -20,8 +20,10 @@ var NavigatorView = Ext.extend(AbstractView, {
 
 		this.items = [];
 
-		this.dockedItems[0].title = table.get('name');
-		this.dockedItems[0].items.push (
+		var toolBar = this.dockedItems[0];
+		toolBar.title = table.get('name');
+
+		toolBar.items.push (
 			this.syncButton = this.createSyncButton()
 		);
 
@@ -29,6 +31,10 @@ var NavigatorView = Ext.extend(AbstractView, {
 		//this.dockedItems[0].items.push(this.fbBtn);
 
 		if(this.isObjectView) {
+
+			this.cls = 'objectView';
+
+			this.tableTitle = table.get('nameSet');
 
 			table.columns().each( function (c) {
 				var cName = c.get('name');
@@ -40,33 +46,32 @@ var NavigatorView = Ext.extend(AbstractView, {
 				}
 			});
 
-			this.cls = 'objectView';
 
-			if (this.objectRecord.modelName != 'MainMenu') {
-				formConfig.plugins = [
-					new Ext.plugins.PullRefreshPlugin({
-
-						isLoading: table.get('loading'),
-
-						render: function() {
-							Ext.plugins.PullRefreshPlugin.prototype.render.apply(this, arguments);
-
-							if(this.isLoading)
-								this.setViewState('loading');
-						},
-
-						refreshFn: function(onCompleteCallback, pullPlugin) {
-							this.list.pullPlugin = pullPlugin;
-							IOrders.xi.fireEvent(
-								'pullrefresh',
-								modelName,
-								onCompleteCallback
-							);
-						}
-
-					})
-				];
-			}
+			// if (this.objectRecord.modelName != 'MainMenu') {
+			// 	formConfig.plugins = [
+			// 		new Ext.plugins.PullRefreshPlugin({
+            //
+			// 			isLoading: table.get('loading'),
+            //
+			// 			render: function() {
+			// 				Ext.plugins.PullRefreshPlugin.prototype.render.apply(this, arguments);
+            //
+			// 				if(this.isLoading)
+			// 					this.setViewState('loading');
+			// 			},
+            //
+			// 			refreshFn: function(onCompleteCallback, pullPlugin) {
+			// 				this.list.pullPlugin = pullPlugin;
+			// 				IOrders.xi.fireEvent(
+			// 					'pullrefresh',
+			// 					modelName,
+			// 					onCompleteCallback
+			// 				);
+			// 			}
+            //
+			// 		})
+			// 	];
+			// }
 
 			formItems.push(this.fieldSetConfig(this, table, modelName));
 
@@ -139,7 +144,8 @@ var NavigatorView = Ext.extend(AbstractView, {
 		} else if (this.isSetView) {
 
 			this.cls = 'setView';
-			this.dockedItems[0].title = tablesStore.getById(this.tableRecord).get('nameSet');
+			this.tableTitle = tablesStore.getById(this.tableRecord).get('nameSet');
+			this.dockedItems[0].title = this.tableTitle;
 
 			if(this.objectRecord.modelName != 'MainMenu') {
 				formItems.push(createFilterField(this.objectRecord));
@@ -187,16 +193,16 @@ var NavigatorView = Ext.extend(AbstractView, {
 				}
 			;
 
-			var tbItems = this.dockedItems[0].items;
 
-			tbItems.push({xtype: 'spacer'});
+			toolBar.items.push({xtype: 'spacer'});
+			// toolBar.items.push(this.createRefreshButton());
 
 			tableHasColumn(table.getId(), 'name')
-				&& tbItems.push (searcher)
+				&& toolBar.items.push (searcher)
 			;
 
 			table.get('extendable') && !table.get('belongs')
-				&& tbItems.push({
+				&& toolBar.items.push({
 					ui: 'plain', iconMask: true,
 					name: 'Add', iconCls: 'add',
 					scope: this
@@ -546,13 +552,27 @@ var NavigatorView = Ext.extend(AbstractView, {
 
 	},
 
+	createRefreshButton: function() {
+
+		var button = new Ext.Button ({
+
+			iconMask: true,
+			name: 'Refresh',
+			iconCls: 'refresh',
+			scope: this
+		});
+
+		return button;
+
+	},
+
 	createSyncButton: function() {
 
 		var me = this, sb = new Ext.Button ({
 
 			iconMask: true,
 			name: 'Sync',
-			iconCls: 'action',
+			iconCls: 'refresh',
 			scope: this,
 
 			checkDisabled: function(){
