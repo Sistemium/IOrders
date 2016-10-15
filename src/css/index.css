@@ -740,7 +740,7 @@ small .span3 {
 	display: none;
 }
 
-.x-form.x-navigator-form, .scroll-y {
+.x-form.x-navigator-form, .scroll-y, .x-panel-body {
 	overflow-y: auto;
 	-webkit-overflow-scrolling: touch;
 }

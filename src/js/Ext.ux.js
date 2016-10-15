@@ -97,3 +97,43 @@ if (typeof WebKitPoint == 'undefined') {
 		return [rect.left, rect.top];
 	}
 }
+
+Ext.gesture.Manager.onTouchMove = function(e) {
+	// if (!Ext.is.Android) {
+	// 	e.preventDefault();
+	// }
+
+	if (!this.startEvent) {
+		return;
+	}
+
+	if (Ext.is.Desktop) {
+		e.target = this.startEvent.target;
+	}
+
+	if (this.isFrozen) {
+		return;
+	}
+
+	var gestures = this.currentGestures,
+		gesture,
+		touch = e.changedTouches ? e.changedTouches[0] : e;
+
+	this.lastMovePoint = Ext.util.Point.fromEvent(e);
+
+	if (Ext.supports.Touch && this.isClick && !this.lastMovePoint.isWithin(this.startPoint, this.clickMoveThreshold)) {
+		this.isClick = false;
+	}
+
+	for (var i = 0; i < gestures.length; i++) {
+		if (e.stopped) {
+			break;
+		}
+
+		gesture = gestures[i];
+
+		if (gesture.listenForMove) {
+			gesture.onTouchMove(e, touch);
+		}
+	}
+};
