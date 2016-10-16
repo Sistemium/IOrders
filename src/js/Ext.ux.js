@@ -98,6 +98,50 @@ if (typeof WebKitPoint == 'undefined') {
 	}
 }
 
+Ext.gesture.Manager.onTouchStart = function(e) {
+
+	var targets = [],
+		target = e.target;
+
+	if (e.stopped === true) {
+		return;
+	}
+
+	// if (Ext.is.Android) {
+	// 	if (!(target.tagName && ['input', 'textarea', 'select'].indexOf(target.tagName.toLowerCase()) !== -1)) {
+	// 		e.preventDefault();
+	// 	}
+	// }
+
+	if (this.isFrozen) {
+		return;
+	}
+
+	if (this.startEvent) {
+		this.onTouchEnd(e);
+	}
+
+	this.locks = {};
+
+	this.currentTargets = [target];
+
+	while (target) {
+		if (this.targets.indexOf(target) !== -1) {
+			targets.unshift(target);
+		}
+
+		target = target.parentNode;
+		this.currentTargets.push(target);
+	}
+
+	this.startEvent = e;
+	this.startPoint = Ext.util.Point.fromEvent(e);
+	this.lastMovePoint = null;
+	this.isClick = true;
+	this.handleTargets(targets, e);
+
+};
+
 Ext.gesture.Manager.onTouchMove = function(e) {
 	// if (!Ext.is.Android) {
 	// 	e.preventDefault();
