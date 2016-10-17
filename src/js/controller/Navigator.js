@@ -555,8 +555,9 @@ Ext.regController('Navigator', {
             parentColumns.each(function(col) {
                 rec.set(col.get('name'), objectRecord.get(col.get('name')));
             });
-			
-			options.view.form.fields.each (function(f) {
+
+			var fields = options.view.form.fields;
+			fields && fields.each (function(f) {
 				if (f.importFields) Ext.each (f.importFields, function(ff) {
 					rec.set(ff.toName, ff.value);
 				})
