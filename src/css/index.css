@@ -742,6 +742,7 @@ small .span3 {
 
 .x-form.x-navigator-form, .scroll-y, .x-panel-body {
 	overflow-y: auto;
+	overflow-x: hidden;
 	-webkit-overflow-scrolling: touch;
 }
 
