@@ -11,7 +11,7 @@ var HorizontalIndexBar = Ext.extend(Ext.DataView, {
 	),
 
 	itemSelector:'div.x-hindex-item',
-	scroll: 'vertical',
+	scroll: false,
 
 	height: 124,
 

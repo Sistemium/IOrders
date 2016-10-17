@@ -151,7 +151,7 @@ var offerProductListConfig = function (options) {
 			
 		},
 
-		scroll: false,
+		scroll: false
 		
 		// scroll: {
 		//

@@ -2,6 +2,7 @@ var ExpandableGroupedList = Ext.extend(Ext.List, {
 
 	grouped: true,
     pinHeaders: true,
+	scroll: false,
 
 	initComponent: function() {
 

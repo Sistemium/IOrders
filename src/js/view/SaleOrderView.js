@@ -63,7 +63,8 @@ var SaleOrderView = Ext.extend(AbstractView, {
 		this.productPanel = Ext.create({
 			xtype: 'panel',
 			layout: {type: 'vbox', pack: 'justify', align: 'stretch'},
-			flex: 3
+			flex: 3,
+			scroll: false
 		});
 		
 		this.items = [this.productCategoryList, this.productPanel];
