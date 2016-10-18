@@ -80,6 +80,13 @@ Ext.override(Ext.form.Select, {
             this.fireEvent('change', this, this.getValue());
         }
 
+        Ext.dispatch({
+        	action: 'onSelectFieldValueChange',
+        	field: this,
+        	selected: selected,
+        	filter: true
+        });
+
         this.listPanel.destroy({
             type: 'fade',
             out: true,
@@ -87,13 +94,6 @@ Ext.override(Ext.form.Select, {
         });
 
         this.listPanel = false;
-
-        Ext.dispatch({
-        	action: 'onSelectFieldValueChange',
-        	field: this,
-        	selected: selected,
-        	filter: true
-        });
     },
 	
 	onPickerChange: function(picker, value) {
@@ -230,7 +230,7 @@ Ext.override(Ext.form.Select, {
                 stopMaskTapEvent : false,
                 hideOnMaskTap    : true,
                 cls              : 'x-select-overlay',
-                scroll: false, //           : 'vertical',
+                scroll: 'vertical',
                 items: {
                     xtype: 'list',
                     store: this.store,
@@ -250,6 +250,6 @@ Ext.override(Ext.form.Select, {
         }
 		
         return this.listPanel;
-    },
+    }
 	
-})
+});
