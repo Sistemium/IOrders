@@ -64,7 +64,7 @@ Ext.override(Ext.form.Select, {
 	
 	onListSelect: function(selModel, selected) {
 		
-		if (this.listPanel.hidden) {
+		if (this.listPanel && this.listPanel.hidden) {
 			IOrders.logEvent({
 				module:'SelectField.js',
 				action: 'onListSelect' ,
@@ -87,7 +87,7 @@ Ext.override(Ext.form.Select, {
         });
 
         this.listPanel = false;
-        
+
         Ext.dispatch({
         	action: 'onSelectFieldValueChange',
         	field: this,
