@@ -75,16 +75,18 @@ Ext.override(Ext.form.Select, {
 			return;
 		}
 		
-        this.listPanel.hide({
-            type: 'fade',
-            out: true,
-            scope: this
-        });
-        
         if (selected) {
             this.setValue(selected.get(this.valueField));
             this.fireEvent('change', this, this.getValue());
         }
+
+        this.listPanel.destroy({
+            type: 'fade',
+            out: true,
+            scope: this
+        });
+
+        this.listPanel = false;
         
         Ext.dispatch({
         	action: 'onSelectFieldValueChange',
