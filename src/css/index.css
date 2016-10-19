@@ -746,6 +746,7 @@ small .span3 {
 	overflow-y: scroll;
 }
 
-/*.x-scroller-parent {*/
-	/*-webkit-overflow-scrolling: touch;*/
-/*}*/
+.x-desktop .x-panel .x-panel-body {
+	overflow-x: hidden;
+	overflow-y: auto;
+}

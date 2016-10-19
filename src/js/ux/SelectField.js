@@ -230,7 +230,7 @@ Ext.override(Ext.form.Select, {
                 stopMaskTapEvent : false,
                 hideOnMaskTap    : true,
                 cls              : 'x-select-overlay',
-                scroll: 'vertical',
+                scroll: !Ext.is.Desktop && 'vertical',
                 items: {
                     xtype: 'list',
                     store: this.store,
