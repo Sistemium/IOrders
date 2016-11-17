@@ -170,7 +170,7 @@ var SaleOrderView = Ext.extend(AbstractView, {
 						itemId: 'StockMode',
 						name: 'StockMode',
 						pressed: stockMode,
-						scope: this,
+						scope: this
 					}],
 					listeners: {
 						toggle: saleOrderToggleFn
@@ -198,7 +198,7 @@ var SaleOrderView = Ext.extend(AbstractView, {
 				}
 			],
 			titleTpl: summTpl
-		}
+		};
 		
 		if (!metastore.getById('Product').columns().getById('ProductlastName'))
 			bb.items[1].disabled = true;
@@ -237,27 +237,27 @@ var SaleOrderView = Ext.extend(AbstractView, {
 						itemId: 'Charge',
 						text: 'Нагрузки',
 						handler: Ext.emptyFn,
-						hidden: metastore.getById('Charge') ? false : true
+						hidden: !metastore.getById('Charge')
 					},
 					{
 						itemId: 'MML',
 						text: 'MML',
 						criteria: '.isMML',
 						handler: Ext.emptyFn,
-						hidden: tableHasColumn('Offer','isMML') ? false : true
+						hidden: !tableHasColumn('Offer','isMML')
 					},
 					{
 						itemId: 'Bonus',
 						text: 'Акции',
 						handler: Ext.emptyFn,
-						hidden: tableHasColumn('Offer','actionsCount') ? false : true
+						hidden: !tableHasColumn('Offer','actionsCount')
 					},
 					{
 						itemId: 'BonusActive',
 						text: 'Акции',
 						criteria: '.hasAction',
 						handler: Ext.emptyFn,
-						hidden: tableHasColumn('Offer','hasAction') ? false : true
+						hidden: !tableHasColumn('Offer','hasAction')
 					},
 					{
 						itemId: 'ShowSaleOrder',
