@@ -168,7 +168,7 @@ var offerProductListConfig = function (options) {
 				}
 			}*/
 
-		},
+		}
 		
 		/*onRender: function() {
 			
