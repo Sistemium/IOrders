@@ -151,24 +151,24 @@ var offerProductListConfig = function (options) {
 			
 		},
 
-		scroll: false
+		// scroll: false
 		
-		// scroll: {
-		//
-		// 	direction: 'vertical',
-		// 	threshold: 35 /*,
-		//
-		// 	listeners: {
-		// 		scroll:function(s, o) {
-		// 			if (o.y)
-		// 				me.disableSwipe = true;
-		// 		},
-		// 		scrollend: function(s, o){
-		// 			me.disableSwipe = false;
-		// 		}
-		// 	}*/
-		//
-		// },
+		scroll: {
+
+			direction: 'vertical',
+			threshold: 35 /*,
+
+			listeners: {
+				scroll:function(s, o) {
+					if (o.y)
+						me.disableSwipe = true;
+				},
+				scrollend: function(s, o){
+					me.disableSwipe = false;
+				}
+			}*/
+
+		},
 		
 		/*onRender: function() {
 			
