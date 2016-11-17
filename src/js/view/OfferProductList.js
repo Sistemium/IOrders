@@ -153,7 +153,7 @@ var offerProductListConfig = function (options) {
 
 		// scroll: false
 		
-		scroll: {
+		scroll: !Ext.is.Desktop && {
 
 			direction: 'vertical',
 			threshold: 35 /*,
