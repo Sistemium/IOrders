@@ -306,29 +306,29 @@ var NavigatorView = Ext.extend(AbstractView, {
 					new Ext.plugins.ListPagingPlugin({autoPaging: true})
 				];
 
-				if (me.objectRecord.modelName == 'MainMenu')
-					res.push(new Ext.plugins.PullRefreshPlugin({
-
-						isLoading: tablesStore.getById(view.tableRecord).get('loading'),
-
-						render: function() {
-							Ext.plugins.PullRefreshPlugin.prototype.render.apply(this, arguments);
-
-							if(this.isLoading)
-								this.setViewState('loading');
-						},
-
-						refreshFn: function(onCompleteCallback, pullPlugin) {
-							this.list.pullPlugin = pullPlugin;
-							IOrders.xi.fireEvent(
-								'pullrefresh',
-								this.list.store.model.modelName,
-								onCompleteCallback
-							);
-						}
-
-					}))
-				;
+				// if (me.objectRecord.modelName == 'MainMenu')
+				// 	res.push(new Ext.plugins.PullRefreshPlugin({
+                //
+				// 		isLoading: tablesStore.getById(view.tableRecord).get('loading'),
+                //
+				// 		render: function() {
+				// 			Ext.plugins.PullRefreshPlugin.prototype.render.apply(this, arguments);
+                //
+				// 			if(this.isLoading)
+				// 				this.setViewState('loading');
+				// 		},
+                //
+				// 		refreshFn: function(onCompleteCallback, pullPlugin) {
+				// 			this.list.pullPlugin = pullPlugin;
+				// 			IOrders.xi.fireEvent(
+				// 				'pullrefresh',
+				// 				this.list.store.model.modelName,
+				// 				onCompleteCallback
+				// 			);
+				// 		}
+                //
+				// 	}))
+				// ;
 
 				return res;
 

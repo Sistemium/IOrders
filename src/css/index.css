@@ -740,7 +740,7 @@ small .span3 {
 	display: none;
 }
 
-.x-list.scroll-y, .setView > .x-panel-body {
+.x-desktop .x-list.scroll-y, .x-desktop .setView > .x-panel-body {
 	overflow-x: hidden;
 	-webkit-overflow-scrolling: touch;
 	overflow-y: scroll;
