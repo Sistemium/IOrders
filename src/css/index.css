@@ -750,3 +750,7 @@ small .span3 {
 	overflow-x: hidden;
 	overflow-y: auto;
 }
+
+body.x-android {
+	overflow-y:hidden;
+}
