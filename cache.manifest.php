@@ -1,6 +1,7 @@
 <?php
     date_default_timezone_set('Europe/Moscow');
 
+    require_once ('../XML/php/headers.php');
     require_once ('../XML/functions.php');
 
     @$config=simplexml_load_file('cache.manifest.xml');
