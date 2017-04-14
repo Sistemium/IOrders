@@ -754,3 +754,9 @@ small .span3 {
 body.x-android {
 	overflow-y:hidden;
 }
+
+.x-button, .x-button.x-button-back:after, .x-button.x-button-forward:after,
+.x-toolbar .x-button, .x-toolbar .x-button.x-button-back:after, .x-toolbar .x-button.x-button-forward:after {
+	background-color: #cccccc;
+	background-image: none;
+}
